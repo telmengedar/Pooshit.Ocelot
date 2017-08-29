@@ -1,0 +1,201 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{E2099EFB-1D5A-4115-833D-7C42FF9BDDA7}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>NightlyCode.DB</RootNamespace>
+    <AssemblyName>NightlyCode.DB</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Debug\NightlyCode.DB.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Release\NightlyCode.DB.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>nightlycode.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MySql.Data">
+      <HintPath>$(DevDir)\Extern\MySQL\v4.5\MySql.Data.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="NightlyCode.Core">
+      <HintPath>$(DevDir)\Compiled\Library\NightlyCode.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Npgsql">
+      <HintPath>$(DevDir)\Compiled\Extern\Npgsql\Npgsql.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.SQLite, Version=1.0.60.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(DevDir)\Extern\SQLite\x64\System.Data.SQLite.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Clients\Transaction.cs" />
+    <Compile Include="DBType.cs" />
+    <Compile Include="Entities\Attributes\IgnoreAttribute.cs" />
+    <Compile Include="Entities\Attributes\ViewAttribute.cs" />
+    <Compile Include="Entities\DBConverterCollection.cs" />
+    <Compile Include="Entities\Descriptors\ColumnDescriptor.cs" />
+    <Compile Include="Entities\Descriptors\EntityDescriptor.cs" />
+    <Compile Include="Entities\Attributes\ColumnAttribute.cs" />
+    <Compile Include="Entities\Descriptors\EntityColumnDescriptor.cs" />
+    <Compile Include="Entities\Attributes\AutoIncrementAttribute.cs" />
+    <Compile Include="Entities\Attributes\DefaultValueAttribute.cs" />
+    <Compile Include="Entities\Descriptors\IndexDescriptor.cs" />
+    <Compile Include="Entities\Attributes\NotNullAttribute.cs" />
+    <Compile Include="Entities\Attributes\UniqueAttribute.cs" />
+    <Compile Include="Entities\Attributes\IndexAttribute.cs" />
+    <Compile Include="Entities\Attributes\PrimaryKeyAttribute.cs" />
+    <Compile Include="Entities\Attributes\TableAttribute.cs" />
+    <Compile Include="Clients\DBClient.cs" />
+    <Compile Include="DBCommand.cs" />
+    <Compile Include="Clients\IDBClient.cs" />
+    <Compile Include="Entities\Schema\SchemaColumnDescriptor.cs" />
+    <Compile Include="Entities\Descriptors\UniqueDescriptor.cs" />
+    <Compile Include="Entities\EntityCache.cs" />
+    <Compile Include="Entities\EntityManager.cs" />
+    <Compile Include="Entities\IEntityManager.cs" />
+    <Compile Include="Entities\Operations\LoadValuesOperation.cs" />
+    <Compile Include="Entities\Operations\Aggregate.cs" />
+    <Compile Include="Entities\Operations\AggregateType.cs" />
+    <Compile Include="Entities\Operations\Constant.cs" />
+    <Compile Include="Entities\Operations\DBOperators.cs" />
+    <Compile Include="Entities\Operations\InsertValuesOperation.cs" />
+    <Compile Include="Entities\Operations\OrderByCriteria.cs" />
+    <Compile Include="Entities\Operations\PreparedDeleteOperation.cs" />
+    <Compile Include="Entities\Operations\DeleteOperation.cs" />
+    <Compile Include="Entities\Operations\CriteriaVisitor.cs" />
+    <Compile Include="Entities\Operations\DBFunction.cs" />
+    <Compile Include="Entities\Operations\DBFunctionType.cs" />
+    <Compile Include="Entities\Operations\DBParameter.cs" />
+    <Compile Include="Entities\Operations\DeleteEntitiesOperation.cs" />
+    <Compile Include="Entities\Operations\EntityField.cs" />
+    <Compile Include="Entities\Operations\IDBField.cs" />
+    <Compile Include="Entities\Operations\InsertEntitiesOperation.cs" />
+    <Compile Include="Entities\Operations\JoinOperation.cs" />
+    <Compile Include="Entities\Operations\LoadEntitiesOperation.cs" />
+    <Compile Include="Entities\Operations\OperationPreparator.cs" />
+    <Compile Include="Entities\Operations\PreparedLoadEntitiesOperation.cs" />
+    <Compile Include="Entities\Operations\EntityOperation.cs" />
+    <Compile Include="Entities\Operations\PreparedOperation.cs" />
+    <Compile Include="Entities\Operations\UpdateEntitiesOperation.cs" />
+    <Compile Include="Entities\Operations\UpdateValuesOperation.cs" />
+    <Compile Include="Entities\PreparedLoadValuesOperation.cs" />
+    <Compile Include="Entities\Schema\SchemaCreator.cs" />
+    <Compile Include="Entities\Schema\SchemaDescriptor.cs" />
+    <Compile Include="Entities\Schema\SchemaType.cs" />
+    <Compile Include="Entities\Schema\SchemaUpdater.cs" />
+    <Compile Include="Entities\Schema\TableDescriptor.cs" />
+    <Compile Include="Entities\Schema\ViewDescriptor.cs" />
+    <Compile Include="Expressions\PredicateExpression.cs" />
+    <Compile Include="Expressions\WrappedExpression.cs" />
+    <Compile Include="Extern\ConversionKey.cs" />
+    <Compile Include="Extern\Converter.cs" />
+    <Compile Include="Info\IDBInfo.cs" />
+    <Compile Include="Info\MySQLInfo.cs" />
+    <Compile Include="Info\PostgreInfo.cs" />
+    <Compile Include="Extern\Logger.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Info\SQLiteInfo.cs" />
+    <Compile Include="Providers\IDBProvider.cs" />
+    <Compile Include="Providers\MySQLProvider.cs" />
+    <Compile Include="Providers\PostgreProvider.cs" />
+    <Compile Include="Providers\SQLiteProvider.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="nightlycode.snk" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <Target Name="AfterBuild">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(DevDir)\Compiled\Library\" />
+    <Copy SourceFiles="$(DocumentationFile)" DestinationFolder="$(DevDir)\Compiled\Library\" />
+  </Target>
+</Project>

@@ -3,7 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DB", "DB\DB.csproj", "{E2099EFB-1D5A-4115-833D-7C42FF9BDDA7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DB.Tests", "DB.Tests\DB.Tests.csproj", "{6B5D2A54-810E-4DE2-B3A6-82B58E4E3B9A}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E2099EFB-1D5A-4115-833D-7C42FF9BDDA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2099EFB-1D5A-4115-833D-7C42FF9BDDA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2099EFB-1D5A-4115-833D-7C42FF9BDDA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2099EFB-1D5A-4115-833D-7C42FF9BDDA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B5D2A54-810E-4DE2-B3A6-82B58E4E3B9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B5D2A54-810E-4DE2-B3A6-82B58E4E3B9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B5D2A54-810E-4DE2-B3A6-82B58E4E3B9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B5D2A54-810E-4DE2-B3A6-82B58E4E3B9A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
