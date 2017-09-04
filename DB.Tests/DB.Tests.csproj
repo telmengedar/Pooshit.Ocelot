@@ -67,14 +67,6 @@
       <Project>{e2099efb-1d5a-4115-833d-7c42ff9bdda7}</Project>
       <Name>DB</Name>
     </ProjectReference>
-    <ProjectReference Include="..\GM.Core\Core.csproj">
-      <Project>{9800A824-E5F1-4CBC-B02B-F8D0D49667A1}</Project>
-      <Name>Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\GM.Math\Math.csproj">
-      <Project>{76032225-1FDD-4771-8408-5EB4FFEBBA52}</Project>
-      <Name>Math</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
