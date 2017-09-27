@@ -52,6 +52,10 @@ namespace NightlyCode.DB.Entities.Operations {
             throw new NotImplementedException();
         }
 
+        public static bool operator %(DBField lhs, DBField rhs) {
+            throw new NotImplementedException();
+        }
+
         public static bool operator ==(DBField lhs, DBField rhs) {
             return !(lhs != rhs);
         }

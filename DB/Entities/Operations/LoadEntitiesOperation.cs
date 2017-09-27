@@ -42,7 +42,12 @@ namespace NightlyCode.DB.Entities.Operations {
         /// <summary>
         /// limit to use when loading
         /// </summary>
-        protected int? LoadLimit { get; set; }
+        protected long? LoadLimit { get; set; }
+
+        /// <summary>
+        /// offset to use when loading
+        /// </summary>
+        protected long? LoadOffset { get; set; }
 
         /// <summary>
         /// operations to join
@@ -132,7 +137,20 @@ namespace NightlyCode.DB.Entities.Operations {
                 switch(dbclient.DBInfo.Type) {
                     case DBType.SQLite:
                     case DBType.Postgre:
-                        preparator.CommandBuilder.Append(" LIMIT ").Append(LoadLimit.Value);
+                        if(LoadOffset.HasValue)
+                            preparator.CommandBuilder.Append(" LIMIT ").Append(LoadOffset.Value).Append(',').Append(LoadLimit.Value);
+                        else
+                            preparator.CommandBuilder.Append(" LIMIT ").Append(LoadLimit.Value);
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+            else if(LoadOffset.HasValue){
+                switch (dbclient.DBInfo.Type)
+                {
+                    case DBType.SQLite:
+                        preparator.CommandBuilder.Append(" LIMIT ").Append(LoadOffset.Value).Append(",-1");
                         break;
                     default:
                         throw new NotImplementedException();
@@ -201,10 +219,19 @@ namespace NightlyCode.DB.Entities.Operations {
         /// <summary>
         /// specifies a limited number of rows to return
         /// </summary>
-        /// <param name="limit"></param>
-        /// <returns></returns>
-        public LoadEntitiesOperation<T> Limit(int limit) {
+        /// <param name="limit">number of rows to return</param>
+        public LoadEntitiesOperation<T> Limit(long limit) {
             LoadLimit = limit;
+            return this;
+        }
+
+        /// <summary>
+        /// specifies an offset from which on to return result rows
+        /// </summary>
+        /// <param name="offset">number of rows to skip</param>
+        public LoadEntitiesOperation<T> Offset(long offset)
+        {
+            LoadOffset = offset;
             return this;
         }
 

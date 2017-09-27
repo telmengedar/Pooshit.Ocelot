@@ -15,21 +15,21 @@ namespace NightlyCode.DB.Entities.Operations {
         /// </summary>
         /// <param name="type">type of function</param>
         /// <param name="field">field to use</param>
-        internal Aggregate(AggregateType type, IDBField field) {
+        internal Aggregate(AggregateType type, params IDBField[] field) {
             Type = type;
             Alias = "agg" + id++;
-            Field = field;
+            Arguments = field;
         }
 
         /// <summary>
         /// type of aggregate function
         /// </summary>
-        public AggregateType Type { get; private set; }
+        public AggregateType Type { get; }
 
         /// <summary>
         /// content of the function
         /// </summary>
-        public IDBField Field { get; private set; }
+        public IDBField[] Arguments { get; }
 
         /// <summary>
         /// alias to use
@@ -49,9 +49,19 @@ namespace NightlyCode.DB.Entities.Operations {
             }
         }
 
+        /// <summary>
+        /// text used to represent the field
+        /// </summary>
         public override void PrepareCommand(OperationPreparator preparator, IDBInfo dbinfo, Func<Type, EntityDescriptor> descriptorgetter) {
+            bool second = false;
             preparator.CommandBuilder.Append(Method).Append("(");
-            Field.PrepareCommand(preparator, dbinfo, descriptorgetter);
+            foreach(IDBField field in Arguments) {
+                if(second)
+                    preparator.CommandBuilder.Append(", ");
+
+                field.PrepareCommand(preparator, dbinfo, descriptorgetter);
+                second = true;
+            }
             preparator.CommandBuilder.Append(")");
         }
 
@@ -60,16 +70,16 @@ namespace NightlyCode.DB.Entities.Operations {
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static Aggregate Sum<T>(IDBField field) {
+        public static Aggregate Sum<T>(params IDBField[] field) {
             return new Aggregate(AggregateType.Sum, field);
         }
 
         /// <summary>
-        /// maximum value of a field
+        /// maximum value of a field or multiple values
         /// </summary>
-        /// <param name="field"></param>
-        /// <returns></returns>
-        public static Aggregate Max(IDBField field) {
+        /// <param name="field">fields of which to select maximum value</param>
+        /// <returns>aggregate field</returns>
+        public static Aggregate Max(params IDBField[] field) {
             return new Aggregate(AggregateType.Max, field);
         }
     }
