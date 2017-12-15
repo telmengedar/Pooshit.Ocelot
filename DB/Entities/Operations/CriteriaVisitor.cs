@@ -309,7 +309,9 @@ namespace NightlyCode.DB.Entities.Operations {
         }
 
         protected override Expression VisitMethodCall(MethodCallExpression node) {
-            if(node.Method.DeclaringType==typeof(DBOperators)) {
+            AppendValueRemainder();
+
+            if (node.Method.DeclaringType==typeof(DBOperators)) {
                 switch(node.Method.Name) {
                 case "Like":
                     Visit(node.Arguments[0]);

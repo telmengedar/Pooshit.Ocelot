@@ -295,6 +295,14 @@ namespace NightlyCode.DB.Tests.Entities {
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
             entitymanager.Update<TestEntityWithoutAnySpecifications>().Set(t => t.Column1 == "123").Where(t => DBOperators.Replace(t.Column1, "1", "2") == "123").Execute();
         }
+
+        [Test]
+        public void ToLower() {
+            IDBClient dbclient = CreateDBClient();
+            EntityManager entitymanager = new EntityManager(dbclient);
+            entitymanager.Create<TestEntityWithoutAnySpecifications>();
+            entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Where(t => t.Column1.ToLower() == "123".ToLower()).Execute();
+        }
     }
 
     public class AnyException : IResolveConstraint {
