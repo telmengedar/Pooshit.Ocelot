@@ -75,6 +75,20 @@ namespace NightlyCode.DB.Info
             OperationPreparator preparator, Expression value);
 
         /// <summary>
+        /// converts an expression to lowercase using database command
+        /// </summary>
+        /// <param name="visitor"></param>
+        /// <param name="preparator"></param>
+        /// <param name="value"></param>
+        void ToLower(
+#if UNITY
+            ExpressionVisitor visitor,
+#else
+            ExpressionVisitor visitor,
+#endif
+            OperationPreparator preparator, Expression value);
+
+        /// <summary>
         /// command used to check whether a table exists
         /// </summary>
         /// <param name="db"></param>

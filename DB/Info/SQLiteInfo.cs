@@ -93,6 +93,25 @@ namespace NightlyCode.DB.Info
         }
 
         /// <summary>
+        /// converts an expression to lowercase using database command
+        /// </summary>
+        /// <param name="visitor"></param>
+        /// <param name="preparator"></param>
+        /// <param name="value"></param>
+        public void ToLower(
+#if UNITY
+            ExpressionVisitor visitor,
+#else
+            ExpressionVisitor visitor,
+#endif
+            OperationPreparator preparator, Expression value)
+        {
+            preparator.CommandBuilder.Append("lower(");
+            visitor.Visit(value);
+            preparator.CommandBuilder.Append(")");
+        }
+
+        /// <summary>
         /// command used to check whether a table exists
         /// </summary>
         /// <param name="db"></param>

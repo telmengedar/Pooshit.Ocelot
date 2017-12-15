@@ -44,6 +44,10 @@ namespace NightlyCode.DB.Info
             throw new NotImplementedException();
         }
 
+        public void ToLower(ExpressionVisitor visitor, OperationPreparator preparator, Expression value) {
+            throw new NotImplementedException();
+        }
+
         public bool CheckIfTableExists(IDBClient db, string table)
         {
             return db.Query("SHOW TABLES like ?1", table).Rows.Count > 0;

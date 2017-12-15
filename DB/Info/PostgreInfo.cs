@@ -69,6 +69,10 @@ namespace NightlyCode.DB.Info {
             throw new NotImplementedException();
         }
 
+        public void ToLower(ExpressionVisitor visitor, OperationPreparator preparator, Expression value) {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// command used to check whether a table exists
         /// </summary>

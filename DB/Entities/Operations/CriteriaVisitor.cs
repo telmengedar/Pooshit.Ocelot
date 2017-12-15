@@ -349,6 +349,9 @@ namespace NightlyCode.DB.Entities.Operations {
                     case "ToUpper":
                         dbinfo.ToUpper(this, preparator, node.Object);
                         break;
+                    case "ToLower":
+                        dbinfo.ToLower(this, preparator, node.Object);
+                        break;
                 }
                 return node;
             }
