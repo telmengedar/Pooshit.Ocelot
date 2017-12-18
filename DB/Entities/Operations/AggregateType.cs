@@ -19,5 +19,10 @@
         /// maximum of several values
         /// </summary>
         Max,
+
+        /// <summary>
+        /// average of several values
+        /// </summary>
+        Average
     }
 }

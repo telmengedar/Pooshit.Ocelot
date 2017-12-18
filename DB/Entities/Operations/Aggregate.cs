@@ -43,6 +43,8 @@ namespace NightlyCode.DB.Entities.Operations {
                     return "sum";
                 case AggregateType.Max:
                     return "max";
+                case AggregateType.Average:
+                    return "avg";
                 default:
                     throw new NotImplementedException();
                 }
@@ -81,6 +83,15 @@ namespace NightlyCode.DB.Entities.Operations {
         /// <returns>aggregate field</returns>
         public static Aggregate Max(params IDBField[] field) {
             return new Aggregate(AggregateType.Max, field);
+        }
+
+        /// <summary>
+        /// average value of a field or multiple values
+        /// </summary>
+        /// <param name="field">fields of which to select average value</param>
+        /// <returns>aggregate field</returns>
+        public static Aggregate Average(params IDBField[] field) {
+            return new Aggregate(AggregateType.Average, field);
         }
     }
 }
