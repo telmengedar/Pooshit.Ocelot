@@ -411,7 +411,7 @@ namespace NightlyCode.DB.Info
         }
 
         SchemaColumnDescriptor GetColumnDescriptor(string sql) {
-            Match match = Regex.Match(sql, @"^'?(?<name>[^ ']+)'? (?<type>[^ ]+)(?<pk> PRIMARY KEY)?(?<ai> AUTOINCREMENT)?(?<uq> UNIQUE)?(?<nn> NOT NULL)?( DEFAULT '?(?<default>[^']+)'?)?$");
+            Match match = Regex.Match(sql, @"^'?(?<name>[^ ']+)'? (?<type>[^ ]+)(?<pk> PRIMARY KEY)?(?<ai> AUTOINCREMENT)?(?<uq> UNIQUE)?(?<nn> NOT NULL)?( DEFAULT '?(?<default>.+)'?)?$");
             if(!match.Success)
                 throw new InvalidOperationException("Error analysing column description sql");
 
