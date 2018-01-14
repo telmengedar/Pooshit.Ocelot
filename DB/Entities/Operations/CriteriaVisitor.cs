@@ -186,6 +186,14 @@ namespace NightlyCode.DB.Entities.Operations {
                 MethodCallExpression methodcall = (MethodCallExpression)expression;
                 return methodcall.Method.Invoke(GetHost(methodcall.Object), methodcall.Arguments.Select(GetHost).ToArray());
             }
+            if(expression is NewArrayExpression) {
+                NewArrayExpression newarray = (NewArrayExpression)expression;
+                Array array = Array.CreateInstance(newarray.Type.GetElementType(), newarray.Expressions.Count);
+                int index = 0;
+                foreach(Expression ex in newarray.Expressions)
+                    array.SetValue(GetHost(ex), index++);
+                return array;
+            }
             throw new NotImplementedException();
         }
 
