@@ -32,7 +32,7 @@ namespace NightlyCode.DB.Entities.Operations {
         /// </summary>
         /// <param name="fields"></param>
         /// <returns></returns>
-        public new LoadValuesOperation<TLoad, TJoin> OrderBy(params IDBField[] fields) {
+        public new LoadValuesOperation<TLoad, TJoin> OrderBy(params OrderByCriteria[] fields) {
             base.OrderBy(fields);
             return this;
         }
@@ -77,7 +77,7 @@ namespace NightlyCode.DB.Entities.Operations {
         readonly IDBClient dbclient;
         readonly Func<Type, EntityDescriptor> descriptorgetter;
         readonly IDBField[] columns;
-        IDBField[] orderbycriterias;
+        OrderByCriteria[] orderbycriterias;
         IDBField[] groupbycriterias;
         readonly List<JoinOperation> joinoperations = new List<JoinOperation>();
 
@@ -185,10 +185,13 @@ namespace NightlyCode.DB.Entities.Operations {
             if(orderbycriterias != null) {
                 preparator.CommandBuilder.Append(" ORDER BY ");
 
-                foreach(IDBField criteria in orderbycriterias) {
-                    if(flag) flag = false;
+                foreach (OrderByCriteria criteria in orderbycriterias)
+                {
+                    if (flag) flag = false;
                     else preparator.CommandBuilder.Append(", ");
-                    criteria.PrepareCommand(preparator, dbclient.DBInfo, descriptorgetter);
+                    criteria.Field.PrepareCommand(preparator, dbclient.DBInfo, descriptorgetter);
+                    if (!criteria.Ascending)
+                        preparator.CommandBuilder.Append(" DESC");
                 }
             }
 
@@ -246,7 +249,7 @@ namespace NightlyCode.DB.Entities.Operations {
         /// </summary>
         /// <param name="fields"></param>
         /// <returns></returns>
-        public LoadValuesOperation<T> OrderBy(params IDBField[] fields) {
+        public LoadValuesOperation<T> OrderBy(params OrderByCriteria[] fields) {
             if(fields.Length == 0)
                 throw new InvalidOperationException("at least one criteria has to be specified");
 
