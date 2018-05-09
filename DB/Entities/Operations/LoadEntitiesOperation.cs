@@ -105,19 +105,6 @@ namespace NightlyCode.DB.Entities.Operations {
             }
 
             bool flag = true;
-            if(orderbycriterias != null) {
-                preparator.CommandBuilder.Append(" ORDER BY ");
-                
-                foreach(OrderByCriteria criteria in orderbycriterias) {
-                    if(flag) flag = false;
-                    else preparator.CommandBuilder.Append(", ");
-                    criteria.Field.PrepareCommand(preparator, dbclient.DBInfo, descriptorgetter);
-                    if(!criteria.Ascending)
-                        preparator.CommandBuilder.Append(" DESC");
-                }
-            }
-
-            flag = true;
             if(groupbycriterias != null) {
                 preparator.CommandBuilder.Append(" GROUP BY ");
 
@@ -128,7 +115,23 @@ namespace NightlyCode.DB.Entities.Operations {
                 }
                 
             }
-            if(Havings != null) {
+
+            flag = true;
+            if (orderbycriterias != null)
+            {
+                preparator.CommandBuilder.Append(" ORDER BY ");
+
+                foreach (OrderByCriteria criteria in orderbycriterias)
+                {
+                    if (flag) flag = false;
+                    else preparator.CommandBuilder.Append(", ");
+                    criteria.Field.PrepareCommand(preparator, dbclient.DBInfo, descriptorgetter);
+                    if (!criteria.Ascending)
+                        preparator.CommandBuilder.Append(" DESC");
+                }
+            }
+
+            if (Havings != null) {
                 preparator.CommandBuilder.Append(" HAVING ");
                 CriteriaVisitor.GetCriteriaText(Havings, descriptorgetter, dbclient.DBInfo, preparator);
             }
