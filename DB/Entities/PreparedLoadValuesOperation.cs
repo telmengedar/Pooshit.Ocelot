@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -47,6 +48,23 @@ namespace NightlyCode.DB.Entities {
         public IEnumerable<TScalar> ExecuteSet<TScalar>() {
             foreach(object value in dbclient.Set(operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray()))
                 yield return Converter.Convert<TScalar>(value, true);
+        }
+
+        /// <summary>
+        /// executes a query and stores the result in a custom result type
+        /// </summary>
+        /// <typeparam name="TType">type of result</typeparam>
+        /// <param name="assignments">action used to assign values</param>
+        /// <returns>enumeration of result types</returns>
+        public IEnumerable<TType> ExecuteType<TType>(Action<DataRow, TType> assignments)
+            where TType : new()
+        {
+            DataTable table = Execute();
+            foreach(DataRow row in table.Rows) {
+                TType type = new TType();
+                assignments(row, type);
+                yield return type;
+            }
         }
     }
 }
