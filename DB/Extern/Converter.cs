@@ -124,6 +124,10 @@ namespace NightlyCode.DB.Extern {
                 return new NullableConverter(targettype).ConvertFrom(Convert(value, targettype.GetGenericArguments()[0], true));
 #endif
             }
+
+            if(targettype == typeof(string))
+                return value.ToString();
+
             return System.Convert.ChangeType(value, targettype, CultureInfo.InvariantCulture);
         }
 
