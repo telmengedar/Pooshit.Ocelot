@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using NightlyCode.DB.Clients;
 using NightlyCode.DB.Entities.Schema;
+using NightlyCode.DB.Providers;
 using NightlyCode.DB.Tests.Schema;
 using NUnit.Framework;
 
@@ -13,7 +14,7 @@ namespace NightlyCode.DB.Tests {
 
         [Test]
         public void AddColumns() {
-            IDBClient dbclient = DBClient.CreateSQLite(null, false);
+            IDBClient dbclient = Providers.SQLiteProvider.CreateSQLite(null, false);
             creator.Create(typeof(OriginalEntity), dbclient);
             updater.Update<AddEntity>(dbclient);
 
@@ -28,7 +29,7 @@ namespace NightlyCode.DB.Tests {
 
         [Test]
         public void RemoveColumns() {
-            IDBClient dbclient = DBClient.CreateSQLite(null, false);
+            IDBClient dbclient = SQLiteProvider.CreateSQLite(null, false);
             creator.Create(typeof(OriginalEntity), dbclient);
             updater.Update<EntityWithLessFields>(dbclient);
 
@@ -44,7 +45,7 @@ namespace NightlyCode.DB.Tests {
 
         [Test]
         public void AlterColumns() {
-            IDBClient dbclient = DBClient.CreateSQLite(null, false);
+            IDBClient dbclient = SQLiteProvider.CreateSQLite(null, false);
             creator.Create(typeof(OriginalEntity), dbclient);
             updater.Update<AlteredEntity>(dbclient);
 

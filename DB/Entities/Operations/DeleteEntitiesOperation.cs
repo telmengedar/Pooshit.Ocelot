@@ -32,12 +32,12 @@ namespace NightlyCode.DB.Entities.Operations {
 
         int RemoveEntity(object entity) {
             if(entity == null)
-                throw new NullReferenceException("Unable to insert null entity");
+                throw new NullReferenceException("Unable to remove null entity");
 
 
             EntityDescriptor entitydescription = GetDescriptor(entity.GetType());
             if(entitydescription.PrimaryKeyColumn == null)
-                throw new InvalidOperationException("Entity to update needs a primary key");
+                throw new InvalidOperationException("Entity to remove needs a primary key");
 
             StringBuilder commandbuilder = new StringBuilder("DELETE FROM ");
             commandbuilder.Append(entitydescription.TableName);

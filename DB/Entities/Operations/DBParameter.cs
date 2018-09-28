@@ -41,6 +41,44 @@ namespace NightlyCode.DB.Entities.Operations {
         public override void PrepareCommand(OperationPreparator preparator, IDBInfo dbinfo, Func<Type, EntityDescriptor> descriptorgetter) {
             preparator.CommandBuilder.Append(dbinfo.Parameter + index);
         }
+
+        #region expression fields
+
+        /// <summary>
+        /// field to use in expressions when referencing a <see cref="Guid"/> parameter
+        /// </summary>
+        public static Guid Guid => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+
+        /// <summary>
+        /// field to use in expressions when referencing a <see cref="int"/> parameter
+        /// </summary>
+        public static int Int32 => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+
+        /// <summary>
+        /// field to use in expressions when referencing a <see cref="long"/> parameter
+        /// </summary>
+        public static long Int64 => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+
+        /// <summary>
+        /// field to use in expressions when referencing a <see cref="string"/> parameter
+        /// </summary>
+        public static string String => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+
+        /// <summary>
+        /// field to use in expressions when referencing a <see cref="string"/> parameter
+        /// </summary>
+        public static float Single => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+
+        /// <summary>
+        /// field to use in expressions when referencing a <see cref="string"/> parameter
+        /// </summary>
+        public static double Double => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+
+        /// <summary>
+        /// field to use in expressions when referencing a <see cref="T:byte[]"/> parameter
+        /// </summary>
+        public static byte[] Blob => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+        #endregion
     }
 
     /// <summary>

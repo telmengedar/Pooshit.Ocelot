@@ -159,7 +159,7 @@ namespace NightlyCode.DB.Entities.Operations {
                         throw new NotImplementedException();
                 }
             }
-            return new PreparedLoadEntitiesOperation<T>(dbclient, descriptor, preparator.GetOperation());
+            return new PreparedLoadEntitiesOperation<T>(dbclient, descriptor, preparator.CommandBuilder.ToString(), preparator.Parameters.ToArray());
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace NightlyCode.DB.Entities.Operations {
         /// </summary>
         /// <param name="criterias"></param>
         /// <returns></returns>
-        public LoadEntitiesOperation<T> Where(Expression<Predicate<T>> criterias) {
+        public LoadEntitiesOperation<T> Where(Expression<Func<T, bool>> criterias) {
             Criterias = criterias;
             return this;
         }

@@ -33,7 +33,7 @@ namespace NightlyCode.DB.Entities.Operations {
 
         int UpdateEntity(object entity) {
             if(entity == null)
-                throw new NullReferenceException("Unable to insert null entity");
+                throw new NullReferenceException("Unable to update null entity");
 
 
             EntityDescriptor entitydescription = GetDescriptor(entity.GetType());

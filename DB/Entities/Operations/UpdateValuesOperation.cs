@@ -30,7 +30,7 @@ namespace NightlyCode.DB.Entities.Operations {
         /// </summary>
         /// <param name="setters"></param>
         /// <returns></returns>
-        public UpdateValuesOperation<T> Set(params Expression<Predicate<T>>[] setters) {
+        public UpdateValuesOperation<T> Set(params Expression<Func<T, bool>>[] setters) {
             updatesetters = setters;
             return this;
         }
@@ -40,7 +40,7 @@ namespace NightlyCode.DB.Entities.Operations {
         /// </summary>
         /// <param name="criterias"></param>
         /// <returns></returns>
-        public UpdateValuesOperation<T> Where(Expression<Predicate<T>> criterias) {
+        public UpdateValuesOperation<T> Where(Expression<Func<T, bool>> criterias) {
             Criterias = criterias;
             return this;
         }
@@ -49,6 +49,12 @@ namespace NightlyCode.DB.Entities.Operations {
         /// criterias to use
         /// </summary>
         protected Expression Criterias { get; set; }
+
+        public int Execute(Transaction transaction)
+        {
+            PreparedOperation operation = Prepare();
+            return dbclient.NonQuery(transaction, operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray());
+        }
 
         public int Execute() {
             PreparedOperation operation = Prepare();

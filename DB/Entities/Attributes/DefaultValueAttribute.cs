@@ -22,6 +22,11 @@ namespace NightlyCode.DB.Entities.Attributes {
         /// </summary>
         public object Value => value;
 
+        /// <summary>
+        /// get default value for a property
+        /// </summary>
+        /// <param name="property">property of which to get default value</param>
+        /// <returns>default value of property to use for database columns</returns>
         public static object GetDefaultValue(PropertyInfo property) {
             DefaultValueAttribute attribute = (DefaultValueAttribute)GetCustomAttribute(property, typeof(DefaultValueAttribute));
             return attribute?.Value;

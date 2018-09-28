@@ -119,7 +119,7 @@ namespace NightlyCode.DB.Info
         /// <returns></returns>
         public bool CheckIfTableExists(IDBClient db, string table)
         {
-            return db.Query("SELECT name FROM sqlite_master WHERE (type='table' OR type='view') AND name like @1", table).Rows.Count > 0;
+            return db.Query("SELECT name FROM sqlite_master WHERE (type='table' OR type='view') AND name like @1", table).Rows.Length > 0;
         }
 
         /// <summary>
@@ -141,6 +141,8 @@ namespace NightlyCode.DB.Info
             switch(type.Name.ToLower()) {
                 case "datetime":
                     return "TIMESTAMP";
+                case "guid":
+                    return "BLOB";
                 case "string":
                     return "TEXT";
                 case "version":
@@ -185,6 +187,8 @@ namespace NightlyCode.DB.Info
                 return typeof(long);
             if(type == typeof(Version))
                 return typeof(long);
+            if (type == typeof(Guid))
+                return typeof(byte[]);
             return type;
         }
 
@@ -212,8 +216,9 @@ namespace NightlyCode.DB.Info
         /// </summary>
         /// <param name="column"></param>
         /// <returns></returns>
-        public string CreateColumn(EntityColumnDescriptor column) {
-            return CreateColumn(column.Name,
+        public void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column) {
+            CreateColumn(operation, 
+                column.Name,
                 GetDBType(DBConverterCollection.ContainsConverter(column.Property.PropertyType) ? DBConverterCollection.GetDBType(column.Property.PropertyType) : column.Property.PropertyType),
                 column.PrimaryKey,
                 column.AutoIncrement,
@@ -223,27 +228,25 @@ namespace NightlyCode.DB.Info
                 );
         }
 
-        string CreateColumn(string name, string type, bool primarykey, bool autoincrement, bool unique, bool notnull, object defaultvalue) {
-            StringBuilder commandbuilder = new StringBuilder();
-            commandbuilder.Append(MaskColumn(name)).Append(" ");
-            commandbuilder.Append(type);
+        void CreateColumn(OperationPreparator operation, string name, string type, bool primarykey, bool autoincrement, bool unique, bool notnull, object defaultvalue) {
+            operation.CommandBuilder.Append(MaskColumn(name)).Append(" ");
+            operation.CommandBuilder.Append(type);
 
             if (primarykey)
-                commandbuilder.Append(" PRIMARY KEY");
+                operation.CommandBuilder.Append(" PRIMARY KEY");
             if (autoincrement)
-                commandbuilder.Append(" ").Append(AutoIncrement);
+                operation.CommandBuilder.Append(" ").Append(AutoIncrement);
             if (unique)
-                commandbuilder.Append(" UNIQUE");
+                operation.CommandBuilder.Append(" UNIQUE");
             if (notnull)
-                commandbuilder.Append(" NOT NULL");
+                operation.CommandBuilder.Append(" NOT NULL");
 
             if(defaultvalue != null) {
-                if(defaultvalue is string)
-                    commandbuilder.Append(" DEFAULT '").Append(defaultvalue).Append("'");
-                else commandbuilder.Append(" DEFAULT ").Append(defaultvalue);
+                operation.CommandBuilder.Append(" DEFAULT ");
+                if (defaultvalue is string || defaultvalue is Guid || defaultvalue is DateTime || defaultvalue is TimeSpan)
+                    operation.CommandBuilder.Append($"'{defaultvalue}'");
+                else operation.CommandBuilder.Append(defaultvalue);
             }
-
-            return commandbuilder.ToString();
         }
 
         /// <summary>
@@ -270,10 +273,16 @@ namespace NightlyCode.DB.Info
             return GetSchema(client, descriptor.TableName);
         }
 
-        SchemaDescriptor GetSchema(IDBClient client, string tablename) {
-            DataTable table = client.Query("SELECT * FROM sqlite_master WHERE (name=@1)", tablename);
+        /// <summary>
+        /// get schema for a table in database
+        /// </summary>
+        /// <param name="client">database connection</param>
+        /// <param name="tablename">name of table of which to get schema</param>
+        /// <returns><see cref="SchemaDescriptor"/> containing all information about table</returns>
+        public SchemaDescriptor GetSchema(IDBClient client, string tablename) {
+            Clients.Tables.DataTable table = client.Query("SELECT * FROM sqlite_master WHERE (name=@1)", tablename);
 
-            if (table.Rows.Count == 0)
+            if (table.Rows.Length == 0)
                 throw new InvalidOperationException("Type not found in database");
 
             if (Converter.Convert<string>(table.Rows[0]["type"]) == "table")
@@ -281,7 +290,7 @@ namespace NightlyCode.DB.Info
                 TableDescriptor tabledescriptor = new TableDescriptor(Converter.Convert<string>(table.Rows[0]["tbl_name"]));
                 AnalyseTableSql(tabledescriptor, Converter.Convert<string>(table.Rows[0]["sql"]));
 
-                DataTable indices = client.Query("SELECT * FROM sqlite_master WHERE type='index' AND tbl_name=@1", tablename);
+                Clients.Tables.DataTable indices = client.Query("SELECT * FROM sqlite_master WHERE type='index' AND tbl_name=@1", tablename);
                 tabledescriptor.Indices = AnalyseIndexDefinitions(indices).ToArray();
                 return tabledescriptor;
             }
@@ -297,8 +306,8 @@ namespace NightlyCode.DB.Info
             throw new InvalidOperationException("Invalid entity type in database");
         }
 
-        IEnumerable<IndexDescriptor> AnalyseIndexDefinitions(DataTable table) {
-            foreach(DataRow row in table.Rows) {
+        IEnumerable<IndexDescriptor> AnalyseIndexDefinitions(Clients.Tables.DataTable table) {
+            foreach(Clients.Tables.DataRow row in table.Rows) {
 
                 // sqlite has some internal index definitions which are not important here 
                 // and can't be analyzed anyways because they have no sql definition
@@ -319,22 +328,10 @@ namespace NightlyCode.DB.Info
         /// <param name="table">table to modify</param>
         /// <param name="column">column to add</param>
         public void AddColumn(IDBClient client, string table, EntityColumnDescriptor column) {
-            if(column.NotNull) {
-                string defaultvalue = null;
-                if(column.DefaultValue != null)
-                    defaultvalue = Converter.Convert<string>(column.DefaultValue);
-                else if(column.Property.PropertyType.IsEnum)
-                    defaultvalue = "0";
-                else if(column.Property.PropertyType.IsValueType)
-                    defaultvalue = Converter.Convert<string>(Activator.CreateInstance(column.Property.PropertyType));
-
-                if(defaultvalue == null)
-                    client.NonQuery($"ALTER TABLE {table} ADD COLUMN {CreateColumn(column)} DEFAULT NULL");
-                else client.NonQuery($"ALTER TABLE {table} ADD COLUMN {CreateColumn(column)} DEFAULT '{defaultvalue}'");
-            }
-            else {
-                client.NonQuery($"ALTER TABLE {table} ADD COLUMN {CreateColumn(column)}");
-            }
+            OperationPreparator operation = new OperationPreparator(this);
+            operation.CommandBuilder.Append($"ALTER TABLE {table} ADD COLUMN ");
+            CreateColumn(operation, column);
+            client.NonQuery(operation.CommandBuilder.ToString(), operation.Parameters.Select(p=>p.Value).ToArray());
         }
 
         /// <summary>
@@ -361,10 +358,21 @@ namespace NightlyCode.DB.Info
             string columnlist = string.Join(", ", remainingcolumns.Select(c => c.Name));
 #endif
             // create new table without the column
+            bool flag=false;
 #if UNITY
             client.NonQuery($"CREATE TABLE {table} ({string.Join(", ", remainingcolumns.Select(c => CreateColumn(c.Name, c.Type, c.PrimaryKey, c.AutoIncrement, c.IsUnique, c.NotNull, c.DefaultValue)).ToArray())})");
 #else
-            client.NonQuery($"CREATE TABLE {table} ({string.Join(", ", remainingcolumns.Select(c => CreateColumn(c.Name, c.Type, c.PrimaryKey, c.AutoIncrement, c.IsUnique, c.NotNull, c.DefaultValue)))})");
+            OperationPreparator preparator = new OperationPreparator(this);
+            preparator.CommandBuilder.Append($"CREATE TABLE {table} (");
+            foreach(SchemaColumnDescriptor columndesc in remainingcolumns)
+            {
+                if (flag)
+                    preparator.CommandBuilder.Append(",");
+                CreateColumn(preparator, columndesc.Name, columndesc.Type, columndesc.PrimaryKey, columndesc.AutoIncrement, columndesc.IsUnique, columndesc.NotNull, columndesc.DefaultValue);
+                flag = true;
+            }
+            preparator.CommandBuilder.Append(")");
+            client.NonQuery(preparator.CommandBuilder.ToString(), preparator.Parameters.Select(p => p.Value).ToArray());
 #endif
             // transfer data to new table
             client.NonQuery($"INSERT INTO {table} ({columnlist}) SELECT {columnlist} FROM {table}_original");

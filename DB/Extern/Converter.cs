@@ -43,6 +43,8 @@ namespace NightlyCode.DB.Extern {
             specificconverters[new ConversionKey(typeof(long), typeof(UIntPtr))] = v => new UIntPtr((ulong)v);
             specificconverters[new ConversionKey(typeof(string), typeof(bool))] = v => ((string)v).ToLower() == "true" || ((string)v != "" && (string)v != "0");
             specificconverters[new ConversionKey(typeof(string), typeof(byte[]))] = v => System.Convert.FromBase64String((string)v);
+            specificconverters[new ConversionKey(typeof(byte[]), typeof(Guid))] = v => new Guid((byte[])v);
+            specificconverters[new ConversionKey(typeof(Guid), typeof(byte[]))] = v => ((Guid)v).ToByteArray();
         }
 
         /// <summary>

@@ -6,6 +6,7 @@ using System.Text;
 using NightlyCode.DB.Clients;
 using NightlyCode.DB.Entities.Attributes;
 using NightlyCode.DB.Entities.Descriptors;
+using NightlyCode.DB.Entities.Operations;
 
 namespace NightlyCode.DB.Entities.Schema {
 
@@ -20,31 +21,32 @@ namespace NightlyCode.DB.Entities.Schema {
         /// <param name="client">database access</param>
         /// <param name="descriptor"><see cref="EntityDescriptor"/> which describes schema of entity</param>
         public void CreateTable(IDBClient client, EntityDescriptor descriptor) {
-            StringBuilder commandbuilder = new StringBuilder("CREATE TABLE ");
-            commandbuilder.Append(descriptor.TableName).Append(" (");
+            OperationPreparator preparator = new OperationPreparator(client.DBInfo);
+            preparator.CommandBuilder.Append("CREATE TABLE ");
+            preparator.CommandBuilder.Append(descriptor.TableName).Append(" (");
 
             bool firstindicator = true;
             foreach (EntityColumnDescriptor column in descriptor.Columns)
             {
                 if (firstindicator) firstindicator = false;
-                else commandbuilder.Append(", ");
+                else preparator.CommandBuilder.Append(", ");
 
-                commandbuilder.Append(client.DBInfo.CreateColumn(column));
+                client.DBInfo.CreateColumn(preparator, column);
             }
 
             foreach (UniqueDescriptor unique in descriptor.Uniques)
             {
-                commandbuilder.Append(", UNIQUE (");
-                commandbuilder.Append(string.Join(",", unique.Columns.Select(client.DBInfo.MaskColumn).ToArray()));
-                commandbuilder.Append(")");
+                preparator.CommandBuilder.Append(", UNIQUE (");
+                preparator.CommandBuilder.Append(string.Join(",", unique.Columns.Select(client.DBInfo.MaskColumn).ToArray()));
+                preparator.CommandBuilder.Append(")");
             }
 
-            commandbuilder.Append(")");
+            preparator.CommandBuilder.Append(")");
 
             if (!string.IsNullOrEmpty(client.DBInfo.CreateSuffix))
-                commandbuilder.Append(" ").Append(client.DBInfo.CreateSuffix);
+                preparator.CommandBuilder.Append(" ").Append(client.DBInfo.CreateSuffix);
 
-            client.NonQuery(commandbuilder.ToString());
+            client.NonQuery(preparator.CommandBuilder.ToString(), preparator.Parameters.Select(p => p.Value).ToArray());
 
             CreateIndices(client, descriptor.TableName, descriptor.Indices);
         }
@@ -96,7 +98,8 @@ namespace NightlyCode.DB.Entities.Schema {
                 }
                 commandbuilder.Append(");");
             }
-            client.NonQuery(commandbuilder.ToString());
+            if (commandbuilder.Length > 0)
+                client.NonQuery(commandbuilder.ToString());
         }
     }
 }

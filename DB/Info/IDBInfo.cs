@@ -135,9 +135,10 @@ namespace NightlyCode.DB.Info
         /// <summary>
         /// text used to create a column
         /// </summary>
+        /// <param name="operation"></param>
         /// <param name="column"></param>
         /// <returns></returns>
-        string CreateColumn(EntityColumnDescriptor column);
+        void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column);
 
         /// <summary>
         /// changes creation command to creation command with return insert id statement
@@ -156,6 +157,14 @@ namespace NightlyCode.DB.Info
         /// <param name="client">database connection</param>
         /// <returns>schema of specified type</returns>
         SchemaDescriptor GetSchema<T>(IDBClient client);
+
+        /// <summary>
+        /// get schema for a table in database
+        /// </summary>
+        /// <param name="client">database connection</param>
+        /// <param name="name">name of table of which to get schema</param>
+        /// <returns><see cref="SchemaDescriptor"/> containing all information about table</returns>
+        SchemaDescriptor GetSchema(IDBClient client, string name);
 
         /// <summary>
         /// adds a column to a table

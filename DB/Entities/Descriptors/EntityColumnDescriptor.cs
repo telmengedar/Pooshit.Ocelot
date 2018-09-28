@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 
 namespace NightlyCode.DB.Entities.Descriptors
 {
@@ -47,5 +48,17 @@ namespace NightlyCode.DB.Entities.Descriptors
         /// property the column is linked to
         /// </summary>
         public PropertyInfo Property { get; }
+
+        /// <summary>
+        /// creates a default value for this column
+        /// </summary>
+        /// <returns>value which can be used as a default</returns>
+        public object CreateDefaultValue()
+        {
+            if (!Property.PropertyType.IsValueType)
+                return null;
+
+            return Activator.CreateInstance(Property.PropertyType);
+        }
     }
 }

@@ -128,8 +128,27 @@ namespace NightlyCode.DB.Entities.Operations {
         /// loads entities using the operation
         /// </summary>
         /// <returns></returns>
-        public DataTable Execute() {
+        public Clients.Tables.DataTable Execute(Transaction transaction)
+        {
+            return Prepare().Execute(transaction);
+        }
+
+        /// <summary>
+        /// loads entities using the operation
+        /// </summary>
+        /// <returns></returns>
+        public Clients.Tables.DataTable Execute() {
             return Prepare().Execute();
+        }
+
+        /// <summary>
+        /// loads a value using the operation
+        /// </summary>
+        /// <typeparam name="TScalar"></typeparam>
+        /// <returns></returns>
+        public TScalar ExecuteScalar<TScalar>(Transaction transaction)
+        {
+            return Prepare().ExecuteScalar<TScalar>(transaction);
         }
 
         /// <summary>
@@ -139,6 +158,16 @@ namespace NightlyCode.DB.Entities.Operations {
         /// <returns></returns>
         public TScalar ExecuteScalar<TScalar>() {
             return Prepare().ExecuteScalar<TScalar>();
+        }
+
+        /// <summary>
+        /// loads several values using the operation
+        /// </summary>
+        /// <typeparam name="TScalar"></typeparam>
+        /// <returns></returns>
+        public IEnumerable<TScalar> ExecuteSet<TScalar>(Transaction transaction)
+        {
+            return Prepare().ExecuteSet<TScalar>(transaction);
         }
 
         /// <summary>
@@ -156,7 +185,7 @@ namespace NightlyCode.DB.Entities.Operations {
         /// <typeparam name="TType">type of result</typeparam>
         /// <param name="assignments">action used to assign values</param>
         /// <returns>enumeration of result types</returns>
-        public IEnumerable<TType> ExecuteType<TType>(Action<DataRow, TType> assignments)
+        public IEnumerable<TType> ExecuteType<TType>(Action<Clients.Tables.DataRow, TType> assignments)
             where TType : new()
         {
             return Prepare().ExecuteType(assignments);
@@ -242,7 +271,7 @@ namespace NightlyCode.DB.Entities.Operations {
         /// </summary>
         /// <param name="criterias"></param>
         /// <returns></returns>
-        public LoadValuesOperation<T> Where(Expression<Predicate<T>> criterias) {
+        public LoadValuesOperation<T> Where(Expression<Func<T,bool>> criterias) {
             Criterias = criterias;
             return this;
         }
@@ -252,7 +281,7 @@ namespace NightlyCode.DB.Entities.Operations {
         /// </summary>
         /// <param name="criterias"></param>
         /// <returns></returns>
-        public LoadValuesOperation<T> Having(Expression<Predicate<T>> criterias) {
+        public LoadValuesOperation<T> Having(Expression<Func<T, bool>> criterias) {
             Havings = criterias;
             return this;
         }

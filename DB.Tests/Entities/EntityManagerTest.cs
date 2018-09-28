@@ -5,6 +5,7 @@ using NightlyCode.DB.Clients;
 using NightlyCode.DB.Entities;
 using NightlyCode.DB.Entities.Descriptors;
 using NightlyCode.DB.Entities.Operations;
+using NightlyCode.DB.Providers;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
@@ -14,7 +15,7 @@ namespace NightlyCode.DB.Tests.Entities {
     public class EntityManagerTest {
         
         public IDBClient CreateDBClient() {
-            return DBClient.CreateSQLite(null);
+            return SQLiteProvider.CreateSQLite(null);
         }
 
         IEnumerable<TestEntityWithoutAnySpecifications> TestEntities {
@@ -306,18 +307,15 @@ namespace NightlyCode.DB.Tests.Entities {
     }
 
     public class AnyException : IResolveConstraint {
-        public Constraint Resolve() {
+        public IConstraint Resolve() {
             return new AnyExceptionConstraint();
         }
     }
 
     public class AnyExceptionConstraint : Constraint {
-        public override bool Matches(object actual) {
-            return actual is Exception;
-        }
-
-        public override void WriteDescriptionTo(MessageWriter writer) {
-            writer.WriteMessageLine("Any Exception");
+        public override ConstraintResult ApplyTo<TActual>(TActual actual)
+        {
+            return new ConstraintResult(this, actual, actual is Exception);
         }
     }
 }

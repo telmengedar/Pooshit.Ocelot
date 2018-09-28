@@ -237,16 +237,26 @@ namespace NightlyCode.DB.Entities.Operations {
                 preparator.CommandBuilder.Append(GetColumnName((PropertyInfo)member));
             }
             else if(expression.NodeType == ExpressionType.MemberAccess) {
-                object host = GetHost(expression);
-                if(host == null && !((PropertyInfo)member).GetGetMethod().IsStatic)
-                    throw new NullReferenceException("Null reference encountered");
-                if(host is IDBField)
-                    // always append dbfields directly
-                    // since properties are only stubs for lambdas to work
-                    AppendConstantValue(host);
-                else {
-                    object item = ((PropertyInfo)member).GetValue(host, null);
-                    AppendConstantValue(item);
+                // references a parameter to be specified later when executing the operation
+                if (((PropertyInfo)member).DeclaringType == typeof(DBParameter))
+                {
+                    preparator.AppendParameter();
+                }
+                else
+                {
+                    object host = GetHost(expression);
+                    if (host == null && !((PropertyInfo)member).GetGetMethod().IsStatic)
+                        throw new NullReferenceException("Null reference encountered");
+
+                    if (host is IDBField)
+                        // always append dbfields directly
+                        // since properties are only stubs for lambdas to work
+                        AppendConstantValue(host);
+                    else
+                    {
+                        object item = ((PropertyInfo)member).GetValue(host, null);
+                        AppendConstantValue(item);
+                    }
                 }
             }
             else throw new NotImplementedException();

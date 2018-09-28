@@ -179,34 +179,35 @@ namespace NightlyCode.DB.Info {
         /// </summary>
         /// <param name="column"></param>
         /// <returns></returns>
-        public string CreateColumn(EntityColumnDescriptor column) {
-            StringBuilder sb = new StringBuilder();
-            sb.Append($"\"{column.Name}\" ");
+        public void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column) {
+            operation.CommandBuilder.Append($"\"{column.Name}\" ");
             if (column.AutoIncrement)
             {
                 if (column.Property.PropertyType == typeof(int))
-                    sb.Append("serial4");
+                    operation.CommandBuilder.Append("serial4");
                 else if (column.Property.PropertyType == typeof(long))
-                    sb.Append("serial8");
+                    operation.CommandBuilder.Append("serial8");
                 else throw new InvalidOperationException("Autoincrement with postgre only allowed with integer types");
             }
             else {
                 if (DBConverterCollection.ContainsConverter(column.Property.PropertyType))
-                    sb.Append(GetDBType(DBConverterCollection.GetDBType(column.Property.PropertyType)));
-                else sb.Append(GetDBType(column.Property.PropertyType));
+                    operation.CommandBuilder.Append(GetDBType(DBConverterCollection.GetDBType(column.Property.PropertyType)));
+                else operation.CommandBuilder.Append(GetDBType(column.Property.PropertyType));
             }
 
             if (column.PrimaryKey)
-                sb.Append(" PRIMARY KEY");
+                operation.CommandBuilder.Append(" PRIMARY KEY");
             if (column.IsUnique)
-                sb.Append(" UNIQUE");
+                operation.CommandBuilder.Append(" UNIQUE");
             if (column.NotNull)
-                sb.Append(" NOT NULL");
+                operation.CommandBuilder.Append(" NOT NULL");
 
             if (column.DefaultValue != null)
-                sb.Append(" DEFAULT ").Append(column.DefaultValue);
+            {
+                operation.CommandBuilder.Append(" DEFAULT ");
+                operation.AppendParameter(column.DefaultValue);
+            }
 
-            return sb.ToString();
         }
 
         /// <summary>
@@ -234,6 +235,11 @@ namespace NightlyCode.DB.Info {
         }
 
         public void AlterColumn(IDBClient client, string table, EntityColumnDescriptor column) {
+            throw new NotImplementedException();
+        }
+
+        public SchemaDescriptor GetSchema(IDBClient client, string name)
+        {
             throw new NotImplementedException();
         }
     }

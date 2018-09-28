@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NightlyCode.DB.Clients;
 using NightlyCode.DB.Entities.Descriptors;
+using NightlyCode.DB.Entities.Operations;
 using NightlyCode.DB.Extern;
 
 namespace NightlyCode.DB.Entities.Schema {
@@ -13,8 +14,14 @@ namespace NightlyCode.DB.Entities.Schema {
     public class SchemaUpdater {
         readonly SchemaCreator creator = new SchemaCreator();
 
-        public void Update<T>(IDBClient client) {
-            SchemaDescriptor schema = client.DBInfo.GetSchema<T>(client);
+        /// <summary>
+        /// updates the schema of the specified type
+        /// </summary>
+        /// <typeparam name="T">schema type to update</typeparam>
+        /// <param name="client">database connection</param>
+        /// <param name="datasource">table from which to update schema (optional)</param>
+        public void Update<T>(IDBClient client, string datasource=null) {
+            SchemaDescriptor schema = datasource == null ? client.DBInfo.GetSchema<T>(client) : client.DBInfo.GetSchema(client, datasource);
             if(schema is ViewDescriptor)
                 UpdateView<T>(client, (ViewDescriptor)schema);
             else if(schema is TableDescriptor)
@@ -78,22 +85,49 @@ namespace NightlyCode.DB.Entities.Schema {
         }
 
         void RecreateTable(IDBClient client, TableDescriptor olddescriptor, EntityDescriptor newdescriptor) {
+            bool frombackup = olddescriptor.Name == newdescriptor.TableName;
+            string appendix = frombackup ? "_original" : "";
+
             // rename old table
-            client.NonQuery($"ALTER TABLE {olddescriptor.Name} RENAME TO {olddescriptor.Name}_original");
+            if (frombackup)
+                client.NonQuery($"ALTER TABLE {olddescriptor.Name} RENAME TO {olddescriptor.Name}_original");
+            else
+            {
+                if(client.DBInfo.CheckIfTableExists(client, newdescriptor.TableName))
+                    client.NonQuery($"DROP TABLE {newdescriptor.TableName}");
+            }
 
             SchemaColumnDescriptor[] remainingcolumns = olddescriptor.Columns.Where(c => newdescriptor.Columns.Any(c1 => c1.Name == c.Name)).ToArray();
+            EntityColumnDescriptor[] newcolumns = newdescriptor.Columns.Where(c => c.NotNull && c.DefaultValue == null && olddescriptor.Columns.All(o => o.Name != c.Name)).ToArray();
 #if UNITY
             string columnlist = string.Join(", ", remainingcolumns.Select(c => c.Name).ToArray());
 #else
             string columnlist = string.Join(", ", remainingcolumns.Select(c => c.Name));
+            string newcolumnlist= string.Join(", ", newcolumns.Select(c => c.Name));
 #endif
             creator.CreateTable(client, newdescriptor);
 
             // transfer data to new table
-            client.NonQuery($"INSERT INTO {newdescriptor.TableName} ({columnlist}) SELECT {columnlist} FROM {olddescriptor.Name}_original");
+            if (newcolumns.Length == 0)
+                client.NonQuery($"INSERT INTO {newdescriptor.TableName} ({columnlist}) SELECT {columnlist} FROM {olddescriptor.Name}{appendix}");
+            else
+            {
+                // new schema has columns which mustn't be null
+                OperationPreparator operation = new OperationPreparator(client.DBInfo);
+                operation.CommandBuilder.Append($"INSERT INTO {newdescriptor.TableName} ({columnlist},{newcolumnlist}) SELECT {columnlist}");
+                foreach (EntityColumnDescriptor column in newcolumns)
+                {
+                    operation.CommandBuilder.Append(",");
+                    if (column.DefaultValue != null)
+                        operation.AppendParameter(column.DefaultValue);
+                    else operation.AppendParameter(column.CreateDefaultValue());
+                }
+                operation.CommandBuilder.Append($" FROM {olddescriptor.Name}{appendix}");
+                client.NonQuery(operation.CommandBuilder.ToString(), operation.Parameters.Select(p => p.Value).ToArray());
+            }
 
             // remove old data
-            client.NonQuery($"DROP TABLE {olddescriptor.Name}_original");
+            client.NonQuery($"DROP TABLE {olddescriptor.Name}{appendix}");
         }
 
         void UpdateIndices(IDBClient client, TableDescriptor oldschema, EntityDescriptor newschema) {

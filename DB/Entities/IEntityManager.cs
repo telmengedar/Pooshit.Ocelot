@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using NightlyCode.DB.Clients;
 using NightlyCode.DB.Entities.Operations;
 
 namespace NightlyCode.DB.Entities {
@@ -9,6 +10,17 @@ namespace NightlyCode.DB.Entities {
     /// interface for an entity manager
     /// </summary>
     public interface IEntityManager {
+
+        /// <summary>
+        /// client used to access db
+        /// </summary>
+        IDBClient DBClient { get; }
+
+        /// <summary>
+        /// starts a transaction
+        /// </summary>
+        /// <returns>Transaction object to use</returns>
+        Transaction Transaction();
 
         /// <summary>
         /// creates the table for the entity

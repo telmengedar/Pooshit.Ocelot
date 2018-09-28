@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Data;
 using NightlyCode.DB.Info;
 
 namespace NightlyCode.DB.Clients
@@ -18,38 +17,73 @@ namespace NightlyCode.DB.Clients
         /// <summary>
         /// executes a non query
         /// </summary>
-        /// <param name="commandstring"></param>
-        /// <param name="parameters"></param>
+        /// <param name="commandstring">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
         int NonQuery(string commandstring, params object[] parameters);
+
+        /// <summary>
+        /// executes a non query
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="commandstring">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        int NonQuery(Transaction transaction, string commandstring, params object[] parameters);
 
         /// <summary>
         /// executes a query
         /// </summary>
-        /// <param name="query"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        DataTable Query(string query, params object[] parameters);
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>table containing result data</returns>
+        Tables.DataTable Query(string query, params object[] parameters);
+
+        /// <summary>
+        /// executes a query
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>table containing result data</returns>
+        Tables.DataTable Query(Transaction transaction, string query, params object[] parameters);
 
         /// <summary>
         /// executes a query returning a scalar
         /// </summary>
-        /// <param name="query"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>resulting scalar</returns>
         object Scalar(string query, params object[] parameters);
+
+        /// <summary>
+        /// executes a query returning a scalar
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>resulting scalar</returns>
+        object Scalar(Transaction transaction, string query, params object[] parameters);
 
         /// <summary>
         /// executes a query returning a set of values
         /// </summary>
-        /// <param name="query"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>resulting set of values</returns>
         IEnumerable<object> Set(string query, params object[] parameters);
+
+        /// <summary>
+        /// executes a query returning a set of values
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>resulting set of values</returns>
+        IEnumerable<object> Set(Transaction transaction, string query, params object[] parameters);
 
         /// <summary>
         /// begins a transaction
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Transaction object to use</returns>
         Transaction BeginTransaction();
     }
 }

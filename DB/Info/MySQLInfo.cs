@@ -50,7 +50,7 @@ namespace NightlyCode.DB.Info
 
         public bool CheckIfTableExists(IDBClient db, string table)
         {
-            return db.Query("SHOW TABLES like ?1", table).Rows.Count > 0;
+            return db.Query("SHOW TABLES like ?1", table).Rows.Length > 0;
         }
 
         public bool TransactionHint => false;
@@ -105,7 +105,7 @@ namespace NightlyCode.DB.Info
             get { throw new NotImplementedException(); }
         }
 
-        public string CreateColumn(EntityColumnDescriptor column) {
+        public void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column) {
             throw new NotImplementedException();
         }
 
@@ -130,6 +130,11 @@ namespace NightlyCode.DB.Info
         }
 
         public TableDescriptor[] GetTables() {
+            throw new NotImplementedException();
+        }
+
+        public SchemaDescriptor GetSchema(IDBClient client, string name)
+        {
             throw new NotImplementedException();
         }
     }

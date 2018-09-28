@@ -125,8 +125,10 @@ namespace NightlyCode.DB.Entities.Descriptors
                     PrimaryKey = PrimaryKeyAttribute.IsPrimaryKey(propertyinfo),
                     AutoIncrement = AutoIncrementAttribute.IsAutoIncrement(propertyinfo),
                     NotNull = NotNullAttribute.HasNotNull(propertyinfo) || (propertyinfo.PropertyType.IsValueType && !(propertyinfo.PropertyType.IsGenericType && propertyinfo.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))),
-                    DefaultValue = DefaultValueAttribute.GetDefaultValue(propertyinfo),
                 };
+
+                if (!columndescriptor.PrimaryKey)
+                    columndescriptor.DefaultValue = DefaultValueAttribute.GetDefaultValue(propertyinfo);
 
                 IndexAttribute[] ia = propertyinfo.GetCustomAttributes(typeof(IndexAttribute), true) as IndexAttribute[];
                 if (ia != null)

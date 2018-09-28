@@ -61,7 +61,12 @@ namespace NightlyCode.DB.Entities {
             if(!DBClient.DBInfo.CheckIfTableExists(DBClient, descriptor.TableName)) {
                 Logger.Info(this, $"Creating new table for '{typeof(T).Name}");
                 Create<T>();
+                return;
             }
+
+            string backuptable = $"{descriptor.TableName}_original";
+            if (DBClient.DBInfo.CheckIfTableExists(DBClient, backuptable))
+                updater.Update<T>(DBClient, backuptable);
             else updater.Update<T>(DBClient);
         }
 
@@ -233,6 +238,15 @@ namespace NightlyCode.DB.Entities {
                 return Activator.CreateInstance(type);
             }
             return null;
+        }
+
+        /// <summary>
+        /// starts a transaction
+        /// </summary>
+        /// <returns>Transaction object to use</returns>
+        public Transaction Transaction()
+        {
+            return DBClient.BeginTransaction();
         }
     }
 }

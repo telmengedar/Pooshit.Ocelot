@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Linq.Expressions;
 using NightlyCode.DB.Clients;
 using NightlyCode.DB.Entities.Descriptors;
@@ -38,16 +39,27 @@ namespace NightlyCode.DB.Entities.Operations {
         /// <summary>
         /// loads entities using the operation
         /// </summary>
-        /// <returns></returns>
+        /// <returns>number of rows deleted</returns>
         public int Execute() {
-            return Prepare().Execute();
+            PreparedOperation operation = Prepare();
+            return dbclient.NonQuery(operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray());
+        }
+
+        /// <summary>
+        /// loads entities using the operation
+        /// </summary>
+        /// <returns>number of rows deleted</returns>
+        public int Execute(Transaction transaction)
+        {
+            PreparedOperation operation = Prepare();
+            return dbclient.NonQuery(transaction, operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray());
         }
 
         /// <summary>
         /// prepares the operation for execution
         /// </summary>
         /// <returns></returns>
-        public PreparedDeleteOperation<T> Prepare() {
+        public PreparedOperation Prepare() {
             OperationPreparator preparator = new OperationPreparator(dbclient.DBInfo);
             preparator.CommandBuilder.Append("DELETE ");
 
@@ -58,7 +70,7 @@ namespace NightlyCode.DB.Entities.Operations {
                 preparator.CommandBuilder.Append(" WHERE ");
                 CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator);
             }
-            return new PreparedDeleteOperation<T>(dbclient, preparator.GetOperation());
+            return preparator.GetOperation();
         }
 
         /// <summary>
@@ -66,7 +78,7 @@ namespace NightlyCode.DB.Entities.Operations {
         /// </summary>
         /// <param name="criterias"></param>
         /// <returns></returns>
-        public DeleteOperation<T> Where(Expression<Predicate<T>> criterias) {
+        public DeleteOperation<T> Where(Expression<Func<T,bool>> criterias) {
             Criterias = criterias;
             return this;
         }

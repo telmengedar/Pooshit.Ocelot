@@ -29,8 +29,26 @@ namespace NightlyCode.DB.Entities {
         /// executes the statement
         /// </summary>
         /// <returns></returns>
-        public DataTable Execute() {
+        public Clients.Tables.DataTable Execute(Transaction transaction)
+        {
+            return dbclient.Query(transaction, operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray());
+        }
+
+        /// <summary>
+        /// executes the statement
+        /// </summary>
+        /// <returns></returns>
+        public Clients.Tables.DataTable Execute() {
             return dbclient.Query(operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray());
+        }
+
+        /// <summary>
+        /// executes the statement returning a scalar
+        /// </summary>
+        /// <returns></returns>
+        public TScalar ExecuteScalar<TScalar>(Transaction transaction)
+        {
+            return Converter.Convert<TScalar>(dbclient.Scalar(transaction, operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray()), true);
         }
 
         /// <summary>
@@ -41,8 +59,32 @@ namespace NightlyCode.DB.Entities {
             return Converter.Convert<TScalar>(dbclient.Scalar(operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray()), true);
         }
 
+        /// <summary>
+        /// executes the statement returning a scalar
+        /// </summary>
+        /// <returns></returns>
+        public TScalar ExecuteScalar<TScalar>(Transaction transaction, params object[] parameters)
+        {
+            return Converter.Convert<TScalar>(dbclient.Scalar(transaction, operation.CommandText, parameters), true);
+        }
+
+        /// <summary>
+        /// executes the statement returning a scalar
+        /// </summary>
+        /// <returns></returns>
+        public TScalar ExecuteScalar<TScalar>(params object[] parameters)
+        {
+            return Converter.Convert<TScalar>(dbclient.Scalar(operation.CommandText, parameters), true);
+        }
+
         public override string ToString() {
             return operation.CommandText;
+        }
+
+        public IEnumerable<TScalar> ExecuteSet<TScalar>(Transaction transaction)
+        {
+            foreach (object value in dbclient.Set(transaction, operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray()))
+                yield return Converter.Convert<TScalar>(value, true);
         }
 
         public IEnumerable<TScalar> ExecuteSet<TScalar>() {
@@ -56,11 +98,11 @@ namespace NightlyCode.DB.Entities {
         /// <typeparam name="TType">type of result</typeparam>
         /// <param name="assignments">action used to assign values</param>
         /// <returns>enumeration of result types</returns>
-        public IEnumerable<TType> ExecuteType<TType>(Action<DataRow, TType> assignments)
+        public IEnumerable<TType> ExecuteType<TType>(Action<Clients.Tables.DataRow, TType> assignments)
             where TType : new()
         {
-            DataTable table = Execute();
-            foreach(DataRow row in table.Rows) {
+            Clients.Tables.DataTable table = Execute();
+            foreach(Clients.Tables.DataRow row in table.Rows) {
                 TType type = new TType();
                 assignments(row, type);
                 yield return type;
