@@ -22,7 +22,7 @@ namespace NightlyCode.DB.Entities.Descriptors {
         /// <summary>
         /// name of the index
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; }
 
         /// <summary>
         /// columns linked to the index

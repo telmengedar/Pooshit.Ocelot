@@ -10,8 +10,6 @@ namespace NightlyCode.DB.Entities.Descriptors
     /// descriptor of an entity
     /// </summary>
     public class EntityDescriptor {
-        static readonly Dictionary<Type, EntityDescriptor> descriptors = new Dictionary<Type, EntityDescriptor>();
-
         readonly Dictionary<string, EntityColumnDescriptor> properties = new Dictionary<string, EntityColumnDescriptor>();
         readonly Dictionary<string, EntityColumnDescriptor> columndescriptors = new Dictionary<string, EntityColumnDescriptor>();
         readonly List<IndexDescriptor> indices = new List<IndexDescriptor>();
@@ -57,7 +55,7 @@ namespace NightlyCode.DB.Entities.Descriptors
         /// <summary>
         /// the primary key column of the entity
         /// </summary>
-        public EntityColumnDescriptor PrimaryKeyColumn { get; private set; }
+        public EntityColumnDescriptor PrimaryKeyColumn { get; internal set; }
 
         /// <summary>
         /// columns of the entity
@@ -77,7 +75,7 @@ namespace NightlyCode.DB.Entities.Descriptors
         /// <summary>
         /// name of the table
         /// </summary>
-        public string TableName { get; private set; }
+        public string TableName { get; internal set; }
 
         /// <summary>
         /// get the full column descriptor for the column
@@ -102,7 +100,7 @@ namespace NightlyCode.DB.Entities.Descriptors
         /// </summary>
         /// <param name="type">type for which to create entity descriptor</param>
         /// <returns>entitydescriptor for specified type</returns>
-        public static EntityDescriptor Create(Type type)
+        internal static EntityDescriptor Create(Type type)
         {
             TableAttribute tableattribute = TableAttribute.Get(type);
             string tablename = tableattribute == null ? type.Name.ToLower() : tableattribute.Table;
@@ -130,21 +128,18 @@ namespace NightlyCode.DB.Entities.Descriptors
                 if (!columndescriptor.PrimaryKey)
                     columndescriptor.DefaultValue = DefaultValueAttribute.GetDefaultValue(propertyinfo);
 
-                IndexAttribute[] ia = propertyinfo.GetCustomAttributes(typeof(IndexAttribute), true) as IndexAttribute[];
-                if (ia != null)
+                if (propertyinfo.GetCustomAttributes(typeof(IndexAttribute), true) is IndexAttribute[] ia)
                 {
                     foreach (IndexAttribute indexattr in ia)
                     {
-                        List<string> columns;
                         string indexname = indexattr.Name ?? columnname;
-                        if (!indices.TryGetValue(indexname, out columns))
+                        if (!indices.TryGetValue(indexname, out List<string> columns))
                             indices[indexname] = columns = new List<string>();
                         columns.Add(columnname);
                     }
                 }
 
-                UniqueAttribute[] ua = propertyinfo.GetCustomAttributes(typeof(UniqueAttribute), true) as UniqueAttribute[];
-                if (ua != null)
+                if (propertyinfo.GetCustomAttributes(typeof(UniqueAttribute), true) is UniqueAttribute[] ua)
                 {
                     foreach (UniqueAttribute uniqueattr in ua)
                     {
@@ -154,8 +149,7 @@ namespace NightlyCode.DB.Entities.Descriptors
                             continue;
                         }
 
-                        List<string> columns;
-                        if (!unique.TryGetValue(uniqueattr.Name, out columns))
+                        if (!unique.TryGetValue(uniqueattr.Name, out List<string> columns))
                             unique[uniqueattr.Name] = columns = new List<string>();
                         columns.Add(columnname);
                     }
@@ -167,33 +161,10 @@ namespace NightlyCode.DB.Entities.Descriptors
                 descriptor.AddIndex(new IndexDescriptor(kvp.Key, kvp.Value));
             foreach (KeyValuePair<string, List<string>> kvp in unique)
             {
-                descriptor.AddUnique(new UniqueDescriptor(kvp.Key, kvp.Value));
+                descriptor.AddUnique(new UniqueDescriptor(kvp.Value));
             }
 
             return descriptor;
         }
-
-        /// <summary>
-        /// get entitydescriptor for the specified type
-        /// </summary>
-        /// <typeparam name="T">type of which to get entity descriptor</typeparam>
-        /// <returns>entity descriptor for specified type</returns>
-        public static EntityDescriptor Get<T>() {
-            return Get(typeof(T));
-        }
-
-        /// <summary>
-        /// get entitydescriptor for the specified type
-        /// </summary>
-        /// <param name="type">type of which to get entity descriptor</param>
-        /// <returns>entity descriptor for specified type</returns>
-        public static EntityDescriptor Get(Type type)
-        {
-            EntityDescriptor descriptor;
-            if (!descriptors.TryGetValue(type, out descriptor))
-                descriptors[type] = descriptor = Create(type);
-            return descriptor;
-        }
-
     }
 }

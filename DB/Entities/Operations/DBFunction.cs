@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using NightlyCode.DB.Entities.Descriptors;
+using NightlyCode.DB.Entities.Operations.Aggregates;
+using NightlyCode.DB.Entities.Operations.Expressions;
 using NightlyCode.DB.Info;
 
 namespace NightlyCode.DB.Entities.Operations {
@@ -60,6 +64,20 @@ namespace NightlyCode.DB.Entities.Operations {
             }
         }
 
+        static IDBField ToField<T>(Expression<Func<T, object>> expression) {
+            return EntityField.Create(expression);
+        }
+
+        static IEnumerable<IDBField> ToFields<T>(IEnumerable<Expression<Func<T, object>>> expressions)
+        {
+            return expressions.Select(ToField);
+        }
+
+        static IDBField[] ToFieldArray<T>(IEnumerable<Expression<Func<T, object>>> expressions)
+        {
+            return ToFields(expressions).ToArray();
+        }
+
         /// <summary>
         /// random value
         /// </summary>
@@ -83,6 +101,97 @@ namespace NightlyCode.DB.Entities.Operations {
         /// <returns></returns>
         public static DBFunction Length<T>(Expression<Func<T, object>> fieldexpression) {
             return new DBFunction(DBFunctionType.Length, fieldexpression);
+        }
+
+        /// <summary>
+        /// sums up a field in db
+        /// </summary>
+        public static Aggregate Sum(params IDBField[] field)
+        {
+            return new FieldAggregate("sum", field);
+        }
+
+        /// <summary>
+        /// sums up a field in db
+        /// </summary>
+        public static Aggregate Sum<T>(params Expression<Func<T, object>>[] fields) {
+            return new FieldAggregate("sum", ToFieldArray(fields));
+        }
+
+        /// <summary>
+        /// sums up a field in db returning a floating point result
+        /// </summary>
+        public static Aggregate Total(params IDBField[] field)
+        {
+            return new FieldAggregate("total", field);
+        }
+
+        /// <summary>
+        /// sums up a field in db returning a floating point result
+        /// </summary>
+        public static Aggregate Total<T>(params Expression<Func<T, object>>[] fields)
+        {
+            return new FieldAggregate("total", ToFieldArray(fields));
+        }
+
+        /// <summary>
+        /// maximum value of a field or multiple values
+        /// </summary>
+        /// <param name="fields">fields of which to select maximum value</param>
+        /// <returns>aggregate field</returns>
+        public static Aggregate Max(params IDBField[] fields)
+        {
+            return new FieldAggregate("max", fields);
+        }
+
+        /// <summary>
+        /// maximum value of a field or multiple values
+        /// </summary>
+        /// <param name="fields">fields of which to select maximum value</param>
+        /// <returns>aggregate field</returns>
+        public static Aggregate Max<T>(params Expression<Func<T, object>>[] fields)
+        {
+            return new FieldAggregate("max", ToFieldArray(fields));
+        }
+
+        /// <summary>
+        /// minimum value of a field or multiple values
+        /// </summary>
+        /// <param name="fields">fields of which to select minimum value</param>
+        /// <returns>aggregate field</returns>
+        public static Aggregate Min(params IDBField[] fields)
+        {
+            return new FieldAggregate("min", fields);
+        }
+
+        /// <summary>
+        /// minimum value of a field or multiple values
+        /// </summary>
+        /// <param name="fields">fields of which to select minimum value</param>
+        /// <returns>aggregate field</returns>
+        public static Aggregate Min<T>(params Expression<Func<T, object>>[] fields)
+        {
+            return new FieldAggregate("min", ToFieldArray(fields));
+        }
+
+        /// <summary>
+        /// average value of a field or multiple values
+        /// </summary>
+        /// <param name="fields">fields of which to select average value</param>
+        /// <returns>aggregate field</returns>
+        public static Aggregate Average(params IDBField[] fields)
+        {
+            return new FieldAggregate("avg", fields);
+        }
+
+        /// <summary>
+        /// average value of a field or multiple values
+        /// </summary>
+        /// <param name="fields">fields of which to select average value</param>
+        /// <returns>aggregate field</returns>
+        public static Aggregate Average<T>(params Expression<Func<T, object>>[] fields)
+        {
+            return new FieldAggregate("avg", ToFieldArray(fields));
         }
     }
 }

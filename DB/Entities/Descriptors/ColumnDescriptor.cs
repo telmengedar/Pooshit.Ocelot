@@ -20,24 +20,28 @@ namespace NightlyCode.DB.Entities.Descriptors {
         /// <summary>
         /// name of the column
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; internal set; }
 
         /// <summary>
         /// determines whether the column is primary key
         /// </summary>
         public bool PrimaryKey { get; set; }
+
         /// <summary>
         /// determines whether value in column has to be unique
         /// </summary>
         public bool IsUnique { get; set; }
+
         /// <summary>
         /// determines whether the value of the column is set by auto increment
         /// </summary>
         public bool AutoIncrement { get; set; }
+
         /// <summary>
         /// determines whether the column is allowed to contain null values
         /// </summary>
         public bool NotNull { get; set; }
+
         /// <summary>
         /// default value of the column
         /// </summary>

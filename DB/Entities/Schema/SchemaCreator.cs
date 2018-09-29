@@ -14,6 +14,15 @@ namespace NightlyCode.DB.Entities.Schema {
     /// creates a schema in database
     /// </summary>
     public class SchemaCreator {
+        readonly EntityDescriptorCache modelcache;
+
+        /// <summary>
+        /// creates a new <see cref="SchemaCreator"/>
+        /// </summary>
+        /// <param name="modelcache"></param>
+        public SchemaCreator(EntityDescriptorCache modelcache) {
+            this.modelcache = modelcache;
+        }
 
         /// <summary>
         /// creates a new table from description
@@ -57,7 +66,7 @@ namespace NightlyCode.DB.Entities.Schema {
         /// <param name="type">type to create</param>
         /// <param name="client">client to database</param>
         public void Create(Type type, IDBClient client) {
-            EntityDescriptor descriptor = EntityDescriptor.Get(type);
+            EntityDescriptor descriptor = modelcache.Get(type);
 
             if (client.DBInfo.CheckIfTableExists(client, descriptor.TableName))
                 // table already exists

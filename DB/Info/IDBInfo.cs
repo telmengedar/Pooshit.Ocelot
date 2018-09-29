@@ -151,14 +151,6 @@ namespace NightlyCode.DB.Info
         object ReturnInsertID(IDBClient client, EntityDescriptor descriptor, string insertcommand, params object[] parameters);
 
         /// <summary>
-        /// get schema for a type in database
-        /// </summary>
-        /// <typeparam name="T">type for which to get schema</typeparam>
-        /// <param name="client">database connection</param>
-        /// <returns>schema of specified type</returns>
-        SchemaDescriptor GetSchema<T>(IDBClient client);
-
-        /// <summary>
         /// get schema for a table in database
         /// </summary>
         /// <param name="client">database connection</param>

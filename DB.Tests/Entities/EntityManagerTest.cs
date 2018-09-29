@@ -5,7 +5,6 @@ using NightlyCode.DB.Clients;
 using NightlyCode.DB.Entities;
 using NightlyCode.DB.Entities.Descriptors;
 using NightlyCode.DB.Entities.Operations;
-using NightlyCode.DB.Providers;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
@@ -14,10 +13,6 @@ namespace NightlyCode.DB.Tests.Entities {
     [TestFixture]
     public class EntityManagerTest {
         
-        public IDBClient CreateDBClient() {
-            return SQLiteProvider.CreateSQLite(null);
-        }
-
         IEnumerable<TestEntityWithoutAnySpecifications> TestEntities {
             get {
                 yield return new TestEntityWithoutAnySpecifications {
@@ -43,7 +38,7 @@ namespace NightlyCode.DB.Tests.Entities {
 
         [Test]
         public void TestEntityCreation() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
             Assert.That(dbclient.DBInfo.CheckIfTableExists(dbclient, "testentitywithoutanyspecifications"));
@@ -51,7 +46,7 @@ namespace NightlyCode.DB.Tests.Entities {
 
         [Test]
         public void TestInsert() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
             entitymanager.InsertEntities(TestEntities);
@@ -59,7 +54,7 @@ namespace NightlyCode.DB.Tests.Entities {
 
         [Test]
         public void TestContains() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
             entitymanager.InsertEntities(TestEntities);
@@ -71,7 +66,7 @@ namespace NightlyCode.DB.Tests.Entities {
 
         [Test]
         public void TestInsertWithReturn() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
 
@@ -94,7 +89,7 @@ namespace NightlyCode.DB.Tests.Entities {
 
         [Test]
         public void TestUpdate() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
             TestEntityWithoutAnySpecifications[] entities = TestEntities.ToArray();
@@ -109,7 +104,7 @@ namespace NightlyCode.DB.Tests.Entities {
         
         [Test]
         public void TestSave() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
             List<TestEntityWithoutAnySpecifications> entities = new List<TestEntityWithoutAnySpecifications>(TestEntities);
@@ -125,7 +120,7 @@ namespace NightlyCode.DB.Tests.Entities {
 
         [Test]
         public void InsertMultipleTimesFailsUniqueCheck() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
             entitymanager.InsertEntities(TestEntities);
@@ -134,7 +129,7 @@ namespace NightlyCode.DB.Tests.Entities {
 
         [Test]
         public void LoadAllEntities() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
 
@@ -143,7 +138,7 @@ namespace NightlyCode.DB.Tests.Entities {
             TestEntityWithoutAnySpecifications[] loaded = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Execute().ToArray();
 
             Assert.AreEqual(source.Length, loaded.Length, "Sourcelength does not match loaded length");
-            EntityDescriptor descriptor = EntityDescriptor.Create(typeof(TestEntityWithoutAnySpecifications));
+            EntityDescriptor descriptor = entitymanager.Model<TestEntityWithoutAnySpecifications>().Descriptor;
             foreach(EntityColumnDescriptor column in descriptor.Columns) {
                 if(column.AutoIncrement)
                     continue;
@@ -156,7 +151,7 @@ namespace NightlyCode.DB.Tests.Entities {
 
         [Test]
         public void LoadEntitiesWithCriterias() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
 
@@ -169,7 +164,7 @@ namespace NightlyCode.DB.Tests.Entities {
 
         [Test]
         public void OrderBy() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
 
@@ -180,7 +175,7 @@ namespace NightlyCode.DB.Tests.Entities {
 
         [Test]
         public void Limit() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
 
@@ -193,7 +188,7 @@ namespace NightlyCode.DB.Tests.Entities {
         [Test]
         public void ComplexWhere() {
             int boo = 3;
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
 
@@ -217,7 +212,7 @@ namespace NightlyCode.DB.Tests.Entities {
 
         [Test]
         public void UnaryOperations() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
 
@@ -235,7 +230,7 @@ namespace NightlyCode.DB.Tests.Entities {
 
         [Test]
         public void BitwiseOperator() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
 
@@ -250,19 +245,22 @@ namespace NightlyCode.DB.Tests.Entities {
 
         [Test]
         public void Aggregates() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
 
             entitymanager.InsertEntities(TestEntities);
-            PreparedLoadEntitiesOperation<TestEntityWithoutAnySpecifications> preparedstatement = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().GroupBy(EntityField.Create<TestEntityWithoutAnySpecifications>(e => e.Column1)).Having(t => Aggregate.Sum<TestEntityWithoutAnySpecifications>(EntityField.Create<TestEntityWithoutAnySpecifications>(e=>e.IntegerValue)) < Constant.Create(30)).Prepare();
+            PreparedLoadEntitiesOperation<TestEntityWithoutAnySpecifications> preparedstatement = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>()
+                                                                                                            .GroupBy(EntityField.Create<TestEntityWithoutAnySpecifications>(e => e.Column1))
+                                                                                                            .Having(t => DBFunction.Sum(EntityField.Create<TestEntityWithoutAnySpecifications>(e=>e.IntegerValue)) < Constant.Create(30))
+                                                                                                            .Prepare();
             Console.WriteLine(preparedstatement.ToString());
             preparedstatement.Execute();
         }
 
         [Test]
         public void Join() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
             entitymanager.Create<OtherTestEntity>();
@@ -275,7 +273,7 @@ namespace NightlyCode.DB.Tests.Entities {
 
         [Test]
         public void DBFieldComparision() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
             entitymanager.Update<TestEntityWithoutAnySpecifications>().Set(t => t.Column1 == "bla").Where(t => DBFunction.RowID.Int == 7).Execute();
@@ -283,7 +281,7 @@ namespace NightlyCode.DB.Tests.Entities {
 
         [Test]
         public void LikeOperator() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
             entitymanager.Update<TestEntityWithoutAnySpecifications>().Set(t => t.Column1 == "123").Where(t => t.Column1.Like("%something%")).Execute();
@@ -291,7 +289,7 @@ namespace NightlyCode.DB.Tests.Entities {
 
         [Test]
         public void Replace() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
             entitymanager.Update<TestEntityWithoutAnySpecifications>().Set(t => t.Column1 == "123").Where(t => DBOperators.Replace(t.Column1, "1", "2") == "123").Execute();
@@ -299,7 +297,7 @@ namespace NightlyCode.DB.Tests.Entities {
 
         [Test]
         public void ToLower() {
-            IDBClient dbclient = CreateDBClient();
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
             entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Where(t => t.Column1.ToLower() == "123".ToLower()).Execute();

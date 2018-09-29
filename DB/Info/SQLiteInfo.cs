@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Text.RegularExpressions;
 using NightlyCode.DB.Clients;
 using NightlyCode.DB.Entities;
@@ -238,10 +236,53 @@ namespace NightlyCode.DB.Info
                 operation.CommandBuilder.Append(" ").Append(AutoIncrement);
             if (unique)
                 operation.CommandBuilder.Append(" UNIQUE");
-            if (notnull)
+            if(notnull) {
                 operation.CommandBuilder.Append(" NOT NULL");
+            }
 
             if(defaultvalue != null) {
+                operation.CommandBuilder.Append(" DEFAULT ");
+                if (defaultvalue is string || defaultvalue is Guid || defaultvalue is DateTime || defaultvalue is TimeSpan)
+                    operation.CommandBuilder.Append($"'{defaultvalue}'");
+                else operation.CommandBuilder.Append(defaultvalue);
+            }
+        }
+
+        void AddColumn(OperationPreparator operation, EntityColumnDescriptor column) {
+            AddColumn(operation,
+                column.Name,
+                GetDBType(DBConverterCollection.ContainsConverter(column.Property.PropertyType) ? DBConverterCollection.GetDBType(column.Property.PropertyType) : column.Property.PropertyType),
+                column.PrimaryKey,
+                column.AutoIncrement,
+                column.IsUnique,
+                column.NotNull,
+                column.DefaultValue,
+                column.Property.PropertyType
+            );
+        }
+
+        void AddColumn(OperationPreparator operation, string name, string type, bool primarykey, bool autoincrement, bool unique, bool notnull, object defaultvalue, Type columntype)
+        {
+            operation.CommandBuilder.Append(MaskColumn(name)).Append(" ");
+            operation.CommandBuilder.Append(type);
+
+            if (primarykey)
+                operation.CommandBuilder.Append(" PRIMARY KEY");
+            if (autoincrement)
+                operation.CommandBuilder.Append(" ").Append(AutoIncrement);
+            if (unique)
+                operation.CommandBuilder.Append(" UNIQUE");
+            if (notnull)
+            {
+                operation.CommandBuilder.Append(" NOT NULL");
+
+                // SQLite doesn't like no default values on nullable columns in add column case
+                if(defaultvalue == null)
+                    defaultvalue = Activator.CreateInstance(columntype);
+            }
+
+            if (defaultvalue != null)
+            {
                 operation.CommandBuilder.Append(" DEFAULT ");
                 if (defaultvalue is string || defaultvalue is Guid || defaultvalue is DateTime || defaultvalue is TimeSpan)
                     operation.CommandBuilder.Append($"'{defaultvalue}'");
@@ -260,17 +301,6 @@ namespace NightlyCode.DB.Info
         public object ReturnInsertID(IDBClient client, EntityDescriptor descriptor, string insertcommand, params object[] parameters) {
             client.NonQuery(insertcommand, parameters);
             return client.Scalar("SELECT last_insert_rowid()");
-        }
-
-        /// <summary>
-        /// get schema for a type in database
-        /// </summary>
-        /// <typeparam name="T">type for which to get schema</typeparam>
-        /// <param name="client">database connection</param>
-        /// <returns>schema of specified type</returns>
-        public SchemaDescriptor GetSchema<T>(IDBClient client) {
-            EntityDescriptor descriptor = EntityDescriptor.Create(typeof(T));
-            return GetSchema(client, descriptor.TableName);
         }
 
         /// <summary>
@@ -330,7 +360,7 @@ namespace NightlyCode.DB.Info
         public void AddColumn(IDBClient client, string table, EntityColumnDescriptor column) {
             OperationPreparator operation = new OperationPreparator(this);
             operation.CommandBuilder.Append($"ALTER TABLE {table} ADD COLUMN ");
-            CreateColumn(operation, column);
+            AddColumn(operation, column);
             client.NonQuery(operation.CommandBuilder.ToString(), operation.Parameters.Select(p=>p.Value).ToArray());
         }
 
@@ -401,20 +431,28 @@ namespace NightlyCode.DB.Info
         /// <param name="descriptor">descriptor to fill</param>
         /// <param name="sql">sql to analyse</param>
         public void AnalyseTableSql(TableDescriptor descriptor, string sql) {
-            Match match = Regex.Match(sql, @"^CREATE TABLE (?<name>[^ ]+) \((?<columns>.+)\)$");
+            Match match = Regex.Match(sql, @"^CREATE TABLE (?<name>[^ ]+) \((?<columns>.+?)(, UNIQUE \((?<unique>.+?)\))*\)$");
             if(!match.Success)
                 throw new InvalidOperationException("Unable to analyse table information");
 
-            string[] columns = match.Groups["columns"].Value.Split(',');
+            string[] columns = match.Groups["columns"].Value.Split(',').Select(c => c.Trim()).ToArray();
             descriptor.Columns = GetDefinitions(columns).Select(GetColumnDescriptor).ToArray();
+
+
+            descriptor.Uniques = AnalyseUniques(match.Groups["unique"].Captures.Cast<Capture>().Select(c=>c.Value)).ToArray();
+        }
+
+        IEnumerable<UniqueDescriptor> AnalyseUniques(IEnumerable<string> definitions) {
+            foreach(string definition in definitions) {
+                string[] columns = definition.Split(',').Select(s => s.Trim('\'')).ToArray();
+
+                yield return new UniqueDescriptor(columns);
+            }
         }
 
         IEnumerable<string> GetDefinitions(IEnumerable<string> columns) {
             foreach(string column in columns) {
-                string definition = column.Trim();
-                if(definition.StartsWith("UNIQUE"))
-                    yield break;
-                yield return definition;
+                yield return column;
             }
         }
 

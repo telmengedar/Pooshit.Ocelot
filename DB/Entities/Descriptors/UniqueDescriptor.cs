@@ -14,21 +14,14 @@ namespace NightlyCode.DB.Entities.Descriptors
         /// <summary>
         /// creates a new <see cref="UniqueDescriptor"/>
         /// </summary>
-        /// <param name="name">name of the descriptor</param>
         /// <param name="columns">columns which have to have a combined unique value</param>
-        public UniqueDescriptor(string name, IEnumerable<string> columns)
+        public UniqueDescriptor(IEnumerable<string> columns)
         {
-            Name = name;
             this.columns = columns.ToArray();
         }
 
         /// <summary>
-        /// name of the index
-        /// </summary>
-        public string Name { get; private set; }
-
-        /// <summary>
-        /// columns linked to the index
+        /// columns linked to the unique specifier
         /// </summary>
         public IEnumerable<string> Columns => columns;
     }

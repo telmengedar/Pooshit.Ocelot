@@ -10,9 +10,8 @@ namespace NightlyCode.DB.Tests.Entities
     {
 
         [Test]
-        public void TestCreationWithoutNameSpecifications()
-        {
-            EntityDescriptor descriptor = EntityDescriptor.Create(typeof(TestEntityWithoutAnySpecifications));
+        public void TestCreationWithoutNameSpecifications() {
+            EntityDescriptor descriptor = new EntityDescriptorCache().Get<TestEntityWithoutAnySpecifications>();
             Assert.AreEqual(typeof(TestEntityWithoutAnySpecifications).Name.ToLower(), descriptor.TableName);
             Assert.AreEqual(5, descriptor.Columns.Count());
             Assert.NotNull(descriptor.PrimaryKeyColumn);

@@ -11,7 +11,7 @@ using Converter = NightlyCode.DB.Extern.Converter;
 using NightlyCode.Unity.DB.Entities.Operations;
 #endif
 
-namespace NightlyCode.DB.Entities.Operations {
+namespace NightlyCode.DB.Entities.Operations.Expressions {
 
     /// <summary>
     /// visits an expression tree to convert it to sql

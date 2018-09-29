@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 using NightlyCode.DB.Entities.Descriptors;
+using NightlyCode.DB.Entities.Operations.Expressions;
 using NightlyCode.DB.Info;
 
 namespace NightlyCode.DB.Entities.Operations {

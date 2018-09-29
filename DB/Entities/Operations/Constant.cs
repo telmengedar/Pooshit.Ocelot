@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq.Expressions;
 using NightlyCode.DB.Entities.Descriptors;
+using NightlyCode.DB.Entities.Operations.Expressions;
 using NightlyCode.DB.Info;
 
 namespace NightlyCode.DB.Entities.Operations {
@@ -28,7 +30,11 @@ namespace NightlyCode.DB.Entities.Operations {
         public override void PrepareCommand(OperationPreparator preparator, IDBInfo dbinfo, Func<Type, EntityDescriptor> descriptorgetter) {
             if(Value==null)
                 preparator.CommandBuilder.Append("NULL");
-            else preparator.AppendParameter(Value);
+            else {
+                if(Value is Expression)
+                    CriteriaVisitor.GetCriteriaText((Expression)Value, descriptorgetter, dbinfo, preparator);
+                else preparator.AppendParameter(Value);
+            }
         }
 
         /// <summary>

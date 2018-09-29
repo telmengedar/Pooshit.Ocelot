@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Runtime.ConstrainedExecution;
 using NightlyCode.DB.Clients;
 using NightlyCode.DB.Entities.Descriptors;
+using NightlyCode.DB.Entities.Operations.Expressions;
 
 namespace NightlyCode.DB.Entities.Operations {
 

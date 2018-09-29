@@ -12,7 +12,17 @@ namespace NightlyCode.DB.Entities.Schema {
     /// updates database schemata
     /// </summary>
     public class SchemaUpdater {
-        readonly SchemaCreator creator = new SchemaCreator();
+        readonly EntityDescriptorCache modelcache;
+        readonly SchemaCreator creator;
+
+        /// <summary>
+        /// creates a new <see cref="SchemaUpdater"/>
+        /// </summary>
+        /// <param name="modelcache">access to entity models</param>
+        public SchemaUpdater(EntityDescriptorCache modelcache) {
+            this.modelcache = modelcache;
+            creator = new SchemaCreator(modelcache);
+        }
 
         /// <summary>
         /// updates the schema of the specified type
@@ -21,7 +31,7 @@ namespace NightlyCode.DB.Entities.Schema {
         /// <param name="client">database connection</param>
         /// <param name="datasource">table from which to update schema (optional)</param>
         public void Update<T>(IDBClient client, string datasource=null) {
-            SchemaDescriptor schema = datasource == null ? client.DBInfo.GetSchema<T>(client) : client.DBInfo.GetSchema(client, datasource);
+            SchemaDescriptor schema = datasource == null ? client.DBInfo.GetSchema(client, modelcache.Get<T>().TableName) : client.DBInfo.GetSchema(client, datasource);
             if(schema is ViewDescriptor)
                 UpdateView<T>(client, (ViewDescriptor)schema);
             else if(schema is TableDescriptor)
@@ -37,7 +47,7 @@ namespace NightlyCode.DB.Entities.Schema {
         void UpdateTable<T>(IDBClient client, TableDescriptor currentschema) {
             Logger.Info(this, $"Checking schema of '{typeof(T).Name}'");
 
-            EntityDescriptor descriptor = EntityDescriptor.Get<T>();
+            EntityDescriptor descriptor = modelcache.Get<T>();
 
             List<EntityColumnDescriptor> missing = new List<EntityColumnDescriptor>();
             List<EntityColumnDescriptor> altered = new List<EntityColumnDescriptor>();

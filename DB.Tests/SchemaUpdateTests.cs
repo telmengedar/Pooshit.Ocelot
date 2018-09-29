@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using NightlyCode.DB.Clients;
+using NightlyCode.DB.Entities.Descriptors;
 using NightlyCode.DB.Entities.Schema;
-using NightlyCode.DB.Providers;
 using NightlyCode.DB.Tests.Schema;
 using NUnit.Framework;
 
@@ -9,16 +9,23 @@ namespace NightlyCode.DB.Tests {
 
     [TestFixture]
     public class SchemaUpdateTests {
-        readonly SchemaCreator creator = new SchemaCreator();
-        readonly SchemaUpdater updater = new SchemaUpdater();
+        readonly EntityDescriptorCache modelcache = new EntityDescriptorCache();
+        SchemaCreator creator;
+        SchemaUpdater updater;
+
+        [SetUp]
+        public void Setup() {
+            creator = new SchemaCreator(modelcache);
+            updater = new SchemaUpdater(modelcache);
+        }
 
         [Test]
         public void AddColumns() {
-            IDBClient dbclient = Providers.SQLiteProvider.CreateSQLite(null, false);
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             creator.Create(typeof(OriginalEntity), dbclient);
             updater.Update<AddEntity>(dbclient);
 
-            TableDescriptor descriptor = dbclient.DBInfo.GetSchema<AddEntity>(dbclient) as TableDescriptor;
+            TableDescriptor descriptor = dbclient.DBInfo.GetSchema(dbclient, modelcache.Get<AddEntity>().TableName) as TableDescriptor;
             Assert.That(descriptor.Columns.Any(c => c.Name == "field1"));
             Assert.That(descriptor.Columns.Any(c => c.Name == "field2"));
             Assert.That(descriptor.Columns.Any(c => c.Name == "field3"));
@@ -29,11 +36,11 @@ namespace NightlyCode.DB.Tests {
 
         [Test]
         public void RemoveColumns() {
-            IDBClient dbclient = SQLiteProvider.CreateSQLite(null, false);
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             creator.Create(typeof(OriginalEntity), dbclient);
             updater.Update<EntityWithLessFields>(dbclient);
 
-            TableDescriptor descriptor = dbclient.DBInfo.GetSchema<EntityWithLessFields>(dbclient) as TableDescriptor;
+            TableDescriptor descriptor = dbclient.DBInfo.GetSchema(dbclient, modelcache.Get<EntityWithLessFields>().TableName) as TableDescriptor;
             Assert.That(descriptor.Columns.Any(c => c.Name == "field1"));
             Assert.That(descriptor.Columns.Any(c => c.Name == "field2"));
             Assert.That(descriptor.Columns.All(c => c.Name != "field3"));
@@ -45,11 +52,11 @@ namespace NightlyCode.DB.Tests {
 
         [Test]
         public void AlterColumns() {
-            IDBClient dbclient = SQLiteProvider.CreateSQLite(null, false);
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
             creator.Create(typeof(OriginalEntity), dbclient);
             updater.Update<AlteredEntity>(dbclient);
 
-            TableDescriptor descriptor = dbclient.DBInfo.GetSchema<AlteredEntity>(dbclient) as TableDescriptor;
+            TableDescriptor descriptor = dbclient.DBInfo.GetSchema(dbclient, modelcache.Get<AlteredEntity>().TableName) as TableDescriptor;
             Assert.That(descriptor.Columns.Any(c => c.Name == "field1"));
             Assert.That(descriptor.Columns.Any(c => c.Name == "field2"));
             Assert.That(descriptor.Columns.Any(c => c.Name == "field3" && c.Type == "TEXT"));

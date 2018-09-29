@@ -15,15 +15,18 @@ namespace NightlyCode.DB.Entities {
     /// manages entities in db
     /// </summary>
     public class EntityManager : IEntityManager {
-        readonly SchemaCreator creator = new SchemaCreator();
-        readonly SchemaUpdater updater = new SchemaUpdater();
+        readonly SchemaCreator creator;
+        readonly SchemaUpdater updater;
+        readonly EntityDescriptorCache modelcache = new EntityDescriptorCache();
 
         /// <summary>
         /// creates a new <see cref="EntityManager"/>
         /// </summary>
-        /// <param name="dbclient"></param>
+        /// <param name="dbclient">access to database</param>
         public EntityManager(IDBClient dbclient) {
             DBClient = dbclient;
+            creator = new SchemaCreator(modelcache);
+            updater = new SchemaUpdater(modelcache);
         }
 
         /// <summary>
@@ -56,7 +59,7 @@ namespace NightlyCode.DB.Entities {
         /// </remarks>
         /// <typeparam name="T">type of which to update schema</typeparam>
         public void UpdateSchema<T>() {
-            EntityDescriptor descriptor = EntityDescriptor.Get<T>();
+            EntityDescriptor descriptor = modelcache.Get<T>();
 
             if(!DBClient.DBInfo.CheckIfTableExists(DBClient, descriptor.TableName)) {
                 Logger.Info(this, $"Creating new table for '{typeof(T).Name}");
@@ -89,7 +92,7 @@ namespace NightlyCode.DB.Entities {
         /// <typeparam name="T"></typeparam>
         /// <param name="entities"></param>
         public void InsertEntities<T>(IEnumerable<T> entities) {
-            new InsertEntitiesOperation(DBClient, entities, EntityDescriptor.Get).Execute();
+            new InsertEntitiesOperation(DBClient, entities, modelcache.Get).Execute();
         }
 
         /// <summary>
@@ -98,7 +101,7 @@ namespace NightlyCode.DB.Entities {
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public UpdateValuesOperation<T> Update<T>() {
-            return new UpdateValuesOperation<T>(DBClient, EntityDescriptor.Get);
+            return new UpdateValuesOperation<T>(DBClient, modelcache.Get);
         }
 
         /// <summary>
@@ -107,7 +110,7 @@ namespace NightlyCode.DB.Entities {
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public InsertValuesOperation<T> Insert<T>() {
-            return new InsertValuesOperation<T>(DBClient, EntityDescriptor.Get);
+            return new InsertValuesOperation<T>(DBClient, modelcache.Get);
         }
 
         /// <summary>
@@ -116,11 +119,11 @@ namespace NightlyCode.DB.Entities {
         /// <typeparam name="T"></typeparam>
         /// <param name="entities"></param>
         public void DeleteEntities<T>(params T[] entities) {
-            new DeleteEntitiesOperation(DBClient, entities, EntityDescriptor.Get).Execute();
+            new DeleteEntitiesOperation(DBClient, entities, modelcache.Get).Execute();
         }
 
         public DeleteOperation<T> Delete<T>() {
-            return new DeleteOperation<T>(DBClient, EntityDescriptor.Get);
+            return new DeleteOperation<T>(DBClient, modelcache.Get);
         }
 
         /// <summary>
@@ -138,7 +141,7 @@ namespace NightlyCode.DB.Entities {
         /// <typeparam name="T"></typeparam>
         /// <param name="entities"></param>
         public void UpdateEntities<T>(IEnumerable<T> entities) {
-            new UpdateEntitiesOperation(DBClient, entities, EntityDescriptor.Get).Execute();
+            new UpdateEntitiesOperation(DBClient, entities, modelcache.Get).Execute();
         }
 
         /// <summary>
@@ -161,7 +164,7 @@ namespace NightlyCode.DB.Entities {
         /// <typeparam name="T"></typeparam>
         /// <param name="entities"></param>
         public void Save<T>(IEnumerable<T> entities) {
-            EntityDescriptor descriptor = EntityDescriptor.Get(typeof(T));
+            EntityDescriptor descriptor = modelcache.Get<T>();
             List<T> toinsert = new List<T>();
             List<T> toupdate = new List<T>();
 
@@ -195,7 +198,7 @@ namespace NightlyCode.DB.Entities {
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public LoadEntitiesOperation<T> LoadEntities<T>() {
-            return new LoadEntitiesOperation<T>(DBClient, EntityDescriptor.Get);
+            return new LoadEntitiesOperation<T>(DBClient, modelcache.Get);
         }
 
         /// <summary>
@@ -205,7 +208,7 @@ namespace NightlyCode.DB.Entities {
         /// <param name="fields">fields to load from the db</param>
         /// <returns></returns>
         public LoadValuesOperation<T> Load<T>(params IDBField[] fields) {
-            return new LoadValuesOperation<T>(DBClient, fields, EntityDescriptor.Get);
+            return new LoadValuesOperation<T>(DBClient, fields, modelcache.Get);
         }
 
         /// <summary>
@@ -230,7 +233,15 @@ namespace NightlyCode.DB.Entities {
         /// <param name="operation"></param>
         /// <param name="values"></param>
         public long ExecuteID<T>(PreparedOperation operation, params object[] values) {
-            return Converter.Convert<long>(DBClient.DBInfo.ReturnInsertID(DBClient, EntityDescriptor.Get<T>(), operation.CommandText, values));
+            return Converter.Convert<long>(DBClient.DBInfo.ReturnInsertID(DBClient, modelcache.Get<T>(), operation.CommandText, values));
+        }
+
+        /// <summary>
+        /// get access to an entity model
+        /// </summary>
+        /// <typeparam name="T">type of entity of which to access model</typeparam>
+        public EntityDescriptorAccess<T> Model<T>() {
+            return new EntityDescriptorAccess<T>(modelcache.Get<T>());
         }
 
         static object GetDefault(Type type) {

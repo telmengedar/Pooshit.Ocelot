@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using NightlyCode.DB.Clients;
+using NightlyCode.DB.Entities.Descriptors;
 using NightlyCode.DB.Entities.Operations;
 
 namespace NightlyCode.DB.Entities {
@@ -141,5 +142,11 @@ namespace NightlyCode.DB.Entities {
         /// <param name="operation"></param>
         /// <param name="values"></param>
         long ExecuteID<T>(PreparedOperation operation, params object[] values);
+
+        /// <summary>
+        /// get access to an entity model
+        /// </summary>
+        /// <typeparam name="T">type of entity of which to access model</typeparam>
+        EntityDescriptorAccess<T> Model<T>();
     }
 }
