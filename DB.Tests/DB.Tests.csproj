@@ -68,11 +68,11 @@
     <Compile Include="Entities\EntityManagerTest.cs" />
     <Compile Include="Models\TestEntityWithoutAnySpecifications.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SchemaUpdateTests.cs" />
-    <Compile Include="Schema\AddEntity.cs" />
-    <Compile Include="Schema\AlteredEntity.cs" />
-    <Compile Include="Schema\EntityWithLessFields.cs" />
-    <Compile Include="Schema\OriginalEntity.cs" />
+    <Compile Include="Entities\SchemaUpdateTests.cs" />
+    <Compile Include="Models\AddEntity.cs" />
+    <Compile Include="Models\AlteredEntity.cs" />
+    <Compile Include="Models\EntityWithLessFields.cs" />
+    <Compile Include="Models\OriginalEntity.cs" />
     <Compile Include="Sqlite\SqliteInfoTests.cs" />
     <Compile Include="TestData.cs" />
   </ItemGroup>

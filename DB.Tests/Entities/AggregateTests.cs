@@ -1,6 +1,7 @@
 ﻿using NightlyCode.DB.Clients;
 using NightlyCode.DB.Entities;
 using NightlyCode.DB.Entities.Operations;
+using NightlyCode.DB.Tests.Models;
 using NUnit.Framework;
 
 namespace NightlyCode.DB.Tests.Entities {

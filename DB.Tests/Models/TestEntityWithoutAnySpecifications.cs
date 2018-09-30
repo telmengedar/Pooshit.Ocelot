@@ -1,7 +1,7 @@
 using System;
 using NightlyCode.DB.Entities.Attributes;
 
-namespace NightlyCode.DB.Tests.Entities {
+namespace NightlyCode.DB.Tests.Models {
     public class TestEntityWithoutAnySpecifications {
 
         /// <summary>

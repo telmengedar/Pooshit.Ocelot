@@ -36,6 +36,17 @@ namespace NightlyCode.DB.Entities.Descriptors
         }
 
         /// <summary>
+        /// changes the column name in model
+        /// </summary>
+        /// <param name="column">column to modify</param>
+        /// <param name="name">new name of column</param>
+        internal void ChangeColumnName(EntityColumnDescriptor column, string name) {
+            columndescriptors.Remove(column.Name);
+            column.Name = name;
+            columndescriptors[name] = column;
+        }
+
+        /// <summary>
         /// adds an index for the entity
         /// </summary>
         /// <param name="index"></param>

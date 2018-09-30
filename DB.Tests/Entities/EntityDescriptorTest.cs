@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using NightlyCode.DB.Entities.Descriptors;
+using NightlyCode.DB.Tests.Models;
 using NUnit.Framework;
 
 namespace NightlyCode.DB.Tests.Entities

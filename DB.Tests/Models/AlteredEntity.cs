@@ -1,6 +1,6 @@
 ﻿using NightlyCode.DB.Entities.Attributes;
 
-namespace NightlyCode.DB.Tests.Schema {
+namespace NightlyCode.DB.Tests.Models {
 
     [Table("schemaentity")]
     public class AlteredEntity : EntityWithLessFields{

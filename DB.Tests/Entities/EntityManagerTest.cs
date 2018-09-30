@@ -5,6 +5,7 @@ using NightlyCode.DB.Clients;
 using NightlyCode.DB.Entities;
 using NightlyCode.DB.Entities.Descriptors;
 using NightlyCode.DB.Entities.Operations;
+using NightlyCode.DB.Tests.Models;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 

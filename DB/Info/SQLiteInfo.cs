@@ -212,6 +212,7 @@ namespace NightlyCode.DB.Info
         /// <summary>
         /// text used to create a column
         /// </summary>
+        /// <param name="operation"></param>
         /// <param name="column"></param>
         /// <returns></returns>
         public void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column) {
@@ -357,11 +358,14 @@ namespace NightlyCode.DB.Info
         /// <param name="client">db access</param>
         /// <param name="table">table to modify</param>
         /// <param name="column">column to add</param>
-        public void AddColumn(IDBClient client, string table, EntityColumnDescriptor column) {
+        /// <param name="transaction">transaction to use (optional)</param>
+        public void AddColumn(IDBClient client, string table, EntityColumnDescriptor column, Transaction transaction=null) {
             OperationPreparator operation = new OperationPreparator(this);
             operation.CommandBuilder.Append($"ALTER TABLE {table} ADD COLUMN ");
             AddColumn(operation, column);
-            client.NonQuery(operation.CommandBuilder.ToString(), operation.Parameters.Select(p=>p.Value).ToArray());
+            if(transaction!=null)
+                client.NonQuery(transaction, operation.CommandBuilder.ToString(), operation.Parameters.Select(p => p.Value).ToArray());
+            else client.NonQuery(operation.CommandBuilder.ToString(), operation.Parameters.Select(p=>p.Value).ToArray());
         }
 
         /// <summary>
@@ -422,7 +426,7 @@ namespace NightlyCode.DB.Info
         /// </remarks>
         public void AlterColumn(IDBClient client, string table, EntityColumnDescriptor column) {
             RemoveColumn(client, table, column.Name);
-            AddColumn(client, table, column);
+            AddColumn(client, table, column, null);
         }
 
         /// <summary>

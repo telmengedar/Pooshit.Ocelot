@@ -1,11 +1,12 @@
 ﻿using System.Linq;
 using NightlyCode.DB.Clients;
+using NightlyCode.DB.Entities;
 using NightlyCode.DB.Entities.Descriptors;
 using NightlyCode.DB.Entities.Schema;
-using NightlyCode.DB.Tests.Schema;
+using NightlyCode.DB.Tests.Models;
 using NUnit.Framework;
 
-namespace NightlyCode.DB.Tests {
+namespace NightlyCode.DB.Tests.Entities {
 
     [TestFixture]
     public class SchemaUpdateTests {
@@ -26,6 +27,7 @@ namespace NightlyCode.DB.Tests {
             updater.Update<AddEntity>(dbclient);
 
             TableDescriptor descriptor = dbclient.DBInfo.GetSchema(dbclient, modelcache.Get<AddEntity>().TableName) as TableDescriptor;
+            Assert.NotNull(descriptor);
             Assert.That(descriptor.Columns.Any(c => c.Name == "field1"));
             Assert.That(descriptor.Columns.Any(c => c.Name == "field2"));
             Assert.That(descriptor.Columns.Any(c => c.Name == "field3"));
@@ -41,6 +43,7 @@ namespace NightlyCode.DB.Tests {
             updater.Update<EntityWithLessFields>(dbclient);
 
             TableDescriptor descriptor = dbclient.DBInfo.GetSchema(dbclient, modelcache.Get<EntityWithLessFields>().TableName) as TableDescriptor;
+            Assert.NotNull(descriptor);
             Assert.That(descriptor.Columns.Any(c => c.Name == "field1"));
             Assert.That(descriptor.Columns.Any(c => c.Name == "field2"));
             Assert.That(descriptor.Columns.All(c => c.Name != "field3"));
@@ -57,11 +60,32 @@ namespace NightlyCode.DB.Tests {
             updater.Update<AlteredEntity>(dbclient);
 
             TableDescriptor descriptor = dbclient.DBInfo.GetSchema(dbclient, modelcache.Get<AlteredEntity>().TableName) as TableDescriptor;
+            Assert.NotNull(descriptor);
             Assert.That(descriptor.Columns.Any(c => c.Name == "field1"));
             Assert.That(descriptor.Columns.Any(c => c.Name == "field2"));
             Assert.That(descriptor.Columns.Any(c => c.Name == "field3" && c.Type == "TEXT"));
             Assert.That(!descriptor.Indices.Any(i => i.Name == "field3" && i.Columns.Any(c => c == "field3")));
             Assert.That(!descriptor.Indices.Any(i => i.Name == "field4" && i.Columns.Any(c => c == "field4")));
+        }
+
+        [Test]
+        public void AlterColumnsInFilledTable() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+
+            entitymanager.UpdateSchema<ValueModel>();
+            for(int i = 0; i < 50; ++i) {
+                entitymanager.Insert<ValueModel>().Columns(c => c.Integer, c => c.Single, c => c.Double, c => c.String)
+                    .Values(i, (float)i, (double)i, i.ToString()).Execute();
+            }
+
+            entitymanager.Model<ValueModel>().Column(c => c.Integer, "Gangolf");
+            entitymanager.UpdateSchema<ValueModel>();
+
+            ValueModel[] data = entitymanager.LoadEntities<ValueModel>().Execute().ToArray();
+            Assert.AreEqual(50, data.Length);
+            foreach(ValueModel value in data)
+                Assert.AreEqual(0, value.Integer);
         }
     }
 

@@ -1,4 +1,4 @@
-﻿namespace NightlyCode.DB.Tests.Entities {
+﻿namespace NightlyCode.DB.Tests.Models {
 
     public class ValueModel {
         public int Integer { get; set; }

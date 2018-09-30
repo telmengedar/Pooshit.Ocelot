@@ -82,8 +82,11 @@ namespace NightlyCode.DB.Entities.Schema {
             }
             else {
                 if(missing.Count > 0) {
-                    missing.ForEach(c => client.DBInfo.AddColumn(client, descriptor.TableName, c));
-                    UpdateIndices(client, currentschema, descriptor);
+                    using(Transaction transaction = client.BeginTransaction()) {
+                        missing.ForEach(c => client.DBInfo.AddColumn(client, descriptor.TableName, c, transaction));
+                        UpdateIndices(client, currentschema, descriptor, transaction);
+                        transaction.Commit();
+                    }
                 }
             }
         }
@@ -95,52 +98,46 @@ namespace NightlyCode.DB.Entities.Schema {
         }
 
         void RecreateTable(IDBClient client, TableDescriptor olddescriptor, EntityDescriptor newdescriptor) {
-            bool frombackup = olddescriptor.Name == newdescriptor.TableName;
-            string appendix = frombackup ? "_original" : "";
+            string appendix = "_original";
 
-            // rename old table
-            if (frombackup)
-                client.NonQuery($"ALTER TABLE {olddescriptor.Name} RENAME TO {olddescriptor.Name}_original");
-            else
-            {
-                if(client.DBInfo.CheckIfTableExists(client, newdescriptor.TableName))
-                    client.NonQuery($"DROP TABLE {newdescriptor.TableName}");
-            }
+            using(Transaction transaction = client.BeginTransaction()) {
+                client.NonQuery(transaction, $"ALTER TABLE {olddescriptor.Name} RENAME TO {olddescriptor.Name}{appendix}");
 
-            SchemaColumnDescriptor[] remainingcolumns = olddescriptor.Columns.Where(c => newdescriptor.Columns.Any(c1 => c1.Name == c.Name)).ToArray();
-            EntityColumnDescriptor[] newcolumns = newdescriptor.Columns.Where(c => c.NotNull && c.DefaultValue == null && olddescriptor.Columns.All(o => o.Name != c.Name)).ToArray();
+                SchemaColumnDescriptor[] remainingcolumns = olddescriptor.Columns.Where(c => newdescriptor.Columns.Any(c1 => c1.Name == c.Name)).ToArray();
+                EntityColumnDescriptor[] newcolumns = newdescriptor.Columns.Where(c => c.NotNull && c.DefaultValue == null && olddescriptor.Columns.All(o => o.Name != c.Name)).ToArray();
 #if UNITY
             string columnlist = string.Join(", ", remainingcolumns.Select(c => c.Name).ToArray());
 #else
-            string columnlist = string.Join(", ", remainingcolumns.Select(c => c.Name));
-            string newcolumnlist= string.Join(", ", newcolumns.Select(c => c.Name));
+                string columnlist = string.Join(", ", remainingcolumns.Select(c => c.Name));
+                string newcolumnlist = string.Join(", ", newcolumns.Select(c => c.Name));
 #endif
-            creator.CreateTable(client, newdescriptor);
+                creator.CreateTable(client, newdescriptor, transaction);
 
-            // transfer data to new table
-            if (newcolumns.Length == 0)
-                client.NonQuery($"INSERT INTO {newdescriptor.TableName} ({columnlist}) SELECT {columnlist} FROM {olddescriptor.Name}{appendix}");
-            else
-            {
-                // new schema has columns which mustn't be null
-                OperationPreparator operation = new OperationPreparator(client.DBInfo);
-                operation.CommandBuilder.Append($"INSERT INTO {newdescriptor.TableName} ({columnlist},{newcolumnlist}) SELECT {columnlist}");
-                foreach (EntityColumnDescriptor column in newcolumns)
-                {
-                    operation.CommandBuilder.Append(",");
-                    if (column.DefaultValue != null)
-                        operation.AppendParameter(column.DefaultValue);
-                    else operation.AppendParameter(column.CreateDefaultValue());
+                // transfer data to new table
+                if(newcolumns.Length == 0)
+                    client.NonQuery(transaction, $"INSERT INTO {newdescriptor.TableName} ({columnlist}) SELECT {columnlist} FROM {olddescriptor.Name}{appendix}");
+                else {
+                    // new schema has columns which mustn't be null
+                    OperationPreparator operation = new OperationPreparator(client.DBInfo);
+                    operation.CommandBuilder.Append($"INSERT INTO {newdescriptor.TableName} ({columnlist},{newcolumnlist}) SELECT {columnlist}");
+                    foreach(EntityColumnDescriptor column in newcolumns) {
+                        operation.CommandBuilder.Append(",");
+                        if(column.DefaultValue != null)
+                            operation.AppendParameter(column.DefaultValue);
+                        else operation.AppendParameter(column.CreateDefaultValue());
+                    }
+
+                    operation.CommandBuilder.Append($" FROM {olddescriptor.Name}{appendix}");
+                    client.NonQuery(transaction, operation.CommandBuilder.ToString(), operation.Parameters.Select(p => p.Value).ToArray());
                 }
-                operation.CommandBuilder.Append($" FROM {olddescriptor.Name}{appendix}");
-                client.NonQuery(operation.CommandBuilder.ToString(), operation.Parameters.Select(p => p.Value).ToArray());
-            }
 
-            // remove old data
-            client.NonQuery($"DROP TABLE {olddescriptor.Name}{appendix}");
+                // remove old data
+                client.NonQuery(transaction, $"DROP TABLE {olddescriptor.Name}{appendix}");
+                transaction.Commit();
+            }
         }
 
-        void UpdateIndices(IDBClient client, TableDescriptor oldschema, EntityDescriptor newschema) {
+        void UpdateIndices(IDBClient client, TableDescriptor oldschema, EntityDescriptor newschema, Transaction transaction) {
             List<IndexDescriptor> missing = new List<IndexDescriptor>(newschema.Indices.Where(i => oldschema.Indices.All(i2 => i2.Name != i.Name)));
             List<IndexDescriptor> altered = new List<IndexDescriptor>();
             List<string> obsolete = new List<string>();
@@ -161,8 +158,8 @@ namespace NightlyCode.DB.Entities.Schema {
 #else
                 Logger.Info(this, $"Detected altered index definition for '{string.Join(", ", altered.Select(i => i.Name))}'");
 #endif
-                altered.ForEach(c => client.NonQuery($"DROP INDEX idx_{newschema.TableName}_{c}"));
-                creator.CreateIndices(client, newschema.TableName, altered);
+                altered.ForEach(c => client.NonQuery(transaction, $"DROP INDEX idx_{newschema.TableName}_{c}"));
+                creator.CreateIndices(client, newschema.TableName, altered, transaction);
             }
 
             if(missing.Count > 0) {
@@ -171,7 +168,7 @@ namespace NightlyCode.DB.Entities.Schema {
 #else
                 Logger.Info(this, $"Detected missing index '{string.Join(", ", missing.Select(c => c.Name))}'");
 #endif
-                creator.CreateIndices(client, newschema.TableName, missing);
+                creator.CreateIndices(client, newschema.TableName, missing, transaction);
             }
         }
     }

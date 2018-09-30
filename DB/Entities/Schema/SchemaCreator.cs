@@ -29,7 +29,8 @@ namespace NightlyCode.DB.Entities.Schema {
         /// </summary>
         /// <param name="client">database access</param>
         /// <param name="descriptor"><see cref="EntityDescriptor"/> which describes schema of entity</param>
-        public void CreateTable(IDBClient client, EntityDescriptor descriptor) {
+        /// <param name="transaction"></param>
+        public void CreateTable(IDBClient client, EntityDescriptor descriptor, Transaction transaction=null) {
             OperationPreparator preparator = new OperationPreparator(client.DBInfo);
             preparator.CommandBuilder.Append("CREATE TABLE ");
             preparator.CommandBuilder.Append(descriptor.TableName).Append(" (");
@@ -55,7 +56,9 @@ namespace NightlyCode.DB.Entities.Schema {
             if (!string.IsNullOrEmpty(client.DBInfo.CreateSuffix))
                 preparator.CommandBuilder.Append(" ").Append(client.DBInfo.CreateSuffix);
 
-            client.NonQuery(preparator.CommandBuilder.ToString(), preparator.Parameters.Select(p => p.Value).ToArray());
+            if(transaction!=null)
+                client.NonQuery(transaction, preparator.CommandBuilder.ToString(), preparator.Parameters.Select(p => p.Value).ToArray());
+            else client.NonQuery(preparator.CommandBuilder.ToString(), preparator.Parameters.Select(p => p.Value).ToArray());
 
             CreateIndices(client, descriptor.TableName, descriptor.Indices);
         }
@@ -92,7 +95,8 @@ namespace NightlyCode.DB.Entities.Schema {
         /// <param name="client">database access</param>
         /// <param name="table">table on which to create indices</param>
         /// <param name="indices">indices to create</param>
-        public void CreateIndices(IDBClient client, string table, IEnumerable<IndexDescriptor> indices) {
+        /// <param name="transaction">transaction to use (optional)</param>
+        public void CreateIndices(IDBClient client, string table, IEnumerable<IndexDescriptor> indices, Transaction transaction=null) {
             StringBuilder commandbuilder = new StringBuilder();
             foreach (IndexDescriptor indexdescriptor in indices) {
                 string indexname = $"idx_{table}_{indexdescriptor.Name}";
@@ -107,8 +111,12 @@ namespace NightlyCode.DB.Entities.Schema {
                 }
                 commandbuilder.Append(");");
             }
-            if (commandbuilder.Length > 0)
-                client.NonQuery(commandbuilder.ToString());
+
+            if(commandbuilder.Length > 0) {
+                if(transaction==null)
+                    client.NonQuery(commandbuilder.ToString());
+                else client.NonQuery(transaction, commandbuilder.ToString());
+            }
         }
     }
 }

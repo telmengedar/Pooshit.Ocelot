@@ -164,7 +164,8 @@ namespace NightlyCode.DB.Info
         /// <param name="client">db access</param>
         /// <param name="table">table to modify</param>
         /// <param name="column">column to add</param>
-        void AddColumn(IDBClient client, string table, EntityColumnDescriptor column);
+        /// <param name="transaction">transaction to use (optional)</param>
+        void AddColumn(IDBClient client, string table, EntityColumnDescriptor column, Transaction transaction=null);
 
         /// <summary>
         /// removes a column from a table

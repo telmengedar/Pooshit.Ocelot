@@ -124,7 +124,7 @@ namespace NightlyCode.DB.Entities.Descriptors {
         /// <param name="name">new column name</param>
         public EntityDescriptorAccess<T> Column(Expression<Func<T, object>> column, string name)
         {
-            descriptor.GetColumn(visitor.GetColumnName(column)).Name = name;
+            descriptor.ChangeColumnName(descriptor.GetColumn(visitor.GetColumnName(column)), name);
             return this;
         }
     }

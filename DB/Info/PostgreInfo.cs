@@ -226,7 +226,7 @@ namespace NightlyCode.DB.Info {
             throw new NotImplementedException();
         }
 
-        public void AddColumn(IDBClient client, string table, EntityColumnDescriptor column) {
+        public void AddColumn(IDBClient client, string table, EntityColumnDescriptor column, Transaction transaction) {
             throw new NotImplementedException();
         }
 
