@@ -101,6 +101,10 @@ namespace NightlyCode.DB.Entities.Schema {
             string appendix = "_original";
 
             using(Transaction transaction = client.BeginTransaction()) {
+                // check if an old backup table exists for whatever reason
+                if(client.DBInfo.CheckIfTableExists(client, "{olddescriptor.Name}{appendix}"))
+                    client.NonQuery(transaction, $"DROP TABLE {olddescriptor.Name}{appendix}");
+
                 client.NonQuery(transaction, $"ALTER TABLE {olddescriptor.Name} RENAME TO {olddescriptor.Name}{appendix}");
 
                 SchemaColumnDescriptor[] remainingcolumns = olddescriptor.Columns.Where(c => newdescriptor.Columns.Any(c1 => c1.Name == c.Name)).ToArray();
