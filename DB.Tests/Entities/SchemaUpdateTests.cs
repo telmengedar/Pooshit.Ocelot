@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using NightlyCode.DB.Clients;
 using NightlyCode.DB.Entities;
 using NightlyCode.DB.Entities.Descriptors;
@@ -87,6 +88,45 @@ namespace NightlyCode.DB.Tests.Entities {
             foreach(ValueModel value in data)
                 Assert.AreEqual(0, value.Integer);
         }
+
+        [Test]
+        public void ChangeUniqueSpecifiers()
+        {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+
+            entitymanager.Model<ValueModel>().Unique(m => m.String, m => m.Double).Unique(m => m.Double, m => m.Integer).Unique(m => m.Integer, m => m.Single);
+            entitymanager.UpdateSchema<ValueModel>();
+
+            entitymanager.Model<ValueModel>().DropUnique(m => m.Double, m => m.Integer).Unique(m => m.Single, m => m.String);
+            entitymanager.UpdateSchema<ValueModel>();
+
+            TableDescriptor descriptor = dbclient.DBInfo.GetSchema(dbclient, modelcache.Get<ValueModel>().TableName) as TableDescriptor;
+            Assert.NotNull(descriptor);
+            Assert.AreEqual(3, descriptor.Uniques.Length);
+            Assert.That(descriptor.Uniques.Any(u => u.Columns.SequenceEqual(new[] {"string", "double"})));
+            Assert.That(descriptor.Uniques.Any(u => u.Columns.SequenceEqual(new[] {"integer", "single"})));
+            Assert.That(descriptor.Uniques.Any(u => u.Columns.SequenceEqual(new[] {"single", "string"})));
+            Assert.That(descriptor.Uniques.All(u => !u.Columns.SequenceEqual(new[] {"double", "integer"})));
+        }
+
+        [Test]
+        public void AddMissingComplexUniqueConstraint()
+        {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+
+            entitymanager.UpdateSchema<ValueModel>();
+
+            entitymanager.Model<ValueModel>().Unique(m => m.Single, m => m.String);
+            entitymanager.UpdateSchema<ValueModel>();
+
+            TableDescriptor descriptor = dbclient.DBInfo.GetSchema(dbclient, modelcache.Get<ValueModel>().TableName) as TableDescriptor;
+            Assert.NotNull(descriptor);
+            Assert.AreEqual(1, descriptor.Uniques.Length);
+            Assert.That(descriptor.Uniques.Any(u => u.Columns.SequenceEqual(new[] { "single", "string" })));
+        }
+
     }
 
 }

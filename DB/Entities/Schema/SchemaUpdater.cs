@@ -44,7 +44,8 @@ namespace NightlyCode.DB.Entities.Schema {
             creator.Create(typeof(T), client);
         }
 
-        void UpdateTable<T>(IDBClient client, TableDescriptor currentschema) {
+        void UpdateTable<T>(IDBClient client, TableDescriptor currentschema)
+        {
             Logger.Info(this, $"Checking schema of '{typeof(T).Name}'");
 
             EntityDescriptor descriptor = modelcache.Get<T>();
@@ -55,38 +56,51 @@ namespace NightlyCode.DB.Entities.Schema {
 
             missing.AddRange(descriptor.Columns.Where(c => currentschema.Columns.All(sc => sc.Name != c.Name)));
             missing.ForEach(c => Logger.Info(this, $"Detected missing column '{c.Name}'"));
-            foreach(SchemaColumnDescriptor column in currentschema.Columns) {
+            foreach (SchemaColumnDescriptor column in currentschema.Columns)
+            {
                 EntityColumnDescriptor entitycolumn = descriptor.Columns.FirstOrDefault(c => c.Name == column.Name);
-                if(entitycolumn == null) {
+                if (entitycolumn == null)
+                {
                     Logger.Info(this, $"Detected obsolete column '{column.Name}'");
                     obsolete.Add(column.Name);
                 }
-                else {
-                    if(!AreTypesEqual(column.Type, client.DBInfo.GetDBType(entitycolumn.Property.PropertyType)) 
-                       || column.PrimaryKey != entitycolumn.PrimaryKey
-                       || column.AutoIncrement != entitycolumn.AutoIncrement
-                       || column.IsUnique != entitycolumn.IsUnique
-                       || column.NotNull != entitycolumn.NotNull
+                else
+                {
+                    if (!AreTypesEqual(column.Type, client.DBInfo.GetDBType(entitycolumn.Property.PropertyType))
+                        || column.PrimaryKey != entitycolumn.PrimaryKey
+                        || column.AutoIncrement != entitycolumn.AutoIncrement
+                        || column.IsUnique != entitycolumn.IsUnique
+                        || column.NotNull != entitycolumn.NotNull
                         /* default value is not evaluated for now
                        || column.DefaultValue != entitycolumn.DefaultValue*/
-                        ) {
+                    )
+                    {
                         Logger.Info(this, $"Detected altered column '{entitycolumn.Name}'", $"New -> {entitycolumn} {client.DBInfo.GetDBType(entitycolumn.Property.PropertyType)}\r\nOld -> {column} {column.Type}");
                         altered.Add(entitycolumn);
                     }
                 }
             }
 
-            bool recreatetable = obsolete.Count > 0 || altered.Count > 0 || missing.Any(m => m.IsUnique || m.PrimaryKey);
-            if(recreatetable) {
+            bool recreatetable = obsolete.Count > 0
+                                 || altered.Count > 0
+                                 || missing.Any(m => m.IsUnique || m.PrimaryKey)
+                                 || !currentschema.Uniques.SequenceEqual(descriptor.Uniques)
+                                 || !currentschema.Indices.SequenceEqual(descriptor.Indices);
+
+            if (recreatetable)
+            {
                 RecreateTable(client, currentschema, descriptor);
             }
-            else {
-                if(missing.Count > 0) {
-                    using(Transaction transaction = client.BeginTransaction()) {
+            else
+            {
+                using (Transaction transaction = client.BeginTransaction())
+                {
+                    if (missing.Count > 0)
                         missing.ForEach(c => client.DBInfo.AddColumn(client, descriptor.TableName, c, transaction));
-                        UpdateIndices(client, currentschema, descriptor, transaction);
-                        transaction.Commit();
-                    }
+
+                    UpdateIndices(client, currentschema, descriptor, transaction);
+                    UpdateUniques(client, currentschema, descriptor, transaction);
+                    transaction.Commit();
                 }
             }
         }
@@ -139,6 +153,17 @@ namespace NightlyCode.DB.Entities.Schema {
                 client.NonQuery(transaction, $"DROP TABLE {olddescriptor.Name}{appendix}");
                 transaction.Commit();
             }
+        }
+
+        void UpdateUniques(IDBClient client, TableDescriptor oldschema, EntityDescriptor newschema, Transaction transaction)
+        {
+            //List<UniqueDescriptor> obsolete = new List<UniqueDescriptor>(oldschema.Uniques.Except(newschema.Uniques));
+            List<UniqueDescriptor> missing = new List<UniqueDescriptor>(newschema.Uniques.Except(oldschema.Uniques));
+
+            //foreach (UniqueDescriptor drop in obsolete)
+                //client.NonQuery(transaction, $"ALTER TABLE {newschema.TableName} DROP UNIQUE ({string.Join(",", drop.Columns.Select(c => client.DBInfo.MaskColumn(c)))});");
+            foreach (UniqueDescriptor add in missing)
+                client.NonQuery(transaction, $"ALTER TABLE {newschema.TableName} ADD UNIQUE ({string.Join(",", add.Columns.Select(c => client.DBInfo.MaskColumn(c)))});");
         }
 
         void UpdateIndices(IDBClient client, TableDescriptor oldschema, EntityDescriptor newschema, Transaction transaction) {

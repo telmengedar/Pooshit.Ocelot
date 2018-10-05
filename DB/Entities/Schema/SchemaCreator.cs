@@ -32,8 +32,7 @@ namespace NightlyCode.DB.Entities.Schema {
         /// <param name="transaction"></param>
         public void CreateTable(IDBClient client, EntityDescriptor descriptor, Transaction transaction=null) {
             OperationPreparator preparator = new OperationPreparator(client.DBInfo);
-            preparator.CommandBuilder.Append("CREATE TABLE ");
-            preparator.CommandBuilder.Append(descriptor.TableName).Append(" (");
+            preparator.CommandBuilder.Append($"CREATE TABLE {descriptor.TableName} (");
 
             bool firstindicator = true;
             foreach (EntityColumnDescriptor column in descriptor.Columns)
@@ -44,7 +43,7 @@ namespace NightlyCode.DB.Entities.Schema {
                 client.DBInfo.CreateColumn(preparator, column);
             }
 
-            foreach (UniqueDescriptor unique in descriptor.Uniques)
+            foreach (UniqueDescriptor unique in descriptor.Uniques.Where(u => u.Columns.Count() > 1))
             {
                 preparator.CommandBuilder.Append(", UNIQUE (");
                 preparator.CommandBuilder.Append(string.Join(",", unique.Columns.Select(client.DBInfo.MaskColumn).ToArray()));

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using NightlyCode.DB.Entities.Attributes;
 
@@ -61,6 +62,15 @@ namespace NightlyCode.DB.Entities.Descriptors
         internal void AddUnique(UniqueDescriptor unique)
         {
             uniques.Add(unique);
+        }
+
+        /// <summary>
+        /// removes a unique descriptor from entity model
+        /// </summary>
+        /// <param name="columns">columns which make up the unique</param>
+        internal void RemoveUnique(string[] columns)
+        {
+            uniques.RemoveAll(u => u.Columns.SequenceEqual(columns));
         }
 
         /// <summary>

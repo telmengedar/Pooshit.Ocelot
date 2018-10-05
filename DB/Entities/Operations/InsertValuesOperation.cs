@@ -67,7 +67,7 @@ namespace NightlyCode.DB.Entities.Operations {
         /// executes the insert operation
         /// </summary>
         /// <returns>number of rows affected</returns>
-        public long Execute() {
+        public long Execute(Transaction transaction=null) {
             if (insertcolumns?.Length != insertvalues?.Length)
                 throw new InvalidOperationException("unable to execute insert operation. Number of value parameters does not match number of columns.");
 
@@ -75,7 +75,9 @@ namespace NightlyCode.DB.Entities.Operations {
 
             if(lastinsertid)
                 return Converter.Convert<long>(dbclient.DBInfo.ReturnInsertID(dbclient, descriptorgetter(typeof(T)), operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray()));
-            return dbclient.NonQuery(operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray());
+            if(transaction==null)
+                return dbclient.NonQuery(operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray());
+            return dbclient.NonQuery(transaction, operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray());
         }
 
         public PreparedOperation Prepare() {

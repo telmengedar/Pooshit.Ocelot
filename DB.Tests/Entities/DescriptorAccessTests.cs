@@ -87,8 +87,6 @@ namespace NightlyCode.DB.Tests.Entities {
             Assert.NotNull(schema);
 
             Assert.That(schema.Columns.First(c => c.Name == nameof(ValueModel.String).ToLower()).IsUnique);
-            Assert.AreEqual(1, schema.Uniques.Length);
-            Assert.That(schema.Uniques[0].Columns.Single() == nameof(ValueModel.String).ToLower());
         }
 
         [Test]
@@ -100,15 +98,12 @@ namespace NightlyCode.DB.Tests.Entities {
             entitymanager.Model<ValueModel>().Unique(m => m.String, m=>m.Single);
 
             EntityDescriptor descriptor = entitymanager.Model<ValueModel>().Descriptor;
-            Assert.That(descriptor.GetColumnByProperty(nameof(ValueModel.String)).IsUnique);
-            Assert.That(descriptor.GetColumnByProperty(nameof(ValueModel.Single)).IsUnique);
 
             entitymanager.UpdateSchema<ValueModel>();
 
             TableDescriptor schema = entitymanager.DBClient.DBInfo.GetSchema(entitymanager.DBClient, descriptor.TableName) as TableDescriptor;
             Assert.NotNull(schema);
 
-            Assert.That(schema.Columns.First(c => c.Name == nameof(ValueModel.String).ToLower()).IsUnique);
             Assert.AreEqual(1, schema.Uniques.Length);
             Assert.AreEqual(2, schema.Uniques[0].Columns.Count());
             Assert.That(schema.Uniques[0].Columns.Any(c=>c == nameof(ValueModel.String).ToLower()));
@@ -125,17 +120,16 @@ namespace NightlyCode.DB.Tests.Entities {
             entitymanager.Model<ValueModel>().Unique(m => m.Double, m => m.Integer);
 
             EntityDescriptor descriptor = entitymanager.Model<ValueModel>().Descriptor;
-            Assert.That(descriptor.GetColumnByProperty(nameof(ValueModel.String)).IsUnique);
-            Assert.That(descriptor.GetColumnByProperty(nameof(ValueModel.Single)).IsUnique);
-            Assert.That(descriptor.GetColumnByProperty(nameof(ValueModel.Double)).IsUnique);
-            Assert.That(descriptor.GetColumnByProperty(nameof(ValueModel.Integer)).IsUnique);
+            Assert.That(!descriptor.GetColumnByProperty(nameof(ValueModel.String)).IsUnique);
+            Assert.That(!descriptor.GetColumnByProperty(nameof(ValueModel.Single)).IsUnique);
+            Assert.That(!descriptor.GetColumnByProperty(nameof(ValueModel.Double)).IsUnique);
+            Assert.That(!descriptor.GetColumnByProperty(nameof(ValueModel.Integer)).IsUnique);
 
             entitymanager.UpdateSchema<ValueModel>();
 
             TableDescriptor schema = entitymanager.DBClient.DBInfo.GetSchema(entitymanager.DBClient, descriptor.TableName) as TableDescriptor;
             Assert.NotNull(schema);
 
-            Assert.That(schema.Columns.First(c => c.Name == nameof(ValueModel.String).ToLower()).IsUnique);
             Assert.AreEqual(2, schema.Uniques.Length);
             Assert.AreEqual(2, schema.Uniques[0].Columns.Count());
             Assert.AreEqual(2, schema.Uniques[1].Columns.Count());

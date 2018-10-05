@@ -9,10 +9,10 @@ namespace NightlyCode.DB.Entities.Operations {
     public class JoinOperation {
 
         /// <summary>
-        /// ctor
+        /// creates a new <see cref="JoinOperation"/>
         /// </summary>
-        /// <param name="joinType"></param>
-        /// <param name="criterias"></param>
+        /// <param name="joinType">type of entity to join</param>
+        /// <param name="criterias">join criterias</param>
         public JoinOperation(Type joinType, Expression criterias) {
             JoinType = joinType;
             Criterias = criterias;
@@ -21,11 +21,11 @@ namespace NightlyCode.DB.Entities.Operations {
         /// <summary>
         /// type to join
         /// </summary>
-        public Type JoinType { get; private set; }
+        public Type JoinType { get; }
 
         /// <summary>
         /// criterias to use when joining tables
         /// </summary>
-        public Expression Criterias { get; private set; }
+        public Expression Criterias { get; }
     }
 }

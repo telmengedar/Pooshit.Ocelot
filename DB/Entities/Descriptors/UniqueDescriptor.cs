@@ -24,5 +24,42 @@ namespace NightlyCode.DB.Entities.Descriptors
         /// columns linked to the unique specifier
         /// </summary>
         public IEnumerable<string> Columns => columns;
+
+        /// <inheritdocs/>
+        protected bool Equals(UniqueDescriptor other)
+        {
+            return columns.SequenceEqual(other.Columns);
+        }
+
+        /// <inheritdocs/>
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((UniqueDescriptor) obj);
+        }
+
+        /// <inheritdocs/>
+        public override int GetHashCode()
+        {
+            if (columns == null)
+                return 0;
+
+            int hashcode = 0;
+            foreach (string column in columns)
+            {
+                hashcode ^= 397;
+                hashcode ^= column.GetHashCode();
+            }
+
+            return hashcode;
+        }
+
+        /// <inheritdocs/>
+        public override string ToString()
+        {
+            return string.Join(",", columns);
+        }
     }
 }

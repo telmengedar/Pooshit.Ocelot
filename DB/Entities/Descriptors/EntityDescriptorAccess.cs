@@ -64,14 +64,39 @@ namespace NightlyCode.DB.Entities.Descriptors {
         }
 
         /// <summary>
-        /// adds an index to the <see cref="EntityDescriptor"/>
+        /// adds an unique index to the <see cref="EntityDescriptor"/>
         /// </summary>
         /// <param name="columns">columns to be included in index</param>
         public EntityDescriptorAccess<T> Unique(params Expression<Func<T, object>>[] columns)
         {
-            descriptor.AddUnique(new UniqueDescriptor(columns.Select(visitor.GetColumnName)));
-            foreach (EntityColumnDescriptor column in columns.Select(c => descriptor.GetColumn(visitor.GetColumnName(c))))
-                column.IsUnique = true;
+            if (columns.Length == 0)
+                return this;
+
+            if (columns.Length > 1)
+            {
+                descriptor.AddUnique(new UniqueDescriptor(columns.Select(visitor.GetColumnName)));
+            }
+            else
+            {
+                descriptor.GetColumn(visitor.GetColumnName(columns[0])).IsUnique = true;
+            }
+            
+            return this;
+        }
+
+        /// <summary>
+        /// drops an unique index from the <see cref="EntityDescriptor"/>
+        /// </summary>
+        /// <param name="columns">columns which make up the index</param>
+        public EntityDescriptorAccess<T> DropUnique(params Expression<Func<T, object>>[] columns)
+        {
+            if (columns.Length == 0)
+                return this;
+
+            if (columns.Length == 1)
+                descriptor.GetColumn(visitor.GetColumnName(columns[0])).IsUnique = false;
+            else descriptor.RemoveUnique(columns.Select(visitor.GetColumnName).ToArray());
+
             return this;
         }
 

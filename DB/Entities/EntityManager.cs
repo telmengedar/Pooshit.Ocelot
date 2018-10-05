@@ -67,10 +67,7 @@ namespace NightlyCode.DB.Entities {
                 return;
             }
 
-            string backuptable = $"{descriptor.TableName}_original";
-            if (DBClient.DBInfo.CheckIfTableExists(DBClient, backuptable))
-                updater.Update<T>(DBClient, backuptable);
-            else updater.Update<T>(DBClient);
+            updater.Update<T>(DBClient);
         }
 
         void CreateSingle(Type type) {

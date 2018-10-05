@@ -16,10 +16,10 @@ namespace NightlyCode.DB.Entities {
         readonly PreparedOperation operation;
 
         /// <summary>
-        /// ctor
+        /// creates a new <see cref="PreparedLoadValuesOperation{T}"/>
         /// </summary>
-        /// <param name="dbclient"></param>
-        /// <param name="statement"></param>
+        /// <param name="dbclient">database access</param>
+        /// <param name="statement">prepared statement</param>
         public PreparedLoadValuesOperation(IDBClient dbclient, PreparedOperation statement) {
             this.dbclient = dbclient;
             operation = statement;
@@ -63,8 +63,9 @@ namespace NightlyCode.DB.Entities {
         /// executes the statement returning a scalar
         /// </summary>
         /// <returns></returns>
-        public TScalar ExecuteScalar<TScalar>(Transaction transaction, params object[] parameters)
-        {
+        public TScalar ExecuteScalar<TScalar>(Transaction transaction, params object[] parameters) {
+            if (parameters == null || parameters.Length == 0)
+                parameters = operation.Parameters.Select(p => p.Value).ToArray();
             return Converter.Convert<TScalar>(dbclient.Scalar(transaction, operation.CommandText, parameters), true);
         }
 
@@ -74,21 +75,31 @@ namespace NightlyCode.DB.Entities {
         /// <returns></returns>
         public TScalar ExecuteScalar<TScalar>(params object[] parameters)
         {
+            if (parameters == null || parameters.Length == 0)
+                parameters = operation.Parameters.Select(p => p.Value).ToArray();
+
             return Converter.Convert<TScalar>(dbclient.Scalar(operation.CommandText, parameters), true);
         }
 
+        /// <inheritdoc/>
         public override string ToString() {
             return operation.CommandText;
         }
 
-        public IEnumerable<TScalar> ExecuteSet<TScalar>(Transaction transaction)
+        public IEnumerable<TScalar> ExecuteSet<TScalar>(Transaction transaction, params object[] parameters)
         {
-            foreach (object value in dbclient.Set(transaction, operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray()))
+            if (parameters == null || parameters.Length == 0)
+                parameters = operation.Parameters.Select(p => p.Value).ToArray();
+
+            foreach (object value in dbclient.Set(transaction, operation.CommandText, parameters))
                 yield return Converter.Convert<TScalar>(value, true);
         }
 
-        public IEnumerable<TScalar> ExecuteSet<TScalar>() {
-            foreach(object value in dbclient.Set(operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray()))
+        public IEnumerable<TScalar> ExecuteSet<TScalar>(params object[] parameters) {
+            if (parameters == null || parameters.Length == 0)
+                parameters = operation.Parameters.Select(p => p.Value).ToArray();
+
+            foreach (object value in dbclient.Set(operation.CommandText, parameters))
                 yield return Converter.Convert<TScalar>(value, true);
         }
 
