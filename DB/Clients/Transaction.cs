@@ -8,10 +8,9 @@ namespace NightlyCode.DB.Clients {
     /// transaction of db clients
     /// </summary>
     public class Transaction : IDisposable {
-        private readonly IDBClient client;
-        bool commited = false;
+        readonly IDBClient client;
+        bool commited;
         
-
         internal Transaction(IDBClient client, IDbTransaction transaction) {
             this.client = client;
             DbTransaction = transaction;
@@ -37,6 +36,14 @@ namespace NightlyCode.DB.Clients {
         /// </summary>
         public void Commit() {
             DbTransaction.Commit();
+            commited = true;
+        }
+
+        /// <summary>
+        /// rolls back all changes made in transaction
+        /// </summary>
+        public void Rollback() {
+            DbTransaction.Rollback();
             commited = true;
         }
 

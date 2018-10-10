@@ -41,6 +41,15 @@ namespace Database.Clients {
         }
 
         /// <summary>
+        /// rolls back all changes made in transaction
+        /// </summary>
+        public void Rollback()
+        {
+            DbTransaction.Rollback();
+            commited = true;
+        }
+
+        /// <summary>
         /// disposes the transaction, rolling back when it hasn't been commited
         /// </summary>
         public void Dispose() {
