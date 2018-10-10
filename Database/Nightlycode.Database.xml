@@ -1,0 +1,3092 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Nightlycode.Database</name>
+    </assembly>
+    <members>
+        <member name="T:Database.Clients.DBClient">
+            <summary>
+            client to execute database commands
+            </summary>
+        </member>
+        <member name="M:Database.Clients.DBClient.#ctor(System.Data.IDbConnection,Database.Info.IDBInfo)">
+            <summary>
+            creates a new <see cref="T:Database.Clients.DBClient"/>
+            </summary>
+            <param name="connection">connection to database</param>
+            <param name="dbinfo">information for database statements</param>
+        </member>
+        <member name="P:Database.Clients.DBClient.DBInfo">
+            <summary>
+            database information
+            </summary>
+        </member>
+        <member name="M:Database.Clients.DBClient.PrepareCommand(System.String,System.Object[])">
+            <summary>
+            prepares a command for execution
+            </summary>
+            <param name="commandtext">command text containing sql to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>command which can get executed</returns>
+        </member>
+        <member name="T:Database.Clients.IDBClient">
+            <summary>
+            interface for clients which provide access to a database
+            </summary>
+        </member>
+        <member name="P:Database.Clients.IDBClient.DBInfo">
+            <summary>
+            info about db connection
+            </summary>
+        </member>
+        <member name="M:Database.Clients.IDBClient.NonQuery(System.String,System.Object[])">
+            <summary>
+            executes a non query
+            </summary>
+            <param name="commandstring">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+        </member>
+        <member name="M:Database.Clients.IDBClient.NonQuery(Database.Clients.Transaction,System.String,System.Object[])">
+            <summary>
+            executes a non query
+            </summary>
+            <param name="transaction">transaction to use</param>
+            <param name="commandstring">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+        </member>
+        <member name="M:Database.Clients.IDBClient.Query(System.String,System.Object[])">
+            <summary>
+            executes a query
+            </summary>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>table containing result data</returns>
+        </member>
+        <member name="M:Database.Clients.IDBClient.Query(Database.Clients.Transaction,System.String,System.Object[])">
+            <summary>
+            executes a query
+            </summary>
+            <param name="transaction">transaction to use</param>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>table containing result data</returns>
+        </member>
+        <member name="M:Database.Clients.IDBClient.Scalar(System.String,System.Object[])">
+            <summary>
+            executes a query returning a scalar
+            </summary>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>resulting scalar</returns>
+        </member>
+        <member name="M:Database.Clients.IDBClient.Scalar(Database.Clients.Transaction,System.String,System.Object[])">
+            <summary>
+            executes a query returning a scalar
+            </summary>
+            <param name="transaction">transaction to use</param>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>resulting scalar</returns>
+        </member>
+        <member name="M:Database.Clients.IDBClient.Set(System.String,System.Object[])">
+            <summary>
+            executes a query returning a set of values
+            </summary>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>resulting set of values</returns>
+        </member>
+        <member name="M:Database.Clients.IDBClient.Set(Database.Clients.Transaction,System.String,System.Object[])">
+            <summary>
+            executes a query returning a set of values
+            </summary>
+            <param name="transaction">transaction to use</param>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>resulting set of values</returns>
+        </member>
+        <member name="M:Database.Clients.IDBClient.BeginTransaction">
+            <summary>
+            begins a transaction
+            </summary>
+            <returns>Transaction object to use</returns>
+        </member>
+        <member name="T:Database.Clients.Tables.DataRow">
+            <summary>
+            row of a database table
+            </summary>
+        </member>
+        <member name="M:Database.Clients.Tables.DataRow.#ctor(System.Object[],Database.Clients.Tables.DataTableColumns)">
+            <summary>
+            creates a new <see cref="T:Database.Clients.Tables.DataRow"/>
+            </summary>
+            <param name="data">data of the <see cref="T:Database.Clients.Tables.DataRow"/></param>
+            <param name="columns">column information of <see cref="T:Database.Clients.Tables.DataTable"/></param>
+        </member>
+        <member name="P:Database.Clients.Tables.DataRow.Item(System.Int32)">
+            <summary>
+            indexer for row data
+            </summary>
+            <param name="index">index at which to get value</param>
+            <returns>value at the specified index</returns>
+        </member>
+        <member name="P:Database.Clients.Tables.DataRow.Item(System.String)">
+            <summary>
+            indexer for row data
+            </summary>
+            <param name="column">name of column which to return</param>
+            <returns>value of specified column</returns>
+        </member>
+        <member name="M:Database.Clients.Tables.DataTable.#ctor(Database.Clients.Tables.DataTableColumns,Database.Clients.Tables.DataRow[])">
+            <summary>
+            creates a new datatable
+            </summary>
+            <param name="columns"></param>
+            <param name="rows"></param>
+        </member>
+        <member name="P:Database.Clients.Tables.DataTable.Columns">
+            <summary>
+            column information
+            </summary>
+        </member>
+        <member name="P:Database.Clients.Tables.DataTable.Rows">
+            <summary>
+            rows containing data
+            </summary>
+        </member>
+        <member name="T:Database.Clients.Tables.DataTableColumns">
+            <summary>
+            column information for a <see cref="T:Database.Clients.Tables.DataTable"/>
+            </summary>
+        </member>
+        <member name="P:Database.Clients.Tables.DataTableColumns.Item(System.String)">
+            <summary>
+            indexer for column index information
+            </summary>
+            <param name="column">column name</param>
+            <returns>index information for column name</returns>
+        </member>
+        <member name="M:Database.Clients.Tables.DataTableColumns.GetIndex(System.String)">
+            <summary>
+            get index for the column
+            </summary>
+            <param name="column"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Database.Clients.Tables.DataTableColumns.Names">
+            <summary>
+            names of columns
+            </summary>
+        </member>
+        <member name="T:Database.Clients.Transaction">
+            <summary>
+            transaction of db clients
+            </summary>
+        </member>
+        <member name="M:Database.Clients.Transaction.Execute(Database.Entities.Operations.PreparedOperation,System.Object[])">
+            <summary>
+            executes a prepared operation without result
+            </summary>
+            <param name="operation">operation to execute</param>
+            <param name="values">operation parameters</param>
+        </member>
+        <member name="P:Database.Clients.Transaction.DbTransaction">
+            <summary>
+            transaction object
+            </summary>
+        </member>
+        <member name="M:Database.Clients.Transaction.Commit">
+            <summary>
+            commits the transaction
+            </summary>
+        </member>
+        <member name="M:Database.Clients.Transaction.Dispose">
+            <summary>
+            disposes the transaction, rolling back when it hasn't been commited
+            </summary>
+        </member>
+        <member name="M:Database.Clients.Transaction.Finalize">
+            <summary>
+            disposes the transaction when it wasn't disposed before
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Attributes.AutoIncrementAttribute">
+            <summary>
+            specifies auto increment for a column
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Attributes.ColumnAttribute">
+            <summary>
+            attribute describing the column of a value
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Attributes.ColumnAttribute.#ctor(System.String)">
+            <summary>
+            ctor
+            </summary>
+            <param name="column"></param>
+        </member>
+        <member name="P:Database.Entities.Attributes.ColumnAttribute.Column">
+            <summary>
+            name of the column
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Attributes.ColumnAttribute.Get(System.Reflection.PropertyInfo)">
+            <summary>
+            get the columnattribute for the property
+            </summary>
+            <param name="property"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Entities.Attributes.DefaultValueAttribute">
+            <summary>
+            specifies a default value for a column
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Attributes.DefaultValueAttribute.#ctor(System.Object)">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Attributes.DefaultValueAttribute"/>
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="P:Database.Entities.Attributes.DefaultValueAttribute.Value">
+            <summary>
+            default value
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Attributes.DefaultValueAttribute.GetDefaultValue(System.Reflection.PropertyInfo)">
+            <summary>
+            get default value for a property
+            </summary>
+            <param name="property">property of which to get default value</param>
+            <returns>default value of property to use for database columns</returns>
+        </member>
+        <member name="T:Database.Entities.Attributes.IgnoreAttribute">
+            <summary>
+            specifies properties to ignore for mapping
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Attributes.IgnoreAttribute.HasIgnore(System.Reflection.PropertyInfo)">
+            <summary>
+            determines whether to ignore a property
+            </summary>
+            <param name="property"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Entities.Attributes.IndexAttribute">
+            <summary>
+            specifies an index name a column is part of
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Attributes.IndexAttribute.#ctor(System.String)">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Attributes.IndexAttribute"/>
+            </summary>
+            <param name="name"></param>
+        </member>
+        <member name="P:Database.Entities.Attributes.IndexAttribute.Name">
+            <summary>
+            name of the index
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Attributes.NotNullAttribute">
+            <summary>
+            specifies that a column must not be null
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Attributes.NotNullAttribute.HasNotNull(System.Reflection.PropertyInfo)">
+            <summary>
+            determines whether the property has a not null specification
+            </summary>
+            <param name="property"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Entities.Attributes.PrimaryKeyAttribute">
+            <summary>
+            specifies that the column is the primary key
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Attributes.PrimaryKeyAttribute.Get(System.Reflection.PropertyInfo)">
+            <summary>
+            get the primary key attribute for the property
+            </summary>
+            <param name="property"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Attributes.PrimaryKeyAttribute.IsPrimaryKey(System.Reflection.PropertyInfo)">
+            <summary>
+            determines whether the specified property is a primary key
+            </summary>
+            <param name="property"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Entities.Attributes.TableAttribute">
+            <summary>
+            attribute describing the table the object resides in
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Attributes.TableAttribute.#ctor(System.String)">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Attributes.TableAttribute"/>
+            </summary>
+            <param name="table"></param>
+        </member>
+        <member name="P:Database.Entities.Attributes.TableAttribute.Table">
+            <summary>
+            table name
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Attributes.TableAttribute.Get(System.Type)">
+            <summary>
+            get the tableattribute for the specified type
+            </summary>
+            <param name="type">type for which to return <see cref="T:Database.Entities.Attributes.TableAttribute"/></param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Entities.Attributes.UniqueAttribute">
+            <summary>
+            specifies that the value of the column must be unique
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Attributes.UniqueAttribute.#ctor">
+            <summary>
+            creates a new unique attribute
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Attributes.UniqueAttribute.#ctor(System.String)">
+            <summary>
+            creates a new unique attribute
+            </summary>
+            <param name="name">name used to combine several properties to one unique statement</param>
+        </member>
+        <member name="P:Database.Entities.Attributes.UniqueAttribute.Name">
+            <summary>
+            name used to combine several properties to one unique statement
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Attributes.ViewAttribute">
+            <summary>
+            used for entities to mark them as views
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Attributes.ViewAttribute.#ctor(System.String)">
+            <summary>
+            Creates a new view attribute
+            </summary>
+            <param name="definition"></param>
+        </member>
+        <member name="P:Database.Entities.Attributes.ViewAttribute.Definition">
+            <summary>
+            definition of view
+            </summary>
+        </member>
+        <member name="T:Database.Entities.DBConverterCollection">
+            <summary>
+            collection of custom db converters
+            </summary>
+        </member>
+        <member name="M:Database.Entities.DBConverterCollection.ContainsConverter(System.Type)">
+            <summary>
+            determines whether the collection contains a converter for the type
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.DBConverterCollection.ToDBValue(System.Type,System.Object)">
+            <summary>
+            converts the value to a db value
+            </summary>
+            <param name="type"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.DBConverterCollection.FromDBValue(System.Type,System.Object)">
+            <summary>
+            converts the value from a db value
+            </summary>
+            <param name="type"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Entities.Descriptors.ColumnDescriptor">
+            <summary>
+            descriptor for a column of a database entity
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Descriptors.ColumnDescriptor.#ctor">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Descriptors.ColumnDescriptor"/>
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Descriptors.ColumnDescriptor.#ctor(System.String)">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Descriptors.ColumnDescriptor"/>
+            </summary>
+            <param name="name">name of the column</param>
+        </member>
+        <member name="P:Database.Entities.Descriptors.ColumnDescriptor.Name">
+            <summary>
+            name of the column
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Descriptors.ColumnDescriptor.PrimaryKey">
+            <summary>
+            determines whether the column is primary key
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Descriptors.ColumnDescriptor.IsUnique">
+            <summary>
+            determines whether value in column has to be unique
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Descriptors.ColumnDescriptor.AutoIncrement">
+            <summary>
+            determines whether the value of the column is set by auto increment
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Descriptors.ColumnDescriptor.NotNull">
+            <summary>
+            determines whether the column is allowed to contain null values
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Descriptors.ColumnDescriptor.DefaultValue">
+            <summary>
+            default value of the column
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Descriptors.ColumnDescriptor.ToString">
+            <summary>
+            Returns a string that represents the current object.
+            </summary>
+            <returns>
+            A string that represents the current object.
+            </returns>
+            <filterpriority>2</filterpriority>
+        </member>
+        <member name="T:Database.Entities.Descriptors.EntityColumnDescriptor">
+            <summary>
+            descriptor for a column
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityColumnDescriptor.#ctor">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Descriptors.EntityColumnDescriptor"/>
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityColumnDescriptor.#ctor(System.String,System.Reflection.PropertyInfo)">
+            <summary>
+            ctor
+            </summary>
+            <param name="name"></param>
+            <param name="property"></param>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityColumnDescriptor.GetValue(System.Object)">
+            <summary>
+            get the value of an entity corresponding to the column
+            </summary>
+            <param name="entity"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityColumnDescriptor.SetValue(System.Object,System.Object)">
+            <summary>
+            set the value to the column
+            </summary>
+            <param name="entity"></param>
+            <param name="value"></param>
+        </member>
+        <member name="P:Database.Entities.Descriptors.EntityColumnDescriptor.Property">
+            <summary>
+            property the column is linked to
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityColumnDescriptor.CreateDefaultValue">
+            <summary>
+            creates a default value for this column
+            </summary>
+            <returns>value which can be used as a default</returns>
+        </member>
+        <member name="T:Database.Entities.Descriptors.EntityDescriptor">
+            <summary>
+            descriptor of an entity
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptor.#ctor(System.String)">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Descriptors.EntityDescriptor"/>
+            </summary>
+            <param name="tablename"></param>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptor.AddColumn(Database.Entities.Descriptors.EntityColumnDescriptor)">
+            <summary>
+            adds a column to the descriptor
+            </summary>
+            <param name="column"></param>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptor.ChangeColumnName(Database.Entities.Descriptors.EntityColumnDescriptor,System.String)">
+            <summary>
+            changes the column name in model
+            </summary>
+            <param name="column">column to modify</param>
+            <param name="name">new name of column</param>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptor.AddIndex(Database.Entities.Descriptors.IndexDescriptor)">
+            <summary>
+            adds an index for the entity
+            </summary>
+            <param name="index"></param>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptor.AddUnique(Database.Entities.Descriptors.UniqueDescriptor)">
+            <summary>
+            adds an unique descriptor for the entity
+            </summary>
+            <param name="unique"></param>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptor.RemoveUnique(System.String[])">
+            <summary>
+            removes a unique descriptor from entity model
+            </summary>
+            <param name="columns">columns which make up the unique</param>
+        </member>
+        <member name="P:Database.Entities.Descriptors.EntityDescriptor.PrimaryKeyColumn">
+            <summary>
+            the primary key column of the entity
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Descriptors.EntityDescriptor.Columns">
+            <summary>
+            columns of the entity
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Descriptors.EntityDescriptor.Indices">
+            <summary>
+            indices of the entity
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Descriptors.EntityDescriptor.Uniques">
+            <summary>
+            unique columns for entity
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Descriptors.EntityDescriptor.TableName">
+            <summary>
+            name of the table
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptor.GetColumn(System.String)">
+            <summary>
+            get the full column descriptor for the column
+            </summary>
+            <param name="column"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptor.GetColumnByProperty(System.String)">
+            <summary>
+            get the full column descriptor for the property
+            </summary>
+            <param name="property"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptor.Create(System.Type)">
+            <summary>
+            creates a new entity descriptor for a type
+            </summary>
+            <param name="type">type for which to create entity descriptor</param>
+            <returns>entitydescriptor for specified type</returns>
+        </member>
+        <member name="T:Database.Entities.Descriptors.EntityDescriptorAccess`1">
+            <summary>
+            allows to modify entity model descriptions
+            </summary>
+            <remarks>
+            this is useful if description can't be specified using attributes
+            if entity descriptions are modified after the model has been updated in database (usually after application start)
+            the behavior is at least undefined (if anything works at all)
+            </remarks>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptorAccess`1.#ctor(Database.Entities.Descriptors.EntityDescriptor)">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Descriptors.EntityDescriptorAccess`1"/>
+            </summary>
+            <param name="descriptor">descriptor to modify</param>
+        </member>
+        <member name="P:Database.Entities.Descriptors.EntityDescriptorAccess`1.Descriptor">
+            <summary>
+            descriptor modified by the accessor
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptorAccess`1.Table(System.String)">
+            <summary>
+            sets name of table in which model is stored
+            </summary>
+            <param name="tablename">name of table</param>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptorAccess`1.PrimaryKey(System.Linq.Expressions.Expression{System.Func{`0,System.Object}})">
+            <summary>
+            sets primary key of <see cref="T:Database.Entities.Descriptors.EntityDescriptor"/>
+            </summary>
+            <param name="column">column to use as primary key</param>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptorAccess`1.Index(System.String,System.Linq.Expressions.Expression{System.Func{`0,System.Object}}[])">
+            <summary>
+            adds an index to the <see cref="T:Database.Entities.Descriptors.EntityDescriptor"/>
+            </summary>
+            <param name="name">name of index</param>
+            <param name="columns">columns to be included in index</param>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptorAccess`1.Unique(System.Linq.Expressions.Expression{System.Func{`0,System.Object}}[])">
+            <summary>
+            adds an unique index to the <see cref="T:Database.Entities.Descriptors.EntityDescriptor"/>
+            </summary>
+            <param name="columns">columns to be included in index</param>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptorAccess`1.DropUnique(System.Linq.Expressions.Expression{System.Func{`0,System.Object}}[])">
+            <summary>
+            drops an unique index from the <see cref="T:Database.Entities.Descriptors.EntityDescriptor"/>
+            </summary>
+            <param name="columns">columns which make up the index</param>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptorAccess`1.NotNull(System.Linq.Expressions.Expression{System.Func{`0,System.Object}}[])">
+            <summary>
+            flags columns not nullable
+            </summary>
+            <param name="columns">columns to flag not nullable</param>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptorAccess`1.Nullable(System.Linq.Expressions.Expression{System.Func{`0,System.Object}}[])">
+            <summary>
+            flags columns nullable
+            </summary>
+            <param name="columns">columns to flag nullable</param>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptorAccess`1.AutoIncrement(System.Linq.Expressions.Expression{System.Func{`0,System.Object}}[])">
+            <summary>
+            flags columns to auto increment their values on insert
+            </summary>
+            <param name="columns">columns to flag as auto increment</param>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptorAccess`1.Default(System.Linq.Expressions.Expression{System.Func{`0,System.Object}},System.Object)">
+            <summary>
+            sets a default value for a column
+            </summary>
+            <param name="column">column for which to set a default value</param>
+            <param name="value">value to use as default</param>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptorAccess`1.Column(System.Linq.Expressions.Expression{System.Func{`0,System.Object}},System.String)">
+            <summary>
+            changes the default column name
+            </summary>
+            <param name="column">column of which to change the name</param>
+            <param name="name">new column name</param>
+        </member>
+        <member name="T:Database.Entities.Descriptors.EntityDescriptorCache">
+            <summary>
+            caches models for entities
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptorCache.Get``1">
+            <summary>
+            get entitydescriptor for the specified type
+            </summary>
+            <typeparam name="T">type of which to get entity descriptor</typeparam>
+            <returns>entity descriptor for specified type</returns>
+        </member>
+        <member name="M:Database.Entities.Descriptors.EntityDescriptorCache.Get(System.Type)">
+            <summary>
+            get entitydescriptor for the specified type
+            </summary>
+            <param name="type">type of which to get entity descriptor</param>
+            <returns>entity descriptor for specified type</returns>
+        </member>
+        <member name="T:Database.Entities.Descriptors.IndexDescriptor">
+            <summary>
+            descriptor for an index
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Descriptors.IndexDescriptor.#ctor(System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Descriptors.IndexDescriptor"/>
+            </summary>
+            <param name="name">name of index</param>
+            <param name="columns">name of columns referenced by the index</param>
+        </member>
+        <member name="P:Database.Entities.Descriptors.IndexDescriptor.Name">
+            <summary>
+            name of the index
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Descriptors.IndexDescriptor.Columns">
+            <summary>
+            columns linked to the index
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Descriptors.IndexDescriptor.Equals(Database.Entities.Descriptors.IndexDescriptor)">
+            <inheritdocs/>
+        </member>
+        <member name="M:Database.Entities.Descriptors.IndexDescriptor.Equals(System.Object)">
+            <inheritdocs/>
+        </member>
+        <member name="M:Database.Entities.Descriptors.IndexDescriptor.GetHashCode">
+            <inheritdocs/>
+        </member>
+        <member name="M:Database.Entities.Descriptors.IndexDescriptor.ToString">
+            <inheritdocs/>
+        </member>
+        <member name="T:Database.Entities.Descriptors.UniqueDescriptor">
+            <summary>
+            descriptor for an index
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Descriptors.UniqueDescriptor.#ctor(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Descriptors.UniqueDescriptor"/>
+            </summary>
+            <param name="columns">columns which have to have a combined unique value</param>
+        </member>
+        <member name="P:Database.Entities.Descriptors.UniqueDescriptor.Columns">
+            <summary>
+            columns linked to the unique specifier
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Descriptors.UniqueDescriptor.Equals(Database.Entities.Descriptors.UniqueDescriptor)">
+            <inheritdocs/>
+        </member>
+        <member name="M:Database.Entities.Descriptors.UniqueDescriptor.Equals(System.Object)">
+            <inheritdocs/>
+        </member>
+        <member name="M:Database.Entities.Descriptors.UniqueDescriptor.GetHashCode">
+            <inheritdocs/>
+        </member>
+        <member name="M:Database.Entities.Descriptors.UniqueDescriptor.ToString">
+            <inheritdocs/>
+        </member>
+        <member name="T:Database.Entities.EntityCache`2">
+            <summary>
+            buffers entities for a key to reduce loading operations to database
+            </summary>
+            <typeparam name="TEntity"></typeparam>
+            <typeparam name="TKey"></typeparam>
+        </member>
+        <member name="M:Database.Entities.EntityCache`2.#ctor(Database.Entities.EntityManager,System.Func{`1,System.Linq.Expressions.Expression{System.Predicate{`0}}})">
+            <summary>
+            creates a new entity cache
+            </summary>
+            <param name="entitymanager"></param>
+            <param name="loader"></param>
+        </member>
+        <member name="M:Database.Entities.EntityCache`2.GetEntity(`1,System.Func{`0})">
+            <summary>
+            get entity for key
+            </summary>
+            <param name="key">key for which to load entity</param>
+            <param name="customcreator">creator which is used when no entity is found in db</param>
+            <returns>entity for the key</returns>
+        </member>
+        <member name="T:Database.Entities.EntityManager">
+            <summary>
+            manages entities in db
+            </summary>
+        </member>
+        <member name="M:Database.Entities.EntityManager.#ctor(Database.Clients.IDBClient)">
+            <summary>
+            creates a new <see cref="T:Database.Entities.EntityManager"/>
+            </summary>
+            <param name="dbclient">access to database</param>
+        </member>
+        <member name="P:Database.Entities.EntityManager.DBClient">
+            <summary>
+            client used to access db
+            </summary>
+        </member>
+        <member name="M:Database.Entities.EntityManager.Create``1">
+            <summary>
+            creates the table for the entity
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Database.Entities.EntityManager.Create(System.Type[])">
+            <summary>
+            creates the tables for the entities
+            </summary>
+            <param name="types"></param>
+        </member>
+        <member name="M:Database.Entities.EntityManager.UpdateSchema``1">
+            <summary>
+            updates the schema of the specified type
+            </summary>
+            <remarks>
+            currently this is only implemented for sqlite databases
+            </remarks>
+            <typeparam name="T">type of which to update schema</typeparam>
+        </member>
+        <member name="M:Database.Entities.EntityManager.InsertEntities``1(``0[])">
+            <summary>
+            inserts entities to the db
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="entities"></param>
+        </member>
+        <member name="M:Database.Entities.EntityManager.InsertEntities``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            inserts entities to the db
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="entities"></param>
+        </member>
+        <member name="M:Database.Entities.EntityManager.Update``1">
+            <summary>
+            gets an operation which allows to update the values of an entity
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.EntityManager.Insert``1">
+            <summary>
+            gets an operation which allows to insert entities to database
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.EntityManager.DeleteEntities``1(``0[])">
+            <summary>
+            delete entities
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="entities"></param>
+        </member>
+        <member name="M:Database.Entities.EntityManager.UpdateEntities``1(``0[])">
+            <summary>
+            updates entities in db
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="entities"></param>
+        </member>
+        <member name="M:Database.Entities.EntityManager.UpdateEntities``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            updates entities in db
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="entities"></param>
+        </member>
+        <member name="M:Database.Entities.EntityManager.Save``1(``0[])">
+            <summary>
+            inserts or updates the specified entities
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="entities"></param>
+        </member>
+        <member name="M:Database.Entities.EntityManager.Save``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            inserts or updates the specified entities
+            </summary>
+            <remarks>
+            this only works with entities with a primary key and autoincrement or no primary key at all
+            when used with an entity with primary key the primary key column has to be left untouched
+            else this won't work either.
+            </remarks>
+            <typeparam name="T"></typeparam>
+            <param name="entities"></param>
+        </member>
+        <member name="M:Database.Entities.EntityManager.LoadEntities``1">
+            <summary>
+            get a load operation for the specified entity type
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.EntityManager.Load``1(Database.Entities.Operations.IDBField[])">
+            <summary>
+            get a load operation to use to load values of an entity from the database
+            </summary>
+            <typeparam name="T">type of entity</typeparam>
+            <param name="fields">fields to load from the db</param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.EntityManager.Load``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
+            <summary>
+            get a load operation to use to load values of an entity from the database
+            </summary>
+        </member>
+        <member name="M:Database.Entities.EntityManager.Execute(Database.Entities.Operations.PreparedOperation,System.Object[])">
+            <summary>
+            executes a prepared operation without result
+            </summary>
+            <param name="operation"></param>
+            <param name="values"></param>
+        </member>
+        <member name="M:Database.Entities.EntityManager.ExecuteID``1(Database.Entities.Operations.PreparedOperation,System.Object[])">
+            <summary>
+            executes a prepared operation without result
+            </summary>
+            <param name="operation"></param>
+            <param name="values"></param>
+        </member>
+        <member name="M:Database.Entities.EntityManager.Model``1">
+            <summary>
+            get access to an entity model
+            </summary>
+            <typeparam name="T">type of entity of which to access model</typeparam>
+        </member>
+        <member name="M:Database.Entities.EntityManager.Transaction">
+            <summary>
+            starts a transaction
+            </summary>
+            <returns>Transaction object to use</returns>
+        </member>
+        <member name="T:Database.Entities.IEntityManager">
+            <summary>
+            interface for an entity manager
+            </summary>
+        </member>
+        <member name="P:Database.Entities.IEntityManager.DBClient">
+            <summary>
+            client used to access db
+            </summary>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.Transaction">
+            <summary>
+            starts a transaction
+            </summary>
+            <returns>Transaction object to use</returns>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.Create``1">
+            <summary>
+            creates the table for the entity
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.Create(System.Type[])">
+            <summary>
+            creates the tables for the entities
+            </summary>
+            <param name="types"></param>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.InsertEntities``1(``0[])">
+            <summary>
+            inserts entities to the db
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="entities"></param>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.InsertEntities``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            inserts entities to the db
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="entities"></param>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.Update``1">
+            <summary>
+            gets an operation which allows to update the values of an entity
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.UpdateEntities``1(``0[])">
+            <summary>
+            updates entities in db
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="entities"></param>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.UpdateEntities``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            updates entities in db
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="entities"></param>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.Save``1(``0[])">
+            <summary>
+            inserts or updates the specified entities
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="entities"></param>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.Save``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            inserts or updates the specified entities
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="entities"></param>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.LoadEntities``1">
+            <summary>
+            get a load operation for the specified entity type
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.Load``1(Database.Entities.Operations.IDBField[])">
+            <summary>
+            get a load operation to use to load values of an entity from the database
+            </summary>
+            <typeparam name="T">type of entity</typeparam>
+            <param name="fields">fields to load from the db</param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.DeleteEntities``1(``0[])">
+            <summary>
+            delete entities
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="entities"></param>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.Load``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
+            <summary>
+            get a load operation to use to load values of an entity from the database
+            </summary>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.Insert``1">
+            <summary>
+            gets an operation which allows to insert entities to database
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.UpdateSchema``1">
+            <summary>
+            updates the schema of the specified type
+            </summary>
+            <remarks>
+            currently this is only implemented for sqlite databases
+            </remarks>
+            <typeparam name="T">type of which to update schema</typeparam>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.Execute(Database.Entities.Operations.PreparedOperation,System.Object[])">
+            <summary>
+            executes a prepared operation without result
+            </summary>
+            <param name="operation"></param>
+            <param name="values"></param>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.ExecuteID``1(Database.Entities.Operations.PreparedOperation,System.Object[])">
+            <summary>
+            executes a prepared operation without result
+            </summary>
+            <param name="operation"></param>
+            <param name="values"></param>
+        </member>
+        <member name="M:Database.Entities.IEntityManager.Model``1">
+            <summary>
+            get access to an entity model
+            </summary>
+            <typeparam name="T">type of entity of which to access model</typeparam>
+        </member>
+        <member name="T:Database.Entities.Operations.DBOperators">
+            <summary>
+            operators for database operations
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.DBOperators.Like(System.String,System.String)">
+            <summary>
+            determines whether a string is like another instance of a string
+            </summary>
+            <param name="lhs"></param>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.DBOperators.Replace(System.String,System.String,System.String)">
+            <summary>
+            replaces every occurence of src in lhs with target
+            </summary>
+            <param name="lhs"></param>
+            <param name="src"></param>
+            <param name="target"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Entities.Operations.DeleteEntitiesOperation">
+            <summary>
+            removes entities from db
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.DeleteEntitiesOperation.#ctor(Database.Clients.IDBClient,System.Collections.IEnumerable,System.Func{System.Type,Database.Entities.Descriptors.EntityDescriptor})">
+            <summary>
+            ctor
+            </summary>
+            <param name="dbclient"></param>
+            <param name="entities"></param>
+            <param name="descriptor"></param>
+        </member>
+        <member name="T:Database.Entities.Operations.DeleteOperation`1">
+            <summary>
+            operation used to load entities
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.DeleteOperation`1.#ctor(Database.Entities.Operations.DeleteOperation{`0})">
+            <summary>
+            creates a new delete operation
+            </summary>
+            <param name="origin"></param>
+        </member>
+        <member name="M:Database.Entities.Operations.DeleteOperation`1.#ctor(Database.Clients.IDBClient,System.Func{System.Type,Database.Entities.Descriptors.EntityDescriptor})">
+            <summary>
+            creates a new delete operation
+            </summary>
+            <param name="dbclient"> </param>
+            <param name="descriptorgetter"></param>
+        </member>
+        <member name="P:Database.Entities.Operations.DeleteOperation`1.Criterias">
+            <summary>
+            criterias to use when loading
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.DeleteOperation`1.Execute">
+            <summary>
+            loads entities using the operation
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:Database.Entities.Operations.DeleteOperation`1.Execute(Database.Clients.Transaction)">
+            <summary>
+            loads entities using the operation
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:Database.Entities.Operations.DeleteOperation`1.Prepare">
+            <summary>
+            prepares the operation for execution
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.DeleteOperation`1.Where(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+            specifies criterias for the operation
+            </summary>
+            <param name="criterias"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Entities.Operations.EntityField">
+            <summary>
+            field describing a property of an entity
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.EntityField.#ctor(System.Linq.Expressions.Expression)">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Operations.EntityField"/>
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.EntityField.FieldExpression">
+            <summary>
+            expression describing the field
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.EntityField.Create``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}})">
+            <summary>
+            creates an entity field
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="fieldexpression"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Entities.Operations.EntityOperation">
+            <summary>
+            updates entities in db
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.EntityOperation.#ctor(Database.Clients.IDBClient,System.Collections.IEnumerable,System.Func{System.Type,Database.Entities.Descriptors.EntityDescriptor})">
+            <summary>
+            ctor
+            </summary>
+            <param name="dbclient"></param>
+            <param name="entities"></param>
+            <param name="descriptor"></param>
+        </member>
+        <member name="P:Database.Entities.Operations.EntityOperation.DBClient">
+            <summary>
+            dbclient used to access db
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.EntityOperation.Entities">
+            <summary>
+            entities to process
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.EntityOperation.GetDescriptor(System.Type)">
+            <summary>
+            get the entity descriptor for the specified type
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.EntityOperation.GetValue(Database.Entities.Descriptors.EntityColumnDescriptor,System.Object)">
+            <summary>
+            get value of entity which is compatible with db
+            </summary>
+            <param name="column"></param>
+            <param name="entity"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.EntityOperation.Execute">
+            <summary>
+            executes the operation
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.Expressions.ColumnVisitor.#ctor(Database.Entities.Descriptors.EntityDescriptor)">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Operations.Expressions.ColumnVisitor"/>
+            </summary>
+            <param name="descriptor">schema info for entity to be analysed</param>
+        </member>
+        <member name="M:Database.Entities.Operations.Expressions.ColumnVisitor.GetColumnName(System.Linq.Expressions.Expression)">
+            <summary>
+            get column name stored in expression
+            </summary>
+            <param name="expression">expression to analyse</param>
+            <returns>column name if any is found in expression, null otherwise</returns>
+        </member>
+        <member name="T:Database.Entities.Operations.Expressions.CriteriaVisitor">
+            <summary>
+            visits an expression tree to convert it to sql
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Operations.Aggregates.Aggregate">
+            <summary>
+            aggregate with <see cref="T:Database.Entities.Operations.IDBField"/> arguments
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.Aggregates.Aggregate.#ctor(System.String,Database.Entities.Operations.IDBField[])">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Operations.Aggregates.Aggregate"/>
+            </summary>
+            <param name="method">aggregate method</param>
+            <param name="arguments">arguments for method</param>
+        </member>
+        <member name="P:Database.Entities.Operations.Aggregates.Aggregate.Method">
+            <summary>
+            method name
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.Aggregates.Aggregate.Arguments">
+            <summary>
+            content of the function
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Operations.Constant">
+            <summary>
+            constant value
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.Constant.#ctor(System.Object)">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Operations.Constant"/>
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="P:Database.Entities.Operations.Constant.Value">
+            <summary>
+            value
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.Constant.Create(System.Object)">
+            <summary>
+            creates a new constant
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Entities.Operations.DBFunction">
+            <summary>
+            function of db
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.DBFunction.Type">
+            <summary>
+            type of function
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.DBFunction.Parameter">
+            <summary>
+            expression describing the field
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.DBFunction.Random">
+            <summary>
+            random value
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.DBFunction.Count">
+            <summary>
+            count the rows of the result
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.DBFunction.RowID">
+            <summary>
+            table wide unique id of row
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.DBFunction.Length``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}})">
+            <summary>
+            length of a text or blob
+            </summary>
+            <typeparam name="T">type of entity containing the text or blob</typeparam>
+            <param name="fieldexpression">expression targeting the field to measure</param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.DBFunction.Sum(Database.Entities.Operations.IDBField[])">
+            <summary>
+            sums up a field in db
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.DBFunction.Sum``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
+            <summary>
+            sums up a field in db
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.DBFunction.Total(Database.Entities.Operations.IDBField[])">
+            <summary>
+            sums up a field in db returning a floating point result
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.DBFunction.Total``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
+            <summary>
+            sums up a field in db returning a floating point result
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.DBFunction.Max(Database.Entities.Operations.IDBField[])">
+            <summary>
+            maximum value of a field or multiple values
+            </summary>
+            <param name="fields">fields of which to select maximum value</param>
+            <returns>aggregate field</returns>
+        </member>
+        <member name="M:Database.Entities.Operations.DBFunction.Max``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
+            <summary>
+            maximum value of a field or multiple values
+            </summary>
+            <param name="fields">fields of which to select maximum value</param>
+            <returns>aggregate field</returns>
+        </member>
+        <member name="M:Database.Entities.Operations.DBFunction.Min(Database.Entities.Operations.IDBField[])">
+            <summary>
+            minimum value of a field or multiple values
+            </summary>
+            <param name="fields">fields of which to select minimum value</param>
+            <returns>aggregate field</returns>
+        </member>
+        <member name="M:Database.Entities.Operations.DBFunction.Min``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
+            <summary>
+            minimum value of a field or multiple values
+            </summary>
+            <param name="fields">fields of which to select minimum value</param>
+            <returns>aggregate field</returns>
+        </member>
+        <member name="M:Database.Entities.Operations.DBFunction.Average(Database.Entities.Operations.IDBField[])">
+            <summary>
+            average value of a field or multiple values
+            </summary>
+            <param name="fields">fields of which to select average value</param>
+            <returns>aggregate field</returns>
+        </member>
+        <member name="M:Database.Entities.Operations.DBFunction.Average``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
+            <summary>
+            average value of a field or multiple values
+            </summary>
+            <param name="fields">fields of which to select average value</param>
+            <returns>aggregate field</returns>
+        </member>
+        <member name="T:Database.Entities.Operations.DBFunctionType">
+            <summary>
+            functions of db
+            </summary>
+        </member>
+        <member name="F:Database.Entities.Operations.DBFunctionType.Random">
+            <summary>
+            random value
+            </summary>
+        </member>
+        <member name="F:Database.Entities.Operations.DBFunctionType.Count">
+            <summary>
+            row count
+            </summary>
+        </member>
+        <member name="F:Database.Entities.Operations.DBFunctionType.RowID">
+            <summary>
+            unique id of row (oid)
+            </summary>
+        </member>
+        <member name="F:Database.Entities.Operations.DBFunctionType.Length">
+            <summary>
+            length of a string or text
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Operations.DBParameter">
+            <summary>
+            parameter for statements
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.DBParameter.#ctor(System.Int32)">
+            <summary>
+            ctor
+            </summary>
+            <param name="index"></param>
+        </member>
+        <member name="M:Database.Entities.Operations.DBParameter.#ctor(System.Int32,System.Object)">
+            <summary>
+            ctor
+            </summary>
+            <param name="index"></param>
+            <param name="value"></param>
+        </member>
+        <member name="P:Database.Entities.Operations.DBParameter.Index">
+            <summary>
+            index of the parameter
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.DBParameter.Value">
+            <summary>
+            property to use for comparision in expressions
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.DBParameter.Guid">
+            <summary>
+            field to use in expressions when referencing a <see cref="P:Database.Entities.Operations.DBParameter.Guid"/> parameter
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.DBParameter.Int32">
+            <summary>
+            field to use in expressions when referencing a <see cref="T:System.Int32"/> parameter
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.DBParameter.Int64">
+            <summary>
+            field to use in expressions when referencing a <see cref="T:System.Int64"/> parameter
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.DBParameter.String">
+            <summary>
+            field to use in expressions when referencing a <see cref="T:System.String"/> parameter
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.DBParameter.Single">
+            <summary>
+            field to use in expressions when referencing a <see cref="T:System.String"/> parameter
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.DBParameter.Double">
+            <summary>
+            field to use in expressions when referencing a <see cref="T:System.String"/> parameter
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.DBParameter.Blob">
+            <summary>
+            field to use in expressions when referencing a <see cref="T:byte[]"/> parameter
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Operations.DBParameter`1">
+            <summary>
+            generic parameter for specific types
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Database.Entities.Operations.DBParameter`1.#ctor(System.Int32)">
+            <summary>
+            ctor
+            </summary>
+            <param name="index"></param>
+        </member>
+        <member name="P:Database.Entities.Operations.DBParameter`1.Value">
+            <summary>
+            property to use for comparision in expressions
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Operations.IDBField">
+            <summary>
+            interface for a db field
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.IDBField.Value">
+            <summary>
+            field used for lambda operations
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.IDBField.Int">
+            <summary>
+            field used for comparision
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.IDBField.DateTime">
+            <summary>
+            field used for comparision
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Operations.Fields.LimitField">
+            <summary>
+            limits the number of result rows
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.Fields.LimitField.Limit">
+            <summary>
+            maximum number of rows to return
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.Fields.LimitField.Offset">
+            <summary>
+            number of rows to skip in returned result
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Operations.InsertEntitiesOperation">
+            <summary>
+            inserts new entities to the db
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.InsertEntitiesOperation.#ctor(Database.Clients.IDBClient,System.Collections.IEnumerable,System.Func{System.Type,Database.Entities.Descriptors.EntityDescriptor})">
+            <summary>
+            ctor
+            </summary>
+            <param name="dbclient"> </param>
+            <param name="entities"></param>
+            <param name="descriptor"> </param>
+        </member>
+        <member name="T:Database.Entities.Operations.InsertValuesOperation`1">
+            <summary>
+            updates values for an entity in the database
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Database.Entities.Operations.InsertValuesOperation`1.#ctor(Database.Clients.IDBClient,System.Func{System.Type,Database.Entities.Descriptors.EntityDescriptor})">
+            <summary>
+            creates a new insert values operation
+            </summary>
+            <param name="dbclient"></param>
+            <param name="descriptorgetter"></param>
+        </member>
+        <member name="M:Database.Entities.Operations.InsertValuesOperation`1.ReturnID">
+            <summary>
+            specifies that this operation should return last insert id (instead of affected rows)
+            </summary>
+            <returns>insert operation</returns>
+        </member>
+        <member name="M:Database.Entities.Operations.InsertValuesOperation`1.Columns(Database.Entities.Operations.IDBField[])">
+            <summary>
+            sets the columns to be updated
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.InsertValuesOperation`1.Columns(System.Linq.Expressions.Expression{System.Func{`0,System.Object}}[])">
+            <summary>
+            sets the columns to be updated
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.InsertValuesOperation`1.Values(System.Object[])">
+            <summary>
+            sets the values to be updated
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.InsertValuesOperation`1.Execute(Database.Clients.Transaction)">
+            <summary>
+            executes the insert operation
+            </summary>
+            <returns>number of rows affected</returns>
+        </member>
+        <member name="T:Database.Entities.Operations.JoinOperation">
+            <summary>
+            operation used to join tables
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.JoinOperation.#ctor(System.Type,System.Linq.Expressions.Expression)">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Operations.JoinOperation"/>
+            </summary>
+            <param name="joinType">type of entity to join</param>
+            <param name="criterias">join criterias</param>
+        </member>
+        <member name="P:Database.Entities.Operations.JoinOperation.JoinType">
+            <summary>
+            type to join
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.JoinOperation.Criterias">
+            <summary>
+            criterias to use when joining tables
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Operations.LoadEntitiesOperation`1">
+            <summary>
+            operation used to load entities
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadEntitiesOperation`1.#ctor(Database.Entities.Operations.LoadEntitiesOperation{`0})">
+            <summary>
+            ctor
+            </summary>
+            <param name="origin"></param>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadEntitiesOperation`1.#ctor(Database.Clients.IDBClient,System.Func{System.Type,Database.Entities.Descriptors.EntityDescriptor})">
+            <summary>
+            ctor
+            </summary>
+            <param name="dbclient"> </param>
+            <param name="descriptorgetter"></param>
+        </member>
+        <member name="P:Database.Entities.Operations.LoadEntitiesOperation`1.LimitStatement">
+            <summary>
+            result limit
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.LoadEntitiesOperation`1.JoinOperations">
+            <summary>
+            operations to join
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.LoadEntitiesOperation`1.Criterias">
+            <summary>
+            criterias to use when loading
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.LoadEntitiesOperation`1.Havings">
+            <summary>
+            having criterias
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadEntitiesOperation`1.Execute">
+            <summary>
+            loads entities using the operation
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadEntitiesOperation`1.Prepare">
+            <summary>
+            prepares the operation for execution
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadEntitiesOperation`1.Where(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+            specifies criterias for the operation
+            </summary>
+            <param name="criterias"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadEntitiesOperation`1.Where(System.Linq.Expressions.Expression)">
+            <summary>
+            specifies criterias for the operation
+            </summary>
+            <param name="criterias"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadEntitiesOperation`1.Having(System.Linq.Expressions.Expression{System.Predicate{`0}})">
+            <summary>
+            specifies having criterias for the operation
+            </summary>
+            <param name="criterias"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadEntitiesOperation`1.OrderBy(Database.Entities.Operations.OrderByCriteria[])">
+            <summary>
+            specifies an order
+            </summary>
+            <param name="fields"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadEntitiesOperation`1.GroupBy(Database.Entities.Operations.IDBField[])">
+            <summary>
+            groups the results by the specified fields
+            </summary>
+            <param name="fields"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadEntitiesOperation`1.Limit(System.Int64)">
+            <summary>
+            specifies a limited number of rows to return
+            </summary>
+            <param name="limit">number of rows to return</param>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadEntitiesOperation`1.Offset(System.Int64)">
+            <summary>
+            specifies an offset from which on to return result rows
+            </summary>
+            <param name="offset">number of rows to skip</param>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadEntitiesOperation`1.Join``1(System.Linq.Expressions.Expression{System.Func{`0,``0,System.Boolean}})">
+            <summary>
+            joins another type to the operation
+            </summary>
+            <typeparam name="TJoin"></typeparam>
+            <param name="criteria"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Entities.Operations.LoadEntitiesOperation`2">
+            <summary>
+            operation used to load entities based on a join operation
+            </summary>
+            <typeparam name="TLoad"></typeparam>
+            <typeparam name="TJoin"></typeparam>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadEntitiesOperation`2.Where(System.Linq.Expressions.Expression{System.Func{`0,`1,System.Boolean}})">
+            <summary>
+            specifies criterias for the operation
+            </summary>
+            <param name="criterias"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadEntitiesOperation`2.OrderBy(Database.Entities.Operations.OrderByCriteria[])">
+            <summary>
+            specifies an order
+            </summary>
+            <param name="fields"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadEntitiesOperation`2.GroupBy(Database.Entities.Operations.IDBField[])">
+            <summary>
+            groups the results by the specified fields
+            </summary>
+            <param name="fields"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadEntitiesOperation`2.Limit(System.Int32)">
+            <summary>
+            specifies a limited number of rows to return
+            </summary>
+            <param name="limit"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadEntitiesOperation`2.Having(System.Linq.Expressions.Expression{System.Func{`0,`1,System.Boolean}})">
+            <summary>
+            specifies having criterias for the operation
+            </summary>
+            <param name="criterias"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Entities.Operations.LoadValuesOperation`2">
+            <summary>
+            operation used to load values of an entity based on a join operation
+            </summary>
+            <typeparam name="TLoad"></typeparam>
+            <typeparam name="TJoin"></typeparam>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`2.Where(System.Linq.Expressions.Expression{System.Func{`0,`1,System.Boolean}})">
+            <summary>
+            specifies criterias for the operation
+            </summary>
+            <param name="criterias"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`2.OrderBy(Database.Entities.Operations.OrderByCriteria[])">
+            <summary>
+            specifies an order
+            </summary>
+            <param name="fields"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`2.GroupBy(Database.Entities.Operations.IDBField[])">
+            <summary>
+            groups the results by the specified fields
+            </summary>
+            <param name="fields"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`2.Limit(System.Int32)">
+            <summary>
+            specifies a limited number of rows to return
+            </summary>
+            <param name="limit"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`2.Having(System.Linq.Expressions.Expression{System.Func{`0,`1,System.Boolean}})">
+            <summary>
+            specifies having criterias for the operation
+            </summary>
+            <param name="criterias"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Entities.Operations.LoadValuesOperation`1">
+            <summary>
+            operation used to load values of an entity
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`1.#ctor(Database.Entities.Operations.LoadValuesOperation{`0})">
+            <summary>
+            ctor
+            </summary>
+            <param name="origin"></param>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`1.#ctor(Database.Clients.IDBClient,Database.Entities.Operations.IDBField[],System.Func{System.Type,Database.Entities.Descriptors.EntityDescriptor})">
+            <summary>
+            ctor
+            </summary>
+            <param name="dbclient"> </param>
+            <param name="fields">fields to load</param>
+            <param name="descriptorgetter"></param>
+        </member>
+        <member name="P:Database.Entities.Operations.LoadValuesOperation`1.LimitStatement">
+            <summary>
+            limit to use when loading
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.LoadValuesOperation`1.JoinOperations">
+            <summary>
+            operations to join
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.LoadValuesOperation`1.Criterias">
+            <summary>
+            criterias to use when loading
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.LoadValuesOperation`1.Havings">
+            <summary>
+            having criterias
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`1.Execute(Database.Clients.Transaction)">
+            <summary>
+            loads entities using the operation
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`1.Execute">
+            <summary>
+            loads entities using the operation
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`1.ExecuteScalar``1(Database.Clients.Transaction)">
+            <summary>
+            loads a value using the operation
+            </summary>
+            <typeparam name="TScalar"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`1.ExecuteScalar``1">
+            <summary>
+            loads a value using the operation
+            </summary>
+            <typeparam name="TScalar"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`1.ExecuteSet``1(Database.Clients.Transaction)">
+            <summary>
+            loads several values using the operation
+            </summary>
+            <typeparam name="TScalar"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`1.ExecuteSet``1">
+            <summary>
+            loads several values using the operation
+            </summary>
+            <typeparam name="TScalar"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`1.ExecuteType``1(System.Action{Database.Clients.Tables.DataRow,``0})">
+            <summary>
+            executes a query and stores the result in a custom result type
+            </summary>
+            <typeparam name="TType">type of result</typeparam>
+            <param name="assignments">action used to assign values</param>
+            <returns>enumeration of result types</returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`1.Prepare">
+            <summary>
+            prepares the operation for execution
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`1.Where(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+            specifies criterias for the operation
+            </summary>
+            <param name="criterias"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`1.Having(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+            specifies having criterias for the operation
+            </summary>
+            <param name="criterias"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`1.OrderBy(Database.Entities.Operations.OrderByCriteria[])">
+            <summary>
+            specifies an order
+            </summary>
+            <param name="fields"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`1.GroupBy(Database.Entities.Operations.IDBField[])">
+            <summary>
+            groups the results by the specified fields
+            </summary>
+            <param name="fields"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`1.Limit(System.Int64)">
+            <summary>
+            specifies a limited number of rows to return
+            </summary>
+            <param name="limit">number of rows to return</param>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`1.Offset(System.Int64)">
+            <summary>
+            specifies an offset from which on to return result rows
+            </summary>
+            <param name="offset">number of rows to skip</param>
+        </member>
+        <member name="M:Database.Entities.Operations.LoadValuesOperation`1.Join``1(System.Linq.Expressions.Expression{System.Func{`0,``0,System.Boolean}})">
+            <summary>
+            joins another type to the operation
+            </summary>
+            <typeparam name="TJoin"></typeparam>
+            <param name="criteria"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Entities.Operations.OperationPreparator">
+            <summary>
+            preparator for operations
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.OperationPreparator.#ctor(Database.Info.IDBInfo)">
+            <summary>
+            ctor
+            </summary>
+            <param name="dbinfo"></param>
+        </member>
+        <member name="M:Database.Entities.Operations.OperationPreparator.AppendParameter">
+            <summary>
+            appends a parameter without value to the command (specified later)
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.OperationPreparator.AppendParameter(System.Object)">
+            <summary>
+            appends a parameter to the command
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="P:Database.Entities.Operations.OperationPreparator.CommandBuilder">
+            <summary>
+            command text
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.OperationPreparator.Parameters">
+            <summary>
+            parameters
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Operations.OrderByCriteria">
+            <summary>
+            criteria used for ordering of results
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.OrderByCriteria.Field">
+            <summary>
+            fields by which to order result
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.OrderByCriteria.Ascending">
+            <summary>
+            whether to order ascending or descending
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Operations.PreparedLoadEntitiesOperation`1">
+            <summary>
+            load operation prepared to execute
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Database.Entities.Operations.PreparedLoadEntitiesOperation`1.#ctor(Database.Clients.IDBClient,Database.Entities.Descriptors.EntityDescriptor,System.String,Database.Entities.Operations.DBParameter[])">
+            <summary>
+            ctor
+            </summary>
+            <param name="dbclient"></param>
+            <param name="descriptor"></param>
+            <param name="commandtext"></param>
+            <param name="parameters"></param>
+        </member>
+        <member name="M:Database.Entities.Operations.PreparedLoadEntitiesOperation`1.Execute">
+            <summary>
+            executes the statement
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.PreparedLoadEntitiesOperation`1.Execute(Database.Clients.Transaction,System.Object[])">
+            <summary>
+            executes the statement
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.PreparedLoadEntitiesOperation`1.Execute(System.Object[])">
+            <summary>
+            executes the statement
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Entities.Operations.PreparedOperation">
+            <summary>
+            a prepared db operation
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.PreparedOperation.#ctor(System.String,Database.Entities.Operations.DBParameter[])">
+            <summary>
+            creates a new prepared operation
+            </summary>
+            <param name="commandText"></param>
+            <param name="parameters"></param>
+        </member>
+        <member name="P:Database.Entities.Operations.PreparedOperation.CommandText">
+            <summary>
+            text to execute
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Operations.PreparedOperation.Parameters">
+            <summary>
+            parameters for command
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Operations.UpdateEntitiesOperation">
+            <summary>
+            updates existing entities in db
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Operations.UpdateEntitiesOperation.#ctor(Database.Clients.IDBClient,System.Collections.IEnumerable,System.Func{System.Type,Database.Entities.Descriptors.EntityDescriptor})">
+            <summary>
+            ctor
+            </summary>
+            <param name="dbclient"></param>
+            <param name="entities"></param>
+            <param name="descriptor"></param>
+        </member>
+        <member name="T:Database.Entities.Operations.UpdateValuesOperation`1">
+            <summary>
+            updates values for an entity in the database
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Database.Entities.Operations.UpdateValuesOperation`1.#ctor(Database.Clients.IDBClient,System.Func{System.Type,Database.Entities.Descriptors.EntityDescriptor})">
+            <summary>
+            ctor
+            </summary>
+            <param name="dbclient"></param>
+            <param name="descriptorgetter"></param>
+        </member>
+        <member name="M:Database.Entities.Operations.UpdateValuesOperation`1.Set(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}}[])">
+            <summary>
+            sets the values to be updated
+            </summary>
+            <param name="setters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.Operations.UpdateValuesOperation`1.Where(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+            sets the criterias for the update
+            </summary>
+            <param name="criterias"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Database.Entities.Operations.UpdateValuesOperation`1.Criterias">
+            <summary>
+            criterias to use
+            </summary>
+        </member>
+        <member name="T:Database.Entities.PreparedLoadValuesOperation`1">
+            <summary>
+            a prepared load values operation
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Database.Entities.PreparedLoadValuesOperation`1.#ctor(Database.Clients.IDBClient,Database.Entities.Operations.PreparedOperation)">
+            <summary>
+            creates a new <see cref="T:Database.Entities.PreparedLoadValuesOperation`1"/>
+            </summary>
+            <param name="dbclient">database access</param>
+            <param name="statement">prepared statement</param>
+        </member>
+        <member name="M:Database.Entities.PreparedLoadValuesOperation`1.Execute(Database.Clients.Transaction)">
+            <summary>
+            executes the statement
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.PreparedLoadValuesOperation`1.Execute">
+            <summary>
+            executes the statement
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.PreparedLoadValuesOperation`1.ExecuteScalar``1(Database.Clients.Transaction)">
+            <summary>
+            executes the statement returning a scalar
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.PreparedLoadValuesOperation`1.ExecuteScalar``1">
+            <summary>
+            executes the statement returning a scalar
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.PreparedLoadValuesOperation`1.ExecuteScalar``1(Database.Clients.Transaction,System.Object[])">
+            <summary>
+            executes the statement returning a scalar
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.PreparedLoadValuesOperation`1.ExecuteScalar``1(System.Object[])">
+            <summary>
+            executes the statement returning a scalar
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Entities.PreparedLoadValuesOperation`1.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:Database.Entities.PreparedLoadValuesOperation`1.ExecuteType``1(System.Action{Database.Clients.Tables.DataRow,``0})">
+            <summary>
+            executes a query and stores the result in a custom result type
+            </summary>
+            <typeparam name="TType">type of result</typeparam>
+            <param name="assignments">action used to assign values</param>
+            <returns>enumeration of result types</returns>
+        </member>
+        <member name="T:Database.Entities.Schema.SchemaColumnDescriptor">
+            <summary>
+            descriptor for a column of a <see cref="T:Database.Entities.Schema.TableDescriptor"/>
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Schema.SchemaColumnDescriptor.#ctor">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Schema.SchemaColumnDescriptor"/>
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Schema.SchemaColumnDescriptor.#ctor(System.String)">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Schema.SchemaColumnDescriptor"/>
+            </summary>
+            <param name="name">name of column</param>
+        </member>
+        <member name="P:Database.Entities.Schema.SchemaColumnDescriptor.Type">
+            <summary>
+            type of column
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Schema.SchemaCreator">
+            <summary>
+            creates a schema in database
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Schema.SchemaCreator.#ctor(Database.Entities.Descriptors.EntityDescriptorCache)">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Schema.SchemaCreator"/>
+            </summary>
+            <param name="modelcache"></param>
+        </member>
+        <member name="M:Database.Entities.Schema.SchemaCreator.CreateTable(Database.Clients.IDBClient,Database.Entities.Descriptors.EntityDescriptor,Database.Clients.Transaction)">
+            <summary>
+            creates a new table from description
+            </summary>
+            <param name="client">database access</param>
+            <param name="descriptor"><see cref="T:Database.Entities.Descriptors.EntityDescriptor"/> which describes schema of entity</param>
+            <param name="transaction"></param>
+        </member>
+        <member name="M:Database.Entities.Schema.SchemaCreator.Create(System.Type,Database.Clients.IDBClient)">
+            <summary>
+            creates a type in database
+            </summary>
+            <param name="type">type to create</param>
+            <param name="client">client to database</param>
+        </member>
+        <member name="M:Database.Entities.Schema.SchemaCreator.CreateIndices(Database.Clients.IDBClient,System.String,System.Collections.Generic.IEnumerable{Database.Entities.Descriptors.IndexDescriptor},Database.Clients.Transaction)">
+            <summary>
+            creates indices for a table
+            </summary>
+            <param name="client">database access</param>
+            <param name="table">table on which to create indices</param>
+            <param name="indices">indices to create</param>
+            <param name="transaction">transaction to use (optional)</param>
+        </member>
+        <member name="T:Database.Entities.Schema.SchemaDescriptor">
+            <summary>
+            descriptor for a schema
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Schema.SchemaDescriptor.Name">
+            <summary>
+            name of schema
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Schema.SchemaDescriptor.Type">
+            <summary>
+            type of schema
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Schema.SchemaType">
+            <summary>
+            schema types
+            </summary>
+        </member>
+        <member name="F:Database.Entities.Schema.SchemaType.Table">
+            <summary>
+            data table
+            </summary>
+        </member>
+        <member name="F:Database.Entities.Schema.SchemaType.View">
+            <summary>
+            view
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Schema.SchemaUpdater">
+            <summary>
+            updates database schemata
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Schema.SchemaUpdater.#ctor(Database.Entities.Descriptors.EntityDescriptorCache)">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Schema.SchemaUpdater"/>
+            </summary>
+            <param name="modelcache">access to entity models</param>
+        </member>
+        <member name="M:Database.Entities.Schema.SchemaUpdater.Update``1(Database.Clients.IDBClient,System.String)">
+            <summary>
+            updates the schema of the specified type
+            </summary>
+            <typeparam name="T">schema type to update</typeparam>
+            <param name="client">database connection</param>
+            <param name="datasource">table from which to update schema (optional)</param>
+        </member>
+        <member name="T:Database.Entities.Schema.TableDescriptor">
+            <summary>
+            descriptor for a database table
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Schema.TableDescriptor.#ctor(System.String)">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Schema.TableDescriptor"/>
+            </summary>
+            <param name="name">name of table</param>
+        </member>
+        <member name="P:Database.Entities.Schema.TableDescriptor.Columns">
+            <summary>
+            columns in table
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Schema.TableDescriptor.Indices">
+            <summary>
+            indices in table
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Schema.TableDescriptor.Uniques">
+            <summary>
+            unique declarations in table
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Schema.TableDescriptor.Type">
+            <summary>
+            type of schema
+            </summary>
+        </member>
+        <member name="T:Database.Entities.Schema.ViewDescriptor">
+            <summary>
+            descriptor for a database view
+            </summary>
+        </member>
+        <member name="M:Database.Entities.Schema.ViewDescriptor.#ctor(System.String)">
+            <summary>
+            creates a new <see cref="T:Database.Entities.Schema.ViewDescriptor"/>
+            </summary>
+            <param name="name"></param>
+        </member>
+        <member name="P:Database.Entities.Schema.ViewDescriptor.SQL">
+            <summary>
+            sql used to create view
+            </summary>
+        </member>
+        <member name="P:Database.Entities.Schema.ViewDescriptor.Type">
+            <summary>
+            type of schema
+            </summary>
+        </member>
+        <member name="T:Database.Expressions.PredicateExpression`1">
+            <summary>
+            a wrapped expression for database operations
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Database.Expressions.PredicateExpression`1.#ctor(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+            ctor
+            </summary>
+            <param name="expression"></param>
+        </member>
+        <member name="M:Database.Expressions.PredicateExpression`1.op_BitwiseAnd(Database.Expressions.PredicateExpression{`0},Database.Expressions.PredicateExpression{`0})">
+            <summary>
+            combines two expressions using the AND operator
+            </summary>
+            <param name="lhs"></param>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Expressions.PredicateExpression`1.op_BitwiseOr(Database.Expressions.PredicateExpression{`0},Database.Expressions.PredicateExpression{`0})">
+            <summary>
+            combines two expressions using the OR operator
+            </summary>
+            <param name="lhs"></param>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Expressions.PredicateExpression`1.op_Implicit(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})~Database.Expressions.PredicateExpression{`0}">
+            <summary>
+            implicit cast operator
+            </summary>
+            <param name="expression"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Expressions.WrappedExpression`1">
+            <summary>
+            wraps expressions and provides several logical operations for them
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Database.Expressions.WrappedExpression`1.#ctor(System.Linq.Expressions.Expression{`0})">
+            <summary>
+            creates a new wrapped expression
+            </summary>
+            <param name="expression"></param>
+        </member>
+        <member name="P:Database.Expressions.WrappedExpression`1.Content">
+            <summary>
+            the wrapped expression
+            </summary>
+        </member>
+        <member name="M:Database.Expressions.WrappedExpression`1.Conjunct(Database.Expressions.WrappedExpression{`0},Database.Expressions.WrappedExpression{`0})">
+            <summary>
+            combines two expressions using the AND operator
+            </summary>
+            <param name="lhs"></param>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Expressions.WrappedExpression`1.Disjunct(Database.Expressions.WrappedExpression{`0},Database.Expressions.WrappedExpression{`0})">
+            <summary>
+            combines two expressions using the OR operator
+            </summary>
+            <param name="lhs"></param>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Expressions.WrappedExpression`1.op_BitwiseAnd(Database.Expressions.WrappedExpression{`0},Database.Expressions.WrappedExpression{`0})">
+            <summary>
+            combines two expressions using the AND operator
+            </summary>
+            <param name="lhs"></param>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Expressions.WrappedExpression`1.op_BitwiseOr(Database.Expressions.WrappedExpression{`0},Database.Expressions.WrappedExpression{`0})">
+            <summary>
+            combines two expressions using the OR operator
+            </summary>
+            <param name="lhs"></param>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Extern.ConversionKey">
+            <summary>
+            key used for specific conversion
+            </summary>
+        </member>
+        <member name="M:Database.Extern.ConversionKey.#ctor(System.Type,System.Type)">
+            <summary>
+            ctor
+            </summary>
+            <param name="sourcetype"></param>
+            <param name="targettype"></param>
+        </member>
+        <member name="P:Database.Extern.ConversionKey.SourceType">
+            <summary>
+            source type from which to convert
+            </summary>
+        </member>
+        <member name="P:Database.Extern.ConversionKey.TargetType">
+            <summary>
+            target type to which to convert
+            </summary>
+        </member>
+        <member name="T:Database.Extern.Converter">
+            <summary>
+            converter used to convert data types
+            </summary>
+        </member>
+        <member name="M:Database.Extern.Converter.#cctor">
+            <summary>
+            cctor
+            </summary>
+        </member>
+        <member name="M:Database.Extern.Converter.RegisterConverter(Database.Extern.ConversionKey,System.Func{System.Object,System.Object})">
+            <summary>
+            registers a specific converter to be used for a specific conversion
+            </summary>
+            <param name="key"></param>
+            <param name="converter"></param>
+        </member>
+        <member name="M:Database.Extern.Converter.Convert(System.Object,System.Type,System.Boolean)">
+            <summary>
+            converts the value to a specific target type
+            </summary>
+            <param name="value"></param>
+            <param name="targettype"></param>
+            <param name="allownullonvaluetypes"> </param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Extern.Converter.Convert``1(System.Object,System.Boolean)">
+            <summary>
+            converts the value to the specified target type
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="value"></param>
+            <param name="allownullonvaluetypes"> </param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Extern.Logger">
+            <summary>
+            provides logging functions to the current assembly
+            </summary>
+        </member>
+        <member name="M:Database.Extern.Logger.Info(System.Object,System.String,System.String)">
+            <summary>
+            logs an info
+            </summary>
+            <param name="sender">sender of the message</param>
+            <param name="message">message content</param>
+            <param name="details">message details</param>
+        </member>
+        <member name="M:Database.Extern.Logger.Warning(System.Object,System.String,System.String)">
+            <summary>
+            logs a warning
+            </summary>
+            <param name="sender">sender of the message</param>
+            <param name="message">message content</param>
+            <param name="details">message details</param>
+        </member>
+        <member name="M:Database.Extern.Logger.Error(System.Object,System.String,System.Exception)">
+            <summary>
+            logs an error
+            </summary>
+            <param name="sender">sender of the message</param>
+            <param name="message">message content</param>
+            <param name="details">message details</param>
+        </member>
+        <member name="T:Database.Extern.ILoggerProvider">
+            <summary>
+            interface for a provider of logging functions
+            </summary>
+        </member>
+        <member name="P:Database.Extern.ILoggerProvider.Info">
+            <summary>
+            method to use to log an info
+            </summary>
+        </member>
+        <member name="P:Database.Extern.ILoggerProvider.Warning">
+            <summary>
+            method to use to log a warning
+            </summary>
+        </member>
+        <member name="P:Database.Extern.ILoggerProvider.Error">
+            <summary>
+            method to use to log an error
+            </summary>
+        </member>
+        <member name="T:Database.Info.DBInfo">
+            <summary>
+            base implementation for db specific logic
+            </summary>
+        </member>
+        <member name="M:Database.Info.DBInfo.#ctor">
+            <summary>
+            creates a new <see cref="T:Database.Info.DBInfo"/>
+            </summary>
+        </member>
+        <member name="M:Database.Info.DBInfo.AddFieldLogic``1(System.Action{``0,Database.Entities.Operations.OperationPreparator,System.Func{System.Type,Database.Entities.Descriptors.EntityDescriptor}})">
+            <summary>
+            adds a logic to use when generating code for a database field
+            </summary>
+            <typeparam name="T">type of field</typeparam>
+            <param name="logic">logic to use when generating code</param>
+        </member>
+        <member name="P:Database.Info.DBInfo.Parameter">
+            <summary>
+            character used for parameters
+            </summary>
+        </member>
+        <member name="P:Database.Info.DBInfo.JoinHint">
+            <summary>
+            parameter used when joining
+            </summary>
+        </member>
+        <member name="P:Database.Info.DBInfo.AutoIncrement">
+            <summary>
+            parameter used to create autoincrement columns
+            </summary>
+        </member>
+        <member name="P:Database.Info.DBInfo.ColumnIndicator">
+            <summary>
+            character used to specify columns explicitely
+            </summary>
+        </member>
+        <member name="P:Database.Info.DBInfo.LikeTerm">
+            <summary>
+            term used for like expression
+            </summary>
+        </member>
+        <member name="M:Database.Info.DBInfo.Replace(System.Linq.Expressions.ExpressionVisitor,Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)">
+            <summary>
+            method used to create a replace function
+            </summary>
+            <param name="preparator"> </param>
+            <param name="value"></param>
+            <param name="src"></param>
+            <param name="target"></param>
+            <param name="visitor"> </param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.DBInfo.ToUpper(System.Linq.Expressions.ExpressionVisitor,Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression)">
+            <summary>
+            converts an expression to uppercase using database command
+            </summary>
+            <param name="visitor"></param>
+            <param name="preparator"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:Database.Info.DBInfo.ToLower(System.Linq.Expressions.ExpressionVisitor,Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression)">
+            <summary>
+            converts an expression to lowercase using database command
+            </summary>
+            <param name="visitor"></param>
+            <param name="preparator"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:Database.Info.DBInfo.CheckIfTableExists(Database.Clients.IDBClient,System.String)">
+            <summary>
+            command used to check whether a table exists
+            </summary>
+            <param name="db"></param>
+            <param name="table"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Database.Info.DBInfo.TransactionHint">
+            <summary>
+            determines whether db supports transactions
+            </summary>
+        </member>
+        <member name="M:Database.Info.DBInfo.GetDBType(System.Type)">
+            <summary>
+            get db type of an application type
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.DBInfo.GetDBRepresentation(System.Type)">
+            <summary>
+            get db representation type
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.DBInfo.MaskColumn(System.String)">
+            <summary>
+            masks a column
+            </summary>
+            <param name="column"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Database.Info.DBInfo.CreateSuffix">
+            <summary>
+            suffix to use when creating tables
+            </summary>
+        </member>
+        <member name="M:Database.Info.DBInfo.CreateColumn(Database.Entities.Operations.OperationPreparator,Database.Entities.Descriptors.EntityColumnDescriptor)">
+            <summary>
+            text used to create a column
+            </summary>
+            <param name="operation"></param>
+            <param name="column"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.DBInfo.ReturnInsertID(Database.Clients.IDBClient,Database.Entities.Descriptors.EntityDescriptor,System.String,System.Object[])">
+            <summary>
+            changes creation command to creation command with return insert id statement
+            </summary>
+            <param name="insertcommand">insert command</param>
+            <param name="client">db client used to execute commands</param>
+            <param name="descriptor">descriptor of entity</param>
+            <param name="parameters">parameters for command</param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.DBInfo.GetSchema(Database.Clients.IDBClient,System.String)">
+            <summary>
+            get schema for a table in database
+            </summary>
+            <param name="client">database connection</param>
+            <param name="name">name of table of which to get schema</param>
+            <returns><see cref="T:Database.Entities.Schema.SchemaDescriptor"/> containing all information about table</returns>
+        </member>
+        <member name="M:Database.Info.DBInfo.AddColumn(Database.Clients.IDBClient,System.String,Database.Entities.Descriptors.EntityColumnDescriptor,Database.Clients.Transaction)">
+            <summary>
+            adds a column to a table
+            </summary>
+            <param name="client">db access</param>
+            <param name="table">table to modify</param>
+            <param name="column">column to add</param>
+            <param name="transaction">transaction to use (optional)</param>
+        </member>
+        <member name="M:Database.Info.DBInfo.RemoveColumn(Database.Clients.IDBClient,System.String,System.String)">
+            <summary>
+            removes a column from a table
+            </summary>
+            <param name="client">db access</param>
+            <param name="table">table to modify</param>
+            <param name="column">column to remove</param>
+        </member>
+        <member name="M:Database.Info.DBInfo.AlterColumn(Database.Clients.IDBClient,System.String,Database.Entities.Descriptors.EntityColumnDescriptor)">
+            <summary>
+            modifies a column of a table
+            </summary>
+            <param name="client">db access</param>
+            <param name="table">table to modify</param>
+            <param name="column">column to modify</param>
+        </member>
+        <member name="M:Database.Info.DBInfo.Append(Database.Entities.Operations.IDBField,Database.Entities.Operations.OperationPreparator,System.Func{System.Type,Database.Entities.Descriptors.EntityDescriptor})">
+            <summary>
+            appends a database field to an <see cref="T:Database.Entities.Operations.OperationPreparator"/>
+            </summary>
+            <param name="field">field to append</param>
+            <param name="preparator">operation to append function to</param>
+            <param name="descriptorgetter">function used to get <see cref="T:Database.Entities.Descriptors.EntityDescriptor"/>s for types</param>
+        </member>
+        <member name="T:Database.Info.IDBInfo">
+            <summary>
+            db specific information
+            </summary>
+        </member>
+        <member name="P:Database.Info.IDBInfo.Parameter">
+            <summary>
+            character used for parameters
+            </summary>
+        </member>
+        <member name="P:Database.Info.IDBInfo.JoinHint">
+            <summary>
+            parameter used when joining
+            </summary>
+        </member>
+        <member name="P:Database.Info.IDBInfo.AutoIncrement">
+            <summary>
+            parameter used to create autoincrement columns
+            </summary>
+        </member>
+        <member name="P:Database.Info.IDBInfo.ColumnIndicator">
+            <summary>
+            character used to specify columns explicitely
+            </summary>
+        </member>
+        <member name="P:Database.Info.IDBInfo.LikeTerm">
+            <summary>
+            term used for like expression
+            </summary>
+        </member>
+        <member name="M:Database.Info.IDBInfo.Replace(System.Linq.Expressions.ExpressionVisitor,Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)">
+            <summary>
+            method used to create a replace function
+            </summary>
+            <param name="preparator"> </param>
+            <param name="value"></param>
+            <param name="src"></param>
+            <param name="target"></param>
+            <param name="visitor"> </param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.IDBInfo.ToUpper(System.Linq.Expressions.ExpressionVisitor,Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression)">
+            <summary>
+            converts an expression to uppercase using database command
+            </summary>
+            <param name="visitor"></param>
+            <param name="preparator"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:Database.Info.IDBInfo.ToLower(System.Linq.Expressions.ExpressionVisitor,Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression)">
+            <summary>
+            converts an expression to lowercase using database command
+            </summary>
+            <param name="visitor"></param>
+            <param name="preparator"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:Database.Info.IDBInfo.CheckIfTableExists(Database.Clients.IDBClient,System.String)">
+            <summary>
+            command used to check whether a table exists
+            </summary>
+            <param name="db"></param>
+            <param name="table"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Database.Info.IDBInfo.TransactionHint">
+            <summary>
+            determines whether db supports transactions
+            </summary>
+        </member>
+        <member name="M:Database.Info.IDBInfo.GetDBType(System.Type)">
+            <summary>
+            get db type of an application type
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.IDBInfo.GetDBRepresentation(System.Type)">
+            <summary>
+            get db representation type
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.IDBInfo.MaskColumn(System.String)">
+            <summary>
+            masks a column
+            </summary>
+            <param name="column"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Database.Info.IDBInfo.CreateSuffix">
+            <summary>
+            suffix to use when creating tables
+            </summary>
+        </member>
+        <member name="M:Database.Info.IDBInfo.CreateColumn(Database.Entities.Operations.OperationPreparator,Database.Entities.Descriptors.EntityColumnDescriptor)">
+            <summary>
+            text used to create a column
+            </summary>
+            <param name="operation"></param>
+            <param name="column"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.IDBInfo.ReturnInsertID(Database.Clients.IDBClient,Database.Entities.Descriptors.EntityDescriptor,System.String,System.Object[])">
+            <summary>
+            changes creation command to creation command with return insert id statement
+            </summary>
+            <param name="insertcommand">insert command</param>
+            <param name="client">db client used to execute commands</param>
+            <param name="descriptor">descriptor of entity</param>
+            <param name="parameters">parameters for command</param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.IDBInfo.GetSchema(Database.Clients.IDBClient,System.String)">
+            <summary>
+            get schema for a table in database
+            </summary>
+            <param name="client">database connection</param>
+            <param name="name">name of table of which to get schema</param>
+            <returns><see cref="T:Database.Entities.Schema.SchemaDescriptor"/> containing all information about table</returns>
+        </member>
+        <member name="M:Database.Info.IDBInfo.AddColumn(Database.Clients.IDBClient,System.String,Database.Entities.Descriptors.EntityColumnDescriptor,Database.Clients.Transaction)">
+            <summary>
+            adds a column to a table
+            </summary>
+            <param name="client">db access</param>
+            <param name="table">table to modify</param>
+            <param name="column">column to add</param>
+            <param name="transaction">transaction to use (optional)</param>
+        </member>
+        <member name="M:Database.Info.IDBInfo.RemoveColumn(Database.Clients.IDBClient,System.String,System.String)">
+            <summary>
+            removes a column from a table
+            </summary>
+            <param name="client">db access</param>
+            <param name="table">table to modify</param>
+            <param name="column">column to remove</param>
+        </member>
+        <member name="M:Database.Info.IDBInfo.AlterColumn(Database.Clients.IDBClient,System.String,Database.Entities.Descriptors.EntityColumnDescriptor)">
+            <summary>
+            modifies a column of a table
+            </summary>
+            <param name="client">db access</param>
+            <param name="table">table to modify</param>
+            <param name="column">column to modify</param>
+        </member>
+        <member name="M:Database.Info.IDBInfo.Append(Database.Entities.Operations.IDBField,Database.Entities.Operations.OperationPreparator,System.Func{System.Type,Database.Entities.Descriptors.EntityDescriptor})">
+            <summary>
+            appends a database field to an <see cref="T:Database.Entities.Operations.OperationPreparator"/>
+            </summary>
+            <param name="field">field to append</param>
+            <param name="preparator">operation to append function to</param>
+            <param name="descriptorgetter">function used to get <see cref="T:Database.Entities.Descriptors.EntityDescriptor"/>s for types</param>
+        </member>
+        <member name="T:Database.Info.MySQLInfo">
+            <summary>
+            information for mysql db
+            </summary>
+        </member>
+        <member name="T:Database.Info.PostgreInfo">
+            <summary>
+            database specific logic for postgre databases
+            </summary>
+        </member>
+        <member name="M:Database.Info.PostgreInfo.#ctor">
+            <summary>
+            creates a new <see cref="T:Database.Info.PostgreInfo"/>
+            </summary>
+        </member>
+        <member name="M:Database.Info.PostgreInfo.AppendFunction(Database.Entities.Operations.DBFunction,Database.Entities.Operations.OperationPreparator,System.Func{System.Type,Database.Entities.Descriptors.EntityDescriptor})">
+            <summary>
+            appends a database function to an <see cref="T:Database.Entities.Operations.OperationPreparator"/>
+            </summary>
+            <param name="function">function to be executed</param>
+            <param name="preparator">operation to append function to</param>
+            <param name="descriptorgetter">function used to get <see cref="T:Database.Entities.Descriptors.EntityDescriptor"/>s for types</param>
+        </member>
+        <member name="P:Database.Info.PostgreInfo.Parameter">
+            <summary>
+            character used for parameters
+            </summary>
+        </member>
+        <member name="P:Database.Info.PostgreInfo.JoinHint">
+            <summary>
+            parameter used when joining
+            </summary>
+        </member>
+        <member name="P:Database.Info.PostgreInfo.AutoIncrement">
+            <summary>
+            parameter used to create autoincrement columns
+            </summary>
+        </member>
+        <member name="P:Database.Info.PostgreInfo.ColumnIndicator">
+            <summary>
+            character used to specify columns explicitely
+            </summary>
+        </member>
+        <member name="P:Database.Info.PostgreInfo.LikeTerm">
+            <summary>
+            term used for like expression
+            </summary>
+        </member>
+        <member name="M:Database.Info.PostgreInfo.Replace(System.Linq.Expressions.ExpressionVisitor,Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)">
+            <summary>
+            method used to create a replace function
+            </summary>
+            <param name="preparator"> </param>
+            <param name="value"></param>
+            <param name="src"></param>
+            <param name="target"></param>
+            <param name="visitor"> </param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.PostgreInfo.CheckIfTableExists(Database.Clients.IDBClient,System.String)">
+            <summary>
+            command used to check whether a table exists
+            </summary>
+            <param name="db"></param>
+            <param name="table"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Database.Info.PostgreInfo.TransactionHint">
+            <summary>
+            determines whether db supports transactions
+            </summary>
+        </member>
+        <member name="M:Database.Info.PostgreInfo.GetDBType(System.Type)">
+            <summary>
+            get db type of an application type
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.PostgreInfo.GetDBRepresentation(System.Type)">
+            <summary>
+            get db representation type
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.PostgreInfo.MaskColumn(System.String)">
+            <summary>
+            masks a column
+            </summary>
+            <param name="column"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Database.Info.PostgreInfo.CreateSuffix">
+            <summary>
+            suffix to use when creating tables
+            </summary>
+        </member>
+        <member name="M:Database.Info.PostgreInfo.CreateColumn(Database.Entities.Operations.OperationPreparator,Database.Entities.Descriptors.EntityColumnDescriptor)">
+            <summary>
+            text used to create a column
+            </summary>
+            <param name="column"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.PostgreInfo.ReturnInsertID(Database.Clients.IDBClient,Database.Entities.Descriptors.EntityDescriptor,System.String,System.Object[])">
+            <summary>
+            changes creation command to creation command with return insert id statement
+            </summary>
+            <param name="insertcommand">insert command</param>
+            <param name="client">db client used to execute commands</param>
+            <param name="descriptor">descriptor of entity</param>
+            <param name="parameters">parameters for command</param>
+            <returns></returns>
+        </member>
+        <member name="T:Database.Info.SQLiteInfo">
+            <summary>
+            information for sqlite
+            </summary>
+        </member>
+        <member name="M:Database.Info.SQLiteInfo.#ctor">
+            <summary>
+            creates a new <see cref="T:Database.Info.SQLiteInfo"/>
+            </summary>
+        </member>
+        <member name="P:Database.Info.SQLiteInfo.Parameter">
+            <summary>
+            character used for parameters
+            </summary>
+        </member>
+        <member name="P:Database.Info.SQLiteInfo.JoinHint">
+            <summary>
+            parameter used when joining
+            </summary>
+        </member>
+        <member name="P:Database.Info.SQLiteInfo.AutoIncrement">
+            <summary>
+            parameter used to create autoincrement columns
+            </summary>
+        </member>
+        <member name="P:Database.Info.SQLiteInfo.ColumnIndicator">
+            <summary>
+            character used to specify columns explicitely
+            </summary>
+        </member>
+        <member name="P:Database.Info.SQLiteInfo.LikeTerm">
+            <summary>
+            term used for like expression
+            </summary>
+        </member>
+        <member name="M:Database.Info.SQLiteInfo.Replace(System.Linq.Expressions.ExpressionVisitor,Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)">
+            <summary>
+            method used to create a replace function
+            </summary>
+            <param name="preparator"> </param>
+            <param name="value"></param>
+            <param name="src"></param>
+            <param name="target"></param>
+            <param name="visitor"> </param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.SQLiteInfo.ToUpper(System.Linq.Expressions.ExpressionVisitor,Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression)">
+            <summary>
+            converts an expression to uppercase using database command
+            </summary>
+            <param name="visitor"></param>
+            <param name="preparator"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:Database.Info.SQLiteInfo.ToLower(System.Linq.Expressions.ExpressionVisitor,Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression)">
+            <summary>
+            converts an expression to lowercase using database command
+            </summary>
+            <param name="visitor"></param>
+            <param name="preparator"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:Database.Info.SQLiteInfo.CheckIfTableExists(Database.Clients.IDBClient,System.String)">
+            <summary>
+            command used to check whether a table exists
+            </summary>
+            <param name="db"></param>
+            <param name="table"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Database.Info.SQLiteInfo.TransactionHint">
+            <summary>
+            determines whether db supports transactions
+            </summary>
+        </member>
+        <member name="M:Database.Info.SQLiteInfo.GetDBType(System.Type)">
+            <summary>
+            get db type of an application type
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.SQLiteInfo.GetDBRepresentation(System.Type)">
+            <summary>
+            get db representation type
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.SQLiteInfo.MaskColumn(System.String)">
+            <summary>
+            masks a column
+            </summary>
+            <param name="column"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Database.Info.SQLiteInfo.CreateSuffix">
+            <summary>
+            suffix to use when creating tables
+            </summary>
+        </member>
+        <member name="M:Database.Info.SQLiteInfo.CreateColumn(Database.Entities.Operations.OperationPreparator,Database.Entities.Descriptors.EntityColumnDescriptor)">
+            <summary>
+            text used to create a column
+            </summary>
+            <param name="operation"></param>
+            <param name="column"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.SQLiteInfo.ReturnInsertID(Database.Clients.IDBClient,Database.Entities.Descriptors.EntityDescriptor,System.String,System.Object[])">
+            <summary>
+            changes creation command to creation command with return insert id statement
+            </summary>
+            <param name="insertcommand">insert command</param>
+            <param name="client">db client used to execute commands</param>
+            <param name="descriptor">descriptor of entity</param>
+            <param name="parameters">parameters for command</param>
+            <returns></returns>
+        </member>
+        <member name="M:Database.Info.SQLiteInfo.GetSchema(Database.Clients.IDBClient,System.String)">
+            <summary>
+            get schema for a table in database
+            </summary>
+            <param name="client">database connection</param>
+            <param name="tablename">name of table of which to get schema</param>
+            <returns><see cref="T:Database.Entities.Schema.SchemaDescriptor"/> containing all information about table</returns>
+        </member>
+        <member name="M:Database.Info.SQLiteInfo.AddColumn(Database.Clients.IDBClient,System.String,Database.Entities.Descriptors.EntityColumnDescriptor,Database.Clients.Transaction)">
+            <summary>
+            adds a column to a table
+            </summary>
+            <param name="client">db access</param>
+            <param name="table">table to modify</param>
+            <param name="column">column to add</param>
+            <param name="transaction">transaction to use (optional)</param>
+        </member>
+        <member name="M:Database.Info.SQLiteInfo.RemoveColumn(Database.Clients.IDBClient,System.String,System.String)">
+            <summary>
+            removes a column from a table
+            </summary>
+            <param name="client">db access</param>
+            <param name="table">table to modify</param>
+            <param name="column">column to remove</param>
+            <remarks>
+            creates a new table and transfers the data since SQLite has no drop column command
+            </remarks>
+        </member>
+        <member name="M:Database.Info.SQLiteInfo.AlterColumn(Database.Clients.IDBClient,System.String,Database.Entities.Descriptors.EntityColumnDescriptor)">
+            <summary>
+            modifies a column of a table
+            </summary>
+            <param name="client">db access</param>
+            <param name="table">table to modify</param>
+            <param name="column">column to modify</param>
+            <remarks>
+            Removes the column and recreates it. So you will lose all your data in that column.
+            </remarks>
+        </member>
+        <member name="M:Database.Info.SQLiteInfo.AnalyseTableSql(Database.Entities.Schema.TableDescriptor,System.String)">
+            <summary>
+            analyses the sql of a table creation and fills the table descriptor from the results
+            </summary>
+            <param name="descriptor">descriptor to fill</param>
+            <param name="sql">sql to analyse</param>
+        </member>
+    </members>
+</doc>
