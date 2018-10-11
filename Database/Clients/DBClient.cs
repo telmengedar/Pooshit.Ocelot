@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using Database.Info;
+using NightlyCode.Database.Info;
 
-namespace Database.Clients
+namespace NightlyCode.Database.Clients
 {
 
     /// <summary>

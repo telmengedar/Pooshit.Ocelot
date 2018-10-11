@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
-using Database.Clients;
-using Database.Entities.Descriptors;
-using Database.Entities.Operations.Expressions;
+using NightlyCode.Database.Clients;
+using NightlyCode.Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Operations.Expressions;
 
-namespace Database.Entities.Operations {
+namespace NightlyCode.Database.Entities.Operations {
 
     /// <summary>
     /// updates values for an entity in the database

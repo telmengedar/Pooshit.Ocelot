@@ -1,12 +1,12 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
-using Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Descriptors;
 
 #if UNITY
 using NightlyCode.Unity.DB.Entities.Operations;
 #endif
 
-namespace Database.Entities.Operations.Expressions {
+namespace NightlyCode.Database.Entities.Operations.Expressions {
     public class ColumnVisitor
 #if UNITY
         : ExpressionVisitor {

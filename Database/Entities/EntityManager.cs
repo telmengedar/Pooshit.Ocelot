@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using Database.Clients;
-using Database.Entities.Descriptors;
-using Database.Entities.Operations;
-using Database.Entities.Schema;
-using Database.Extern;
-using Converter = Database.Extern.Converter;
+using NightlyCode.Database.Clients;
+using NightlyCode.Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Operations;
+using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Entities.Schema;
+using NightlyCode.Database.Extern;
+using Converter = NightlyCode.Database.Extern.Converter;
 
-namespace Database.Entities {
+namespace NightlyCode.Database.Entities {
 
     /// <summary>
     /// manages entities in db

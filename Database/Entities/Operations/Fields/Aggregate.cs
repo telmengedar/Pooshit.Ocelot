@@ -1,4 +1,4 @@
-﻿namespace Database.Entities.Operations.Aggregates {
+﻿namespace NightlyCode.Database.Entities.Operations.Fields {
 
     /// <summary>
     /// aggregate with <see cref="IDBField"/> arguments

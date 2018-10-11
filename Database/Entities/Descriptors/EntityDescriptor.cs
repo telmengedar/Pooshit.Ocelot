@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Database.Entities.Attributes;
+using NightlyCode.Database.Entities.Attributes;
 
-namespace Database.Entities.Descriptors
+namespace NightlyCode.Database.Entities.Descriptors
 {
 
     /// <summary>

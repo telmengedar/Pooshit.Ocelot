@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Database.Extern {
+namespace NightlyCode.Database.Extern {
 
     /// <summary>
     /// key used for specific conversion

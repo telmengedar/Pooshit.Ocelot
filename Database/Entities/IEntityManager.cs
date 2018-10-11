@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using Database.Clients;
-using Database.Entities.Descriptors;
-using Database.Entities.Operations;
+using NightlyCode.Database.Clients;
+using NightlyCode.Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Operations;
+using NightlyCode.Database.Entities.Operations.Fields;
 
-namespace Database.Entities {
+namespace NightlyCode.Database.Entities {
 
     /// <summary>
     /// interface for an entity manager

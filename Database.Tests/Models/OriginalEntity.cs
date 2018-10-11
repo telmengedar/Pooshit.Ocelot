@@ -1,4 +1,4 @@
-﻿using Database.Entities.Attributes;
+﻿using NightlyCode.Database.Entities.Attributes;
 
 namespace NightlyCode.Database.Tests.Models {
 

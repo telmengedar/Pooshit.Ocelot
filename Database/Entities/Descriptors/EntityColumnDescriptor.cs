@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Database.Entities.Descriptors
+namespace NightlyCode.Database.Entities.Descriptors
 {
     /// <summary>
     /// descriptor for a column

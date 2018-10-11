@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Database.Clients;
-using Database.Entities.Operations;
-using Converter = Database.Extern.Converter;
+using NightlyCode.Database.Clients;
+using NightlyCode.Database.Entities.Operations;
+using Converter = NightlyCode.Database.Extern.Converter;
 
-namespace Database.Entities {
+namespace NightlyCode.Database.Entities {
     /// <summary>
     /// a prepared load values operation
     /// </summary>

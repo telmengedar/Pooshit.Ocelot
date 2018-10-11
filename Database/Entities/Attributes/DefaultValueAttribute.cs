@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Database.Entities.Attributes {
+namespace NightlyCode.Database.Entities.Attributes {
 
     /// <summary>
     /// specifies a default value for a column

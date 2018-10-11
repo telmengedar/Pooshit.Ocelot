@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Database.Entities.Attributes
+namespace NightlyCode.Database.Entities.Attributes
 {
     /// <summary>
     /// attribute describing the table the object resides in

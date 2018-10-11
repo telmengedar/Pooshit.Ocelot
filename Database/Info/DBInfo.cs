@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using Database.Clients;
-using Database.Entities.Descriptors;
-using Database.Entities.Operations;
-using Database.Entities.Operations.Aggregates;
-using Database.Entities.Operations.Expressions;
-using Database.Entities.Schema;
+using NightlyCode.Database.Clients;
+using NightlyCode.Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Operations;
+using NightlyCode.Database.Entities.Operations.Expressions;
+using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Entities.Schema;
 
-namespace Database.Info {
+namespace NightlyCode.Database.Info {
 
     /// <summary>
     /// base implementation for db specific logic

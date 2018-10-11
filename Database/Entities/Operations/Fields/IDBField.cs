@@ -1,8 +1,6 @@
 ﻿using System;
-using Database.Entities.Descriptors;
-using Database.Info;
 
-namespace Database.Entities.Operations {
+namespace NightlyCode.Database.Entities.Operations.Fields {
 
     /// <summary>
     /// interface for a db field

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 #endif
 
-namespace Database.Extern {
+namespace NightlyCode.Database.Extern {
 
     /// <summary>
     /// converter used to convert data types

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Database.Entities.Operations {
+namespace NightlyCode.Database.Entities.Operations {
 
     /// <summary>
     /// operators for database operations

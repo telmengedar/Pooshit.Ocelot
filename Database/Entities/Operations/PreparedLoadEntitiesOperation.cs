@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Database.Clients;
-using Database.Entities.Descriptors;
-using Converter = Database.Extern.Converter;
+using NightlyCode.Database.Clients;
+using NightlyCode.Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Operations.Fields;
+using Converter = NightlyCode.Database.Extern.Converter;
 
-namespace Database.Entities.Operations {
+namespace NightlyCode.Database.Entities.Operations {
 
     /// <summary>
     /// load operation prepared to execute

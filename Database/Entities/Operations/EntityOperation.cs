@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections;
-using Database.Clients;
-using Database.Entities.Descriptors;
-using Converter = Database.Extern.Converter;
+using NightlyCode.Database.Clients;
+using NightlyCode.Database.Entities.Descriptors;
+using Converter = NightlyCode.Database.Extern.Converter;
 
-namespace Database.Entities.Operations {
+namespace NightlyCode.Database.Entities.Operations {
 
     /// <summary>
     /// updates entities in db

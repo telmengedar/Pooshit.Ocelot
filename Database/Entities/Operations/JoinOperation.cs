@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace Database.Entities.Operations {
+namespace NightlyCode.Database.Entities.Operations {
 
     /// <summary>
     /// operation used to join tables

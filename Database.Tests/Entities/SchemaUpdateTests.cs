@@ -1,8 +1,8 @@
 ﻿using System.Linq;
-using Database.Clients;
-using Database.Entities;
-using Database.Entities.Descriptors;
-using Database.Entities.Schema;
+using NightlyCode.Database.Clients;
+using NightlyCode.Database.Entities;
+using NightlyCode.Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Schema;
 using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;
 

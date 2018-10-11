@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq.Expressions;
+using NightlyCode.Database.Entities.Operations.Fields;
 
-namespace Database.Entities.Operations {
+namespace NightlyCode.Database.Entities.Operations {
 
     /// <summary>
     /// field describing a property of an entity

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Database.Entities.Schema;
-using Database.Info;
+using NightlyCode.Database.Entities.Schema;
+using NightlyCode.Database.Info;
 using NUnit.Framework;
 
 namespace NightlyCode.Database.Tests.Sqlite {

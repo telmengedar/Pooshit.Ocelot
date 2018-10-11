@@ -1,10 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
-using Database.Entities.Descriptors;
-using Database.Entities.Operations.Expressions;
-using Database.Info;
-
-namespace Database.Entities.Operations {
+﻿namespace NightlyCode.Database.Entities.Operations.Fields {
 
     /// <summary>
     /// constant value

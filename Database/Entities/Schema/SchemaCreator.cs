@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Database.Clients;
-using Database.Entities.Attributes;
-using Database.Entities.Descriptors;
-using Database.Entities.Operations;
+using NightlyCode.Database.Clients;
+using NightlyCode.Database.Entities.Attributes;
+using NightlyCode.Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Operations;
 
-namespace Database.Entities.Schema {
+namespace NightlyCode.Database.Entities.Schema {
 
     /// <summary>
     /// creates a schema in database

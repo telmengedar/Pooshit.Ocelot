@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Database.Entities.Descriptors {
+namespace NightlyCode.Database.Entities.Descriptors {
 
     /// <summary>
     /// caches models for entities

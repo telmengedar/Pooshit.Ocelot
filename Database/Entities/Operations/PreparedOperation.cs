@@ -1,4 +1,6 @@
-﻿namespace Database.Entities.Operations {
+﻿using NightlyCode.Database.Entities.Operations.Fields;
+
+namespace NightlyCode.Database.Entities.Operations {
 
     /// <summary>
     /// a prepared db operation

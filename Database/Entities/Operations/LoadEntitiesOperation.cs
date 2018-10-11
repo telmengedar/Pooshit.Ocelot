@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using Database.Clients;
-using Database.Entities.Descriptors;
-using Database.Entities.Operations.Expressions;
-using Database.Entities.Operations.Fields;
+using NightlyCode.Database.Clients;
+using NightlyCode.Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Operations.Expressions;
+using NightlyCode.Database.Entities.Operations.Fields;
 
-namespace Database.Entities.Operations {
+namespace NightlyCode.Database.Entities.Operations {
 
     /// <summary>
     /// operation used to load entities

@@ -1,4 +1,4 @@
-﻿namespace Database.Clients.Tables
+﻿namespace NightlyCode.Database.Clients.Tables
 {
     /// <summary>
     /// row of a database table

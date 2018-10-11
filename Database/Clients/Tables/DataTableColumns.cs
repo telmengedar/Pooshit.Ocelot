@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Database.Clients.Tables
+namespace NightlyCode.Database.Clients.Tables
 {
 
     /// <summary>

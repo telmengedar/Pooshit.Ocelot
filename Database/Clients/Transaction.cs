@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Data;
-using Database.Entities.Operations;
+using NightlyCode.Database.Entities.Operations;
 
-namespace Database.Clients {
+namespace NightlyCode.Database.Clients {
 
     /// <summary>
     /// transaction of db clients
     /// </summary>
     public class Transaction : IDisposable {
-        private readonly IDBClient client;
-        bool commited = false;
+        readonly IDBClient client;
+        bool commited;
         
 
         internal Transaction(IDBClient client, IDbTransaction transaction) {

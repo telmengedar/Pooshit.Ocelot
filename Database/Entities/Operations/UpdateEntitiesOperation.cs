@@ -2,10 +2,10 @@
 using System.Collections;
 using System.Linq;
 using System.Text;
-using Database.Clients;
-using Database.Entities.Descriptors;
+using NightlyCode.Database.Clients;
+using NightlyCode.Database.Entities.Descriptors;
 
-namespace Database.Entities.Operations {
+namespace NightlyCode.Database.Entities.Operations {
 
     /// <summary>
     /// updates existing entities in db

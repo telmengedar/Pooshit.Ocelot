@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Database.Entities.Descriptors {
+namespace NightlyCode.Database.Entities.Descriptors {
 
     /// <summary>
     /// descriptor for an index

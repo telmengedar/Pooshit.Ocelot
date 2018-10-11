@@ -1,4 +1,4 @@
-﻿namespace Database.Entities.Schema {
+﻿namespace NightlyCode.Database.Entities.Schema {
 
     /// <summary>
     /// schema types

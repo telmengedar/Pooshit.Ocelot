@@ -1,4 +1,4 @@
-namespace Database.Entities.Operations {
+namespace NightlyCode.Database.Entities.Operations.Fields {
 
     /// <summary>
     /// functions of db

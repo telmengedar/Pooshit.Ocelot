@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace Database.Expressions
+namespace NightlyCode.Database.Expressions
 {
 
     /// <summary>

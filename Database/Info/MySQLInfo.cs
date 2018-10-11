@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq.Expressions;
-using Database.Clients;
-using Database.Entities.Descriptors;
-using Database.Entities.Operations;
-using Database.Entities.Schema;
+using NightlyCode.Database.Clients;
+using NightlyCode.Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Operations;
+using NightlyCode.Database.Entities.Schema;
 
-namespace Database.Info
+namespace NightlyCode.Database.Info
 {
 
     /// <summary>

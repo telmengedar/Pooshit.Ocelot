@@ -3,39 +3,23 @@ using System.Collections;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Database.Entities.Descriptors;
-using Database.Info;
-using Converter = Database.Extern.Converter;
+using NightlyCode.Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Info;
+using Converter = NightlyCode.Database.Extern.Converter;
 
-#if UNITY
-using NightlyCode.Unity.DB.Entities.Operations;
-#endif
-
-namespace Database.Entities.Operations.Expressions {
+namespace NightlyCode.Database.Entities.Operations.Expressions {
 
     /// <summary>
     /// visits an expression tree to convert it to sql
     /// </summary>
-    public class CriteriaVisitor
-#if UNITY
-        : ExpressionVisitor
-#else
-        : ExpressionVisitor
-#endif
+    public class CriteriaVisitor : ExpressionVisitor
     { 
-#if UNITY
-        const ExpressionType DefaultExpression = (ExpressionType)(-1);
-#endif
-
         readonly Func<Type, EntityDescriptor> descriptorgetter;
         readonly OperationPreparator preparator;
         readonly IDBInfo dbinfo;
 
-#if UNITY
-        ExpressionType remainder = DefaultExpression;
-#else
         ExpressionType remainder = ExpressionType.Default;
-#endif
 
         CriteriaVisitor(Func<Type, EntityDescriptor> descriptorgetter, OperationPreparator preparator, IDBInfo dbinfo) {
             this.descriptorgetter = descriptorgetter;
@@ -113,11 +97,7 @@ namespace Database.Entities.Operations.Expressions {
                     preparator.CommandBuilder.Append(" <> ");
                     break;
             }
-#if UNITY
-            remainder = DefaultExpression;
-#else
             remainder = ExpressionType.Default;
-#endif
         }
 
         void AppendConstantValue(object value) {
@@ -151,11 +131,7 @@ namespace Database.Entities.Operations.Expressions {
                 }
             }
 
-#if UNITY
-            remainder = DefaultExpression;
-#else
             remainder = ExpressionType.Default;
-#endif
         }
 
         protected override Expression VisitConstant(ConstantExpression node) {
@@ -238,7 +214,8 @@ namespace Database.Entities.Operations.Expressions {
             }
             else if(expression.NodeType == ExpressionType.MemberAccess) {
                 // references a parameter to be specified later when executing the operation
-                if (((PropertyInfo)member).DeclaringType == typeof(DBParameter))
+                if (((PropertyInfo)member).DeclaringType == typeof(DBParameter) 
+                    || (((PropertyInfo)member).DeclaringType.IsGenericType && ((PropertyInfo)member).DeclaringType.GetGenericTypeDefinition() == typeof(DBParameter<>)))
                 {
                     preparator.AppendParameter();
                 }
@@ -262,11 +239,7 @@ namespace Database.Entities.Operations.Expressions {
             else throw new NotImplementedException();
         }
 
-#if UNITY
-        protected override Expression VisitMemberAccess(MemberExpression node) {
-#else
         protected override Expression VisitMember(MemberExpression node) {
-#endif
             AppendValueRemainder();
             if(node.Member is PropertyInfo) {
                 AppendMemberValue(node.Expression ?? node, node.Member);
@@ -292,11 +265,7 @@ namespace Database.Entities.Operations.Expressions {
                 return base.VisitUnary(node);
 
             AppendValueRemainder();
-#if UNITY
-            remainder = DefaultExpression;
-#else
             remainder = ExpressionType.Default;
-#endif
             AddOperant(node.NodeType);
             Visit(node.Operand);
             return node;
@@ -304,11 +273,7 @@ namespace Database.Entities.Operations.Expressions {
 
         protected override Expression VisitBinary(BinaryExpression node) {
             AppendValueRemainder();
-#if UNITY
-            remainder = DefaultExpression;
-#else
             remainder = ExpressionType.Default;
-#endif
 
             if (node.NodeType == ExpressionType.ArrayIndex) {
                 Array array = GetValue(node.Left) as Array;

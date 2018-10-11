@@ -1,8 +1,6 @@
 ﻿using System;
-using Database.Entities.Descriptors;
-using Database.Info;
 
-namespace Database.Entities.Operations {
+namespace NightlyCode.Database.Entities.Operations.Fields {
     
     /// <summary>
     /// parameter for statements
@@ -81,18 +79,11 @@ namespace Database.Entities.Operations {
     /// generic parameter for specific types
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class DBParameter<T> : DBParameter {
+    public static class DBParameter<T> {
 
         /// <summary>
-        /// ctor
+        /// field to use in expressions when referencing a <see cref="T"/> parameter
         /// </summary>
-        /// <param name="index"></param>
-        public DBParameter(int index)
-            : base(index) {}
-
-        /// <summary>
-        /// property to use for comparision in expressions
-        /// </summary>
-        public new T Value { get { return default(T); } }
+        public static T Value => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
     }
 }

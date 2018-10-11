@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using Database.Info;
+using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Info;
 
-namespace Database.Entities.Operations {
+namespace NightlyCode.Database.Entities.Operations {
 
     /// <summary>
     /// preparator for operations

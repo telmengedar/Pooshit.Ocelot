@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
-using Database.Entities.Operations.Expressions;
+using NightlyCode.Database.Entities.Operations.Expressions;
 
-namespace Database.Entities.Descriptors {
+namespace NightlyCode.Database.Entities.Descriptors {
 
     /// <summary>
     /// allows to modify entity model descriptions

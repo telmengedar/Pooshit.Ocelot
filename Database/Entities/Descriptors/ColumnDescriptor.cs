@@ -1,4 +1,4 @@
-namespace Database.Entities.Descriptors {
+namespace NightlyCode.Database.Entities.Descriptors {
     /// <summary>
     /// descriptor for a column of a database entity
     /// </summary>

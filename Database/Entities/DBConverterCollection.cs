@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using GoorooMania.Unity.DB.Entities;
 #endif
 
-namespace Database.Entities {
+namespace NightlyCode.Database.Entities {
 
     /// <summary>
     /// collection of custom db converters

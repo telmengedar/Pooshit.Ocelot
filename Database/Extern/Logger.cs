@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Database.Extern {
+namespace NightlyCode.Database.Extern {
 
     /// <summary>
     /// provides logging functions to the current assembly

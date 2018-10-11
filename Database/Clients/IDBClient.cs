@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Database.Info;
+using NightlyCode.Database.Info;
 
-namespace Database.Clients
+namespace NightlyCode.Database.Clients
 {
 
     /// <summary>

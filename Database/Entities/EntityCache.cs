@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Database.Entities {
+namespace NightlyCode.Database.Entities {
 
     /// <summary>
     /// buffers entities for a key to reduce loading operations to database

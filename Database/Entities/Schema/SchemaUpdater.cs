@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Database.Clients;
-using Database.Entities.Descriptors;
-using Database.Entities.Operations;
-using Database.Extern;
+using NightlyCode.Database.Clients;
+using NightlyCode.Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Operations;
+using NightlyCode.Database.Extern;
 
-namespace Database.Entities.Schema {
+namespace NightlyCode.Database.Entities.Schema {
 
     /// <summary>
     /// updates database schemata

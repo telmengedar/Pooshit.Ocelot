@@ -2,7 +2,7 @@
 using System.Data;
 using System.Linq;
 
-namespace Database.Clients.Tables
+namespace NightlyCode.Database.Clients.Tables
 {
     public class DataTable
     {

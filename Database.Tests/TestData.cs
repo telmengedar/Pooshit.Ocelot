@@ -1,6 +1,6 @@
-﻿using Database.Clients;
-using Database.Info;
-using Microsoft.Data.Sqlite;
+﻿using Microsoft.Data.Sqlite;
+using NightlyCode.Database.Clients;
+using NightlyCode.Database.Info;
 
 namespace NightlyCode.Database.Tests {
     public static class TestData {

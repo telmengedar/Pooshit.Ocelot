@@ -78,6 +78,7 @@ namespace NightlyCode.DB.Entities.Operations {
         /// field to use in expressions when referencing a <see cref="T:byte[]"/> parameter
         /// </summary>
         public static byte[] Blob => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+
         #endregion
     }
 
@@ -95,8 +96,8 @@ namespace NightlyCode.DB.Entities.Operations {
             : base(index) {}
 
         /// <summary>
-        /// property to use for comparision in expressions
+        /// field to use in expressions when referencing a <see cref="T"/> parameter
         /// </summary>
-        public new T Value { get { return default(T); } }
+        public static T Field => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
     }
 }

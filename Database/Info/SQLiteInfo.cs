@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
-using Database.Clients;
-using Database.Entities;
-using Database.Entities.Descriptors;
-using Database.Entities.Operations;
-using Database.Entities.Operations.Expressions;
-using Database.Entities.Operations.Fields;
-using Database.Entities.Schema;
-using Converter = Database.Extern.Converter;
+using NightlyCode.Database.Clients;
+using NightlyCode.Database.Entities;
+using NightlyCode.Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Operations;
+using NightlyCode.Database.Entities.Operations.Expressions;
+using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Entities.Schema;
+using Converter = NightlyCode.Database.Extern.Converter;
 
-namespace Database.Info
+namespace NightlyCode.Database.Info
 {
 
     /// <summary>

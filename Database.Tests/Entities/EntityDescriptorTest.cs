@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;
 
