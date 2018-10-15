@@ -341,6 +341,19 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 return node;
             }
 
+            if (node.Method.DeclaringType == typeof(DBParameter)) {
+                switch (node.Method.Name) {
+                    case "Index":
+                        int index = (int)GetHost(node.Arguments.First());
+                        preparator.AppendParameterIndex(index);
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+
+                return node;
+            }
+
             object value = node.Method.Invoke(GetHost(node.Object), node.Arguments.Select(GetHost).ToArray());
             AppendConstantValue(value);
             return node;

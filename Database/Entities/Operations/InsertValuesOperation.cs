@@ -75,10 +75,10 @@ namespace NightlyCode.Database.Entities.Operations {
             PreparedOperation operation = Prepare();
 
             if(lastinsertid)
-                return Converter.Convert<long>(dbclient.DBInfo.ReturnInsertID(dbclient, descriptorgetter(typeof(T)), operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray()));
+                return Converter.Convert<long>(dbclient.DBInfo.ReturnInsertID(dbclient, descriptorgetter(typeof(T)), operation.CommandText, operation.Parameters));
             if(transaction==null)
-                return dbclient.NonQuery(operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray());
-            return dbclient.NonQuery(transaction, operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray());
+                return dbclient.NonQuery(operation.CommandText, operation.Parameters);
+            return dbclient.NonQuery(transaction, operation.CommandText, operation.Parameters);
         }
 
         public PreparedOperation Prepare() {

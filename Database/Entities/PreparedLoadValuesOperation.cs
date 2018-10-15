@@ -30,7 +30,7 @@ namespace NightlyCode.Database.Entities {
         /// <returns></returns>
         public Clients.Tables.DataTable Execute(Transaction transaction)
         {
-            return dbclient.Query(transaction, operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray());
+            return dbclient.Query(transaction, operation.CommandText, operation.Parameters);
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace NightlyCode.Database.Entities {
         /// </summary>
         /// <returns></returns>
         public Clients.Tables.DataTable Execute() {
-            return dbclient.Query(operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray());
+            return dbclient.Query(operation.CommandText, operation.Parameters);
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace NightlyCode.Database.Entities {
         /// <returns></returns>
         public TScalar ExecuteScalar<TScalar>(Transaction transaction)
         {
-            return Converter.Convert<TScalar>(dbclient.Scalar(transaction, operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray()), true);
+            return Converter.Convert<TScalar>(dbclient.Scalar(transaction, operation.CommandText, operation.Parameters), true);
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace NightlyCode.Database.Entities {
         /// </summary>
         /// <returns></returns>
         public TScalar ExecuteScalar<TScalar>() {
-            return Converter.Convert<TScalar>(dbclient.Scalar(operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray()), true);
+            return Converter.Convert<TScalar>(dbclient.Scalar(operation.CommandText, operation.Parameters), true);
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace NightlyCode.Database.Entities {
         /// <returns></returns>
         public TScalar ExecuteScalar<TScalar>(Transaction transaction, params object[] parameters) {
             if (parameters == null || parameters.Length == 0)
-                parameters = operation.Parameters.Select(p => p.Value).ToArray();
+                parameters = operation.Parameters;
             return Converter.Convert<TScalar>(dbclient.Scalar(transaction, operation.CommandText, parameters), true);
         }
 
@@ -75,7 +75,7 @@ namespace NightlyCode.Database.Entities {
         public TScalar ExecuteScalar<TScalar>(params object[] parameters)
         {
             if (parameters == null || parameters.Length == 0)
-                parameters = operation.Parameters.Select(p => p.Value).ToArray();
+                parameters = operation.Parameters;
 
             return Converter.Convert<TScalar>(dbclient.Scalar(operation.CommandText, parameters), true);
         }
@@ -88,7 +88,7 @@ namespace NightlyCode.Database.Entities {
         public IEnumerable<TScalar> ExecuteSet<TScalar>(Transaction transaction, params object[] parameters)
         {
             if (parameters == null || parameters.Length == 0)
-                parameters = operation.Parameters.Select(p => p.Value).ToArray();
+                parameters = operation.Parameters;
 
             foreach (object value in dbclient.Set(transaction, operation.CommandText, parameters))
                 yield return Converter.Convert<TScalar>(value, true);
@@ -96,7 +96,7 @@ namespace NightlyCode.Database.Entities {
 
         public IEnumerable<TScalar> ExecuteSet<TScalar>(params object[] parameters) {
             if (parameters == null || parameters.Length == 0)
-                parameters = operation.Parameters.Select(p => p.Value).ToArray();
+                parameters = operation.Parameters;
 
             foreach (object value in dbclient.Set(operation.CommandText, parameters))
                 yield return Converter.Convert<TScalar>(value, true);

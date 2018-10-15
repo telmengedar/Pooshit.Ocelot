@@ -73,6 +73,7 @@
     <Compile Include="Fields\ParameterTests.cs" />
     <Compile Include="Models\AddEntity.cs" />
     <Compile Include="Models\AlteredEntity.cs" />
+    <Compile Include="Models\SquareValue.cs" />
     <Compile Include="Models\EntityWithLessFields.cs" />
     <Compile Include="Models\EnumEntity.cs" />
     <Compile Include="Models\OriginalEntity.cs" />

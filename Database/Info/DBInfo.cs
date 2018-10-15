@@ -22,7 +22,6 @@ namespace NightlyCode.Database.Info {
         /// </summary>
         protected DBInfo() {
             AddFieldLogic<Constant>(AppendConstant);
-            AddFieldLogic<DBParameter>(AppendParameter);
             AddFieldLogic<EntityField>(AppendEntityField);
             AddFieldLogic<Aggregate>(AppendAggregate);
         }
@@ -54,14 +53,10 @@ namespace NightlyCode.Database.Info {
                 preparator.CommandBuilder.Append("NULL");
             else
             {
-                if (constant.Value is Expression)
-                    CriteriaVisitor.GetCriteriaText((Expression)constant.Value, descriptorgetter, this, preparator);
+                if (constant.Value is Expression expression)
+                    CriteriaVisitor.GetCriteriaText(expression, descriptorgetter, this, preparator);
                 else preparator.AppendParameter(constant.Value);
             }
-        }
-
-        void AppendParameter(DBParameter parameter, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter) {
-            preparator.CommandBuilder.Append(Parameter + parameter.Index);
         }
 
         void AppendEntityField(EntityField field, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter) {

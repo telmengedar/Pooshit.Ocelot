@@ -146,7 +146,7 @@ namespace NightlyCode.Database.Entities.Schema {
                     }
 
                     operation.CommandBuilder.Append($" FROM {olddescriptor.Name}{appendix}");
-                    client.NonQuery(transaction, operation.CommandBuilder.ToString(), operation.Parameters.Select(p => p.Value).ToArray());
+                    client.NonQuery(transaction, operation.CommandBuilder.ToString(), operation.Parameters.ToArray());
                 }
 
                 // remove old data

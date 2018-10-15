@@ -54,12 +54,12 @@ namespace NightlyCode.Database.Entities.Operations {
         public int Execute(Transaction transaction)
         {
             PreparedOperation operation = Prepare();
-            return dbclient.NonQuery(transaction, operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray());
+            return dbclient.NonQuery(transaction, operation.CommandText, operation.Parameters);
         }
 
         public int Execute() {
             PreparedOperation operation = Prepare();
-            return dbclient.NonQuery(operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray());
+            return dbclient.NonQuery(operation.CommandText, operation.Parameters);
         }
 
         public PreparedOperation Prepare() {

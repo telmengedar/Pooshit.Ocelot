@@ -384,8 +384,8 @@ namespace NightlyCode.Database.Info
             operation.CommandBuilder.Append($"ALTER TABLE {table} ADD COLUMN ");
             AddColumn(operation, column);
             if(transaction!=null)
-                client.NonQuery(transaction, operation.CommandBuilder.ToString(), operation.Parameters.Select(p => p.Value).ToArray());
-            else client.NonQuery(operation.CommandBuilder.ToString(), operation.Parameters.Select(p=>p.Value).ToArray());
+                client.NonQuery(transaction, operation.CommandBuilder.ToString(), operation.Parameters);
+            else client.NonQuery(operation.CommandBuilder.ToString(), operation.Parameters);
         }
 
         /// <summary>
@@ -421,7 +421,7 @@ namespace NightlyCode.Database.Info
                 flag = true;
             }
             preparator.CommandBuilder.Append(")");
-            client.NonQuery(preparator.CommandBuilder.ToString(), preparator.Parameters.Select(p => p.Value).ToArray());
+            client.NonQuery(preparator.CommandBuilder.ToString(), preparator.Parameters);
 
             // transfer data to new table
             client.NonQuery($"INSERT INTO {table} ({columnlist}) SELECT {columnlist} FROM {table}_original");

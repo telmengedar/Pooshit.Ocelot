@@ -23,7 +23,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="descriptor"></param>
         /// <param name="commandtext"></param>
         /// <param name="parameters"></param>
-        public PreparedLoadEntitiesOperation(IDBClient dbclient, EntityDescriptor descriptor, string commandtext, DBParameter[] parameters)
+        public PreparedLoadEntitiesOperation(IDBClient dbclient, EntityDescriptor descriptor, string commandtext, params object[] parameters)
             : base(commandtext, parameters)
         {
             this.dbclient = dbclient;
@@ -35,7 +35,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         public IEnumerable<T> Execute()
         {
-            return Execute(Parameters.Select(p => p.Value).ToArray());
+            return Execute(Parameters);
         }
 
         /// <summary>

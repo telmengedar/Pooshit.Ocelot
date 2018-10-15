@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
@@ -43,7 +42,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <returns>number of rows deleted</returns>
         public int Execute() {
             PreparedOperation operation = Prepare();
-            return dbclient.NonQuery(operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray());
+            return dbclient.NonQuery(operation.CommandText, operation.Parameters);
         }
 
         /// <summary>
@@ -53,7 +52,7 @@ namespace NightlyCode.Database.Entities.Operations {
         public int Execute(Transaction transaction)
         {
             PreparedOperation operation = Prepare();
-            return dbclient.NonQuery(transaction, operation.CommandText, operation.Parameters.Select(p => p.Value).ToArray());
+            return dbclient.NonQuery(transaction, operation.CommandText, operation.Parameters);
         }
 
         /// <summary>

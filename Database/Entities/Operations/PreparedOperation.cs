@@ -1,6 +1,4 @@
-﻿using NightlyCode.Database.Entities.Operations.Fields;
-
-namespace NightlyCode.Database.Entities.Operations {
+﻿namespace NightlyCode.Database.Entities.Operations {
 
     /// <summary>
     /// a prepared db operation
@@ -10,9 +8,9 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <summary>
         /// creates a new prepared operation
         /// </summary>
-        /// <param name="commandText"></param>
-        /// <param name="parameters"></param>
-        public PreparedOperation(string commandText, params DBParameter[] parameters) {
+        /// <param name="commandText">sql query text</param>
+        /// <param name="parameters">parameters for query</param>
+        public PreparedOperation(string commandText, params object[] parameters) {
             CommandText = commandText;
             Parameters = parameters;
         }
@@ -20,11 +18,11 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <summary>
         /// text to execute
         /// </summary>
-        public string CommandText { get; private set; }
+        public string CommandText { get; }
 
         /// <summary>
         /// parameters for command
         /// </summary>
-        public DBParameter[] Parameters { get; private set; }
+        public object[] Parameters { get; }
     }
 }

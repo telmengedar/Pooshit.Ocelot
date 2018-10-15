@@ -47,11 +47,27 @@ namespace NightlyCode.Database.Tests.Entities {
         }
 
         [Test]
-        public void TestInsert() {
+        public void InsertEntities() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
             entitymanager.InsertEntities(TestEntities);
+        }
+
+        [Test]
+        public void InsertStatement() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+            entitymanager.Create<TestEntityWithoutAnySpecifications>();
+
+            PreparedOperation operation = entitymanager.Insert<TestEntityWithoutAnySpecifications>()
+                .Columns(t => t.Column1, t => t.BooleanValue, t => t.IntegerValue, t => t.Something)
+                .Prepare();
+
+            foreach (TestEntityWithoutAnySpecifications entity in TestEntities)
+                entitymanager.Execute(operation, entity.Column1, entity.BooleanValue, entity.IntegerValue, entity.Something);
+
+            Assert.AreEqual(TestEntities.Count(), entitymanager.Load<TestEntityWithoutAnySpecifications>(DBFunction.Count).ExecuteScalar<int>());
         }
 
         [Test]
@@ -304,7 +320,7 @@ namespace NightlyCode.Database.Tests.Entities {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
-            entitymanager.Update<TestEntityWithoutAnySpecifications>().Set(t => t.Column1 == "bla").Where(t => DBFunction.RowID.Int == 7).Execute();
+            entitymanager.Update<TestEntityWithoutAnySpecifications>().Set(t => t.Column1 == "bla").Where(t => DBFunction.RowID.Int32 == 7).Execute();
         }
 
         [Test]

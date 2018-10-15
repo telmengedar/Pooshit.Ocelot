@@ -56,8 +56,8 @@ namespace NightlyCode.Database.Entities.Schema {
                 preparator.CommandBuilder.Append(" ").Append(client.DBInfo.CreateSuffix);
 
             if(transaction!=null)
-                client.NonQuery(transaction, preparator.CommandBuilder.ToString(), preparator.Parameters.Select(p => p.Value).ToArray());
-            else client.NonQuery(preparator.CommandBuilder.ToString(), preparator.Parameters.Select(p => p.Value).ToArray());
+                client.NonQuery(transaction, preparator.CommandBuilder.ToString(), preparator.Parameters);
+            else client.NonQuery(preparator.CommandBuilder.ToString(), preparator.Parameters);
 
             CreateIndices(client, descriptor.TableName, descriptor.Indices);
         }

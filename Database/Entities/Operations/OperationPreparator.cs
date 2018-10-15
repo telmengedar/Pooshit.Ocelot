@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Info;
 
 namespace NightlyCode.Database.Entities.Operations {
@@ -10,45 +9,47 @@ namespace NightlyCode.Database.Entities.Operations {
     /// </summary>
     public class OperationPreparator {
         readonly IDBInfo dbinfo;
-        int indexer = 1;
 
         /// <summary>
-        /// ctor
+        /// creates a new <see cref="OperationPreparator"/>
         /// </summary>
-        /// <param name="dbinfo"></param>
+        /// <param name="dbinfo">db specific information</param>
         public OperationPreparator(IDBInfo dbinfo) {
             this.dbinfo = dbinfo;
             CommandBuilder = new StringBuilder();
-            Parameters = new List<DBParameter>();
-        }
-
-        /// <summary>
-        /// appends a parameter without value to the command (specified later)
-        /// </summary>
-        public void AppendParameter() {
-            CommandBuilder.Append(dbinfo.Parameter + indexer++);
+            Parameters = new List<object>();
         }
 
         /// <summary>
         /// appends a parameter to the command
         /// </summary>
-        /// <param name="value"></param>
-        public void AppendParameter(object value) {
-            DBParameter parameter = new DBParameter(indexer++, value);
-            CommandBuilder.Append(dbinfo.Parameter + parameter.Index);
-            Parameters.Add(parameter);
+        /// <param name="value">value of parameter (optional)</param>
+        public void AppendParameter(object value=null) {
+            Parameters.Add(value);
+            AppendParameterIndex(Parameters.Count);
         }
 
         /// <summary>
+        /// appends a reference to a parameter index to the command
+        /// </summary>
+        /// <param name="index">index of parameter to reference</param>
+        public void AppendParameterIndex(int index) {
+            CommandBuilder.Append($"{dbinfo.Parameter}{index}");
+        }
+        /// <summary>
         /// command text
         /// </summary>
-        public StringBuilder CommandBuilder { get; private set; }
+        public StringBuilder CommandBuilder { get; }
 
         /// <summary>
         /// parameters
         /// </summary>
-        public List<DBParameter> Parameters { get; private set; }
+        public List<object> Parameters { get; }
 
+        /// <summary>
+        /// create prepared operation
+        /// </summary>
+        /// <returns>operation which can get executed</returns>
         public PreparedOperation GetOperation() {
             return new PreparedOperation(CommandBuilder.ToString(), Parameters.ToArray());
         }
