@@ -200,7 +200,7 @@ namespace NightlyCode.Database.Entities.Operations {
             OperationPreparator preparator = new OperationPreparator(dbclient.DBInfo);
             preparator.CommandBuilder.Append("SELECT ");
 
-            EntityDescriptor descriptor = descriptorgetter(typeof(T));
+            EntityDescriptor descriptor = typeof(T) == typeof(object) ? null : descriptorgetter(typeof(T));
 
             bool flag = true;
             foreach(IDBField criteria in columns) {
@@ -209,7 +209,8 @@ namespace NightlyCode.Database.Entities.Operations {
                 dbclient.DBInfo.Append(criteria, preparator, descriptorgetter);
             }
 
-            preparator.CommandBuilder.Append(" FROM ").Append(descriptor.TableName);
+            if(descriptor!=null)
+                preparator.CommandBuilder.Append(" FROM ").Append(descriptor.TableName);
 
             if(joinoperations.Count > 0) {
                 foreach(JoinOperation operation in joinoperations) {
@@ -260,7 +261,7 @@ namespace NightlyCode.Database.Entities.Operations {
                 dbclient.DBInfo.Append(LimitStatement, preparator, descriptorgetter);
             }
 
-            return new PreparedLoadValuesOperation<T>(dbclient, preparator.GetOperation());
+            return new PreparedLoadValuesOperation<T>(dbclient, preparator.CommandBuilder.ToString(), preparator.Parameters.ToArray());
         }
 
         /// <summary>

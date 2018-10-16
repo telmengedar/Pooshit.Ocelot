@@ -163,16 +163,6 @@ namespace NightlyCode.Database.Info {
         public abstract void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column);
 
         /// <summary>
-        /// changes creation command to creation command with return insert id statement
-        /// </summary>
-        /// <param name="insertcommand">insert command</param>
-        /// <param name="client">db client used to execute commands</param>
-        /// <param name="descriptor">descriptor of entity</param>
-        /// <param name="parameters">parameters for command</param>
-        /// <returns></returns>
-        public abstract object ReturnInsertID(IDBClient client, EntityDescriptor descriptor, string insertcommand, params object[] parameters);
-
-        /// <summary>
         /// get schema for a table in database
         /// </summary>
         /// <param name="client">database connection</param>

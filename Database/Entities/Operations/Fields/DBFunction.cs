@@ -55,6 +55,11 @@ namespace NightlyCode.Database.Entities.Operations.Fields {
         public static DBFunction RowID => new DBFunction(DBFunctionType.RowID);
 
         /// <summary>
+        /// used to get id of last inserted row of the session
+        /// </summary>
+        public static DBFunction LastInsertID => new DBFunction(DBFunctionType.LastInsertID);
+
+        /// <summary>
         /// length of a text or blob
         /// </summary>
         /// <typeparam name="T">type of entity containing the text or blob</typeparam>

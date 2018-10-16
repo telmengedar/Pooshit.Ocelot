@@ -17,7 +17,6 @@ namespace NightlyCode.Database.Entities.Operations {
         readonly Func<Type, EntityDescriptor> descriptorgetter;
         IDBField[] insertcolumns;
         object[] insertvalues;
-        bool lastinsertid;
 
         /// <summary>
         /// creates a new insert values operation
@@ -28,15 +27,6 @@ namespace NightlyCode.Database.Entities.Operations {
             this.dbclient = dbclient;
             this.descriptorgetter = descriptorgetter;
         }
-
-        /// <summary>
-        /// specifies that this operation should return last insert id (instead of affected rows)
-        /// </summary>
-        /// <returns>insert operation</returns>
-        public InsertValuesOperation<T> ReturnID() {
-            lastinsertid = true;
-            return this;
-        }  
 
         /// <summary>
         /// sets the columns to be updated
@@ -74,8 +64,6 @@ namespace NightlyCode.Database.Entities.Operations {
 
             PreparedOperation operation = Prepare();
 
-            if(lastinsertid)
-                return Converter.Convert<long>(dbclient.DBInfo.ReturnInsertID(dbclient, descriptorgetter(typeof(T)), operation.CommandText, operation.Parameters));
             if(transaction==null)
                 return dbclient.NonQuery(operation.CommandText, operation.Parameters);
             return dbclient.NonQuery(transaction, operation.CommandText, operation.Parameters);
@@ -126,7 +114,7 @@ namespace NightlyCode.Database.Entities.Operations {
             }
             preparator.CommandBuilder.Append(")");
 
-            return preparator.GetOperation();
+            return preparator.GetOperation(dbclient);
         }
 
     }

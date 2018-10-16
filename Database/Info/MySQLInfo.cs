@@ -94,10 +94,6 @@ namespace NightlyCode.Database.Info
             throw new NotImplementedException();
         }
 
-        public override object ReturnInsertID(IDBClient client, EntityDescriptor descriptor, string insertcommand, params object[] parameters) {
-            throw new NotImplementedException();
-        }
-
         public override void AddColumn(IDBClient client, string table, EntityColumnDescriptor column, Transaction transaction) {
             throw new NotImplementedException();
         }

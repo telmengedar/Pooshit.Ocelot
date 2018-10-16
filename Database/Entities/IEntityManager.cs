@@ -131,20 +131,6 @@ namespace NightlyCode.Database.Entities {
         void UpdateSchema<T>();
 
         /// <summary>
-        /// executes a prepared operation without result
-        /// </summary>
-        /// <param name="operation"></param>
-        /// <param name="values"></param>
-        int Execute(PreparedOperation operation, params object[] values);
-
-        /// <summary>
-        /// executes a prepared operation without result
-        /// </summary>
-        /// <param name="operation"></param>
-        /// <param name="values"></param>
-        long ExecuteID<T>(PreparedOperation operation, params object[] values);
-
-        /// <summary>
         /// get access to an entity model
         /// </summary>
         /// <typeparam name="T">type of entity of which to access model</typeparam>

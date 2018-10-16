@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text;
+using NightlyCode.Database.Clients;
 using NightlyCode.Database.Info;
 
 namespace NightlyCode.Database.Entities.Operations {
@@ -49,9 +50,10 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <summary>
         /// create prepared operation
         /// </summary>
+        /// <param name="dbclient">client used to execute operation</param>
         /// <returns>operation which can get executed</returns>
-        public PreparedOperation GetOperation() {
-            return new PreparedOperation(CommandBuilder.ToString(), Parameters.ToArray());
+        public PreparedOperation GetOperation(IDBClient dbclient) {
+            return new PreparedOperation(dbclient, CommandBuilder.ToString(), Parameters.ToArray());
         }
     }
 }

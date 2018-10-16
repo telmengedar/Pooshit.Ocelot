@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using NightlyCode.Database.Entities.Operations;
 
 namespace NightlyCode.Database.Clients {
 
@@ -8,23 +7,11 @@ namespace NightlyCode.Database.Clients {
     /// transaction of db clients
     /// </summary>
     public class Transaction : IDisposable {
-        readonly IDBClient client;
         bool commited;
         
 
-        internal Transaction(IDBClient client, IDbTransaction transaction) {
-            this.client = client;
+        internal Transaction(IDbTransaction transaction) {
             DbTransaction = transaction;
-        }
-
-        /// <summary>
-        /// executes a prepared operation without result
-        /// </summary>
-        /// <param name="operation">operation to execute</param>
-        /// <param name="values">operation parameters</param>
-        public int Execute(PreparedOperation operation, params object[] values)
-        {
-            return client.NonQuery(this, operation.CommandText, values);
         }
 
         /// <summary>

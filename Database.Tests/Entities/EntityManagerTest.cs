@@ -65,7 +65,7 @@ namespace NightlyCode.Database.Tests.Entities {
                 .Prepare();
 
             foreach (TestEntityWithoutAnySpecifications entity in TestEntities)
-                entitymanager.Execute(operation, entity.Column1, entity.BooleanValue, entity.IntegerValue, entity.Something);
+                operation.Execute(entity.Column1, entity.BooleanValue, entity.IntegerValue, entity.Something);
 
             Assert.AreEqual(TestEntities.Count(), entitymanager.Load<TestEntityWithoutAnySpecifications>(DBFunction.Count).ExecuteScalar<int>());
         }
@@ -345,6 +345,14 @@ namespace NightlyCode.Database.Tests.Entities {
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
             entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Where(t => t.Column1.ToLower() == "123".ToLower()).Execute();
+        }
+
+        [Test]
+        public void ToUpper() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+            entitymanager.Create<TestEntityWithoutAnySpecifications>();
+            entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Where(t => t.Column1.ToLower() == "123".ToUpper()).Execute();
         }
     }
 

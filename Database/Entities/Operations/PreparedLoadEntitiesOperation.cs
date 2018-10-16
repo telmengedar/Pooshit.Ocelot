@@ -24,7 +24,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="commandtext"></param>
         /// <param name="parameters"></param>
         public PreparedLoadEntitiesOperation(IDBClient dbclient, EntityDescriptor descriptor, string commandtext, params object[] parameters)
-            : base(commandtext, parameters)
+            : base(dbclient, commandtext, parameters)
         {
             this.dbclient = dbclient;
             this.descriptor = descriptor;

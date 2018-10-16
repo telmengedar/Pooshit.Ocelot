@@ -6,10 +6,6 @@ using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Schema;
 
-#if UNITY
-using NightlyCode.Unity.DB.Entities.Operations;
-#endif
-
 namespace NightlyCode.Database.Info
 {
 
@@ -52,13 +48,7 @@ namespace NightlyCode.Database.Info
         /// <param name="target"></param>
         /// <param name="visitor"> </param>
         /// <returns></returns>
-        void Replace(
-#if UNITY
-            ExpressionVisitor visitor,
-#else
-            ExpressionVisitor visitor,
-#endif 
-            OperationPreparator preparator, Expression value, Expression src, Expression target);
+        void Replace(ExpressionVisitor visitor, OperationPreparator preparator, Expression value, Expression src, Expression target);
 
         /// <summary>
         /// converts an expression to uppercase using database command
@@ -66,13 +56,7 @@ namespace NightlyCode.Database.Info
         /// <param name="visitor"></param>
         /// <param name="preparator"></param>
         /// <param name="value"></param>
-        void ToUpper(
-#if UNITY
-            ExpressionVisitor visitor,
-#else
-            ExpressionVisitor visitor,
-#endif
-            OperationPreparator preparator, Expression value);
+        void ToUpper(ExpressionVisitor visitor, OperationPreparator preparator, Expression value);
 
         /// <summary>
         /// converts an expression to lowercase using database command
@@ -80,13 +64,7 @@ namespace NightlyCode.Database.Info
         /// <param name="visitor"></param>
         /// <param name="preparator"></param>
         /// <param name="value"></param>
-        void ToLower(
-#if UNITY
-            ExpressionVisitor visitor,
-#else
-            ExpressionVisitor visitor,
-#endif
-            OperationPreparator preparator, Expression value);
+        void ToLower(ExpressionVisitor visitor, OperationPreparator preparator, Expression value);
 
         /// <summary>
         /// command used to check whether a table exists
@@ -134,16 +112,6 @@ namespace NightlyCode.Database.Info
         /// <param name="column"></param>
         /// <returns></returns>
         void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column);
-
-        /// <summary>
-        /// changes creation command to creation command with return insert id statement
-        /// </summary>
-        /// <param name="insertcommand">insert command</param>
-        /// <param name="client">db client used to execute commands</param>
-        /// <param name="descriptor">descriptor of entity</param>
-        /// <param name="parameters">parameters for command</param>
-        /// <returns></returns>
-        object ReturnInsertID(IDBClient client, EntityDescriptor descriptor, string insertcommand, params object[] parameters);
 
         /// <summary>
         /// get schema for a table in database

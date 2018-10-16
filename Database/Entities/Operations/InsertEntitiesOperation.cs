@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Operations.Fields;
 using Converter = NightlyCode.Database.Extern.Converter;
 
 namespace NightlyCode.Database.Entities.Operations {
@@ -46,23 +47,21 @@ namespace NightlyCode.Database.Entities.Operations {
             commandbuilder.Append(entitydescription.TableName);
             commandbuilder.Append(" (")
                             .Append(DBClient.DBInfo.ColumnIndicator)
-#if UNITY
-                            .Append(string.Join(string.Format("{0}, {0}", DBClient.DBInfo.ColumnIndicator), interestingcolumns.Select(c => c.Name).ToArray()))
-#else
                             .Append(string.Join(string.Format("{0}, {0}", DBClient.DBInfo.ColumnIndicator), interestingcolumns.Select(c => c.Name)))
-#endif
                             .Append(DBClient.DBInfo.ColumnIndicator)
                             .Append(")");
             int index = 1;
             commandbuilder.Append(" VALUES(")
-#if UNITY
-                          .Append(string.Join(", ", interestingcolumns.Select(c => DBClient.DBInfo.Parameter + index++).ToArray()))
-#else
                           .Append(string.Join(", ", interestingcolumns.Select(c => DBClient.DBInfo.Parameter + index++)))
-#endif
                           .Append(")");
+
             if(entitydescription.PrimaryKeyColumn != null && entitydescription.PrimaryKeyColumn.AutoIncrement) {
-                object id = Converter.Convert(DBClient.DBInfo.ReturnInsertID(DBClient, entitydescription, commandbuilder.ToString(), interestingcolumns.Select(c => GetValue(c, entity)).ToArray()), entitydescription.PrimaryKeyColumn.Property.PropertyType);
+                DBClient.NonQuery(commandbuilder.ToString(), interestingcolumns.Select(c => GetValue(c, entity)).ToArray());
+
+                OperationPreparator returnoperation = new OperationPreparator(DBClient.DBInfo);
+                returnoperation.CommandBuilder.Append("SELECT ");
+                DBClient.DBInfo.Append(DBFunction.LastInsertID, returnoperation, GetDescriptor);
+                object id = Converter.Convert(DBClient.Scalar(returnoperation.CommandBuilder.ToString()), entitydescription.PrimaryKeyColumn.Property.PropertyType);
                 entitydescription.PrimaryKeyColumn.SetValue(entity, id);
             }
             else {

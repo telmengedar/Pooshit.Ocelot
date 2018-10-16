@@ -24,5 +24,10 @@ namespace NightlyCode.Database.Entities.Operations.Fields {
         /// length of a string or text
         /// </summary>
         Length,
+
+        /// <summary>
+        /// id of last inserted row
+        /// </summary>
+        LastInsertID
     }
 }

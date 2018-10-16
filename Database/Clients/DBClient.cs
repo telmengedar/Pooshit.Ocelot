@@ -30,52 +30,48 @@ namespace NightlyCode.Database.Clients
         /// </summary>
         public IDBInfo DBInfo => dbinfo;
 
-        /// <summary>
-        /// prepares a command for execution
-        /// </summary>
-        /// <param name="commandtext">command text containing sql to execute</param>
-        /// <param name="parameters">parameters for command</param>
-        /// <returns>command which can get executed</returns>
         IDbCommand PrepareCommand(string commandtext, params object[] parameters)
         {
-            return PrepareCommand(commandtext, null, parameters);
-        }
-
-        IDbCommand PrepareCommand(string commandtext, Transaction transaction, params object[] parameters) {
             IDbCommand command = connection.CreateCommand();
             command.CommandText = commandtext;
             command.CommandTimeout = 0;
 
-            if (transaction != null)
-                command.Transaction = transaction.DbTransaction;
-
-            foreach(object o in parameters) {
+            foreach (object o in parameters)
+            {
                 IDbDataParameter parameter = command.CreateParameter();
                 parameter.ParameterName = dbinfo.Parameter + (command.Parameters.Count + 1);
                 parameter.Value = o ?? DBNull.Value;
                 command.Parameters.Add(parameter);
             }
 
-            if(connection.State != ConnectionState.Open) {
+            if (connection.State != ConnectionState.Open)
+            {
                 connection.Open();
             }
 
             return command;
         }
 
+        /// <summary>
+        /// begins a transaction
+        /// </summary>
+        /// <returns>Transaction object to use</returns>
         public Transaction BeginTransaction() {
             lock (connectionlock)
-                return new Transaction(this, connection.BeginTransaction());
+                return new Transaction(connection.BeginTransaction());
         }
 
         Tables.DataTable CreateTable(IDataReader reader) {
 
             return Tables.DataTable.FromReader(reader);
-            /*Tables.DataTable table = new Tables.DataTable();
-            table.Load(reader);
-            return table;*/
         }
 
+        /// <summary>
+        /// executes a query
+        /// </summary>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>table containing result data</returns>
         public Tables.DataTable Query(string query, params object[] parameters) {
             lock(connectionlock) {
                 using(IDbCommand command = PrepareCommand(query, parameters)) {
@@ -84,6 +80,11 @@ namespace NightlyCode.Database.Clients
             }
         }
 
+        /// <summary>
+        /// executes a non query
+        /// </summary>
+        /// <param name="commandstring">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
         public int NonQuery(string commandstring, params object[] parameters) {
             lock(connectionlock) {
                 using(IDbCommand command = PrepareCommand(commandstring, parameters)) {
@@ -92,6 +93,12 @@ namespace NightlyCode.Database.Clients
             }
         }
 
+        /// <summary>
+        /// executes a query returning a scalar
+        /// </summary>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>resulting scalar</returns>
         public object Scalar(string query, params object[] parameters) {
             lock(connectionlock) {
                 using(IDbCommand command = PrepareCommand(query, parameters)) {
@@ -100,6 +107,12 @@ namespace NightlyCode.Database.Clients
             }
         }
 
+        /// <summary>
+        /// executes a query returning a set of values
+        /// </summary>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>resulting set of values</returns>
         public IEnumerable<object> Set(string query, params object[] parameters) {
             lock(connectionlock) {
                 using(IDbCommand command = PrepareCommand(query, parameters)) {
@@ -112,6 +125,12 @@ namespace NightlyCode.Database.Clients
             }
         }
 
+        /// <summary>
+        /// executes a non query
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="commandstring">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
         public int NonQuery(Transaction transaction, string commandstring, params object[] parameters)
         {
             using (IDbCommand command = PrepareCommand(commandstring, parameters))
@@ -121,6 +140,13 @@ namespace NightlyCode.Database.Clients
             }
         }
 
+        /// <summary>
+        /// executes a query
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>table containing result data</returns>
         public Tables.DataTable Query(Transaction transaction, string query, params object[] parameters)
         {
             using (IDbCommand command = PrepareCommand(query, parameters))
@@ -130,6 +156,13 @@ namespace NightlyCode.Database.Clients
             }
         }
 
+        /// <summary>
+        /// executes a query returning a scalar
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>resulting scalar</returns>
         public object Scalar(Transaction transaction, string query, params object[] parameters)
         {
             using (IDbCommand command = PrepareCommand(query, parameters))
@@ -139,6 +172,13 @@ namespace NightlyCode.Database.Clients
             }
         }
 
+        /// <summary>
+        /// executes a query returning a set of values
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>resulting set of values</returns>
         public IEnumerable<object> Set(Transaction transaction, string query, params object[] parameters)
         {
             using (IDbCommand command = PrepareCommand(query, parameters))

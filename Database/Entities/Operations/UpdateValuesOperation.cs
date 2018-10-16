@@ -87,7 +87,7 @@ namespace NightlyCode.Database.Entities.Operations {
                 preparator.CommandBuilder.Append(" WHERE ");
                 CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator);
             }
-            return preparator.GetOperation();
+            return preparator.GetOperation(dbclient);
         }
 
     }

@@ -236,18 +236,6 @@ namespace NightlyCode.Database.Info {
 
         }
 
-        /// <summary>
-        /// changes creation command to creation command with return insert id statement
-        /// </summary>
-        /// <param name="insertcommand">insert command</param>
-        /// <param name="client">db client used to execute commands</param>
-        /// <param name="descriptor">descriptor of entity</param>
-        /// <param name="parameters">parameters for command</param>
-        /// <returns></returns>
-        public override object ReturnInsertID(IDBClient client, EntityDescriptor descriptor, string insertcommand, params object[] parameters) {
-            return client.Scalar(insertcommand + " RETURNING " + MaskColumn(descriptor.PrimaryKeyColumn.Name), parameters);
-        }
-
         public override void AddColumn(IDBClient client, string table, EntityColumnDescriptor column, Transaction transaction) {
             throw new NotImplementedException();
         }

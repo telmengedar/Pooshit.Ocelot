@@ -217,24 +217,6 @@ namespace NightlyCode.Database.Entities {
         }
 
         /// <summary>
-        /// executes a prepared operation without result
-        /// </summary>
-        /// <param name="operation"></param>
-        /// <param name="values"></param>
-        public int Execute(PreparedOperation operation, params object[] values) {
-            return DBClient.NonQuery(operation.CommandText, values);
-        }
-
-        /// <summary>
-        /// executes a prepared operation without result
-        /// </summary>
-        /// <param name="operation"></param>
-        /// <param name="values"></param>
-        public long ExecuteID<T>(PreparedOperation operation, params object[] values) {
-            return Converter.Convert<long>(DBClient.DBInfo.ReturnInsertID(DBClient, modelcache.Get<T>(), operation.CommandText, values));
-        }
-
-        /// <summary>
         /// get access to an entity model
         /// </summary>
         /// <typeparam name="T">type of entity of which to access model</typeparam>
