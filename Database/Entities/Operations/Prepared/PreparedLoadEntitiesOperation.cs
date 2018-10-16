@@ -1,39 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
-using NightlyCode.Database.Entities.Operations.Fields;
 using Converter = NightlyCode.Database.Extern.Converter;
 
-namespace NightlyCode.Database.Entities.Operations {
+namespace NightlyCode.Database.Entities.Operations.Prepared {
 
     /// <summary>
     /// load operation prepared to execute
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">type of entity created from result set</typeparam>
     public class PreparedLoadEntitiesOperation<T> : PreparedOperation {
-        readonly IDBClient dbclient;
         readonly EntityDescriptor descriptor;
 
         /// <summary>
-        /// ctor
+        /// creates a new <see cref="PreparedLoadEntitiesOperation{T}"/>
         /// </summary>
-        /// <param name="dbclient"></param>
-        /// <param name="descriptor"></param>
-        /// <param name="commandtext"></param>
-        /// <param name="parameters"></param>
+        /// <param name="dbclient">access to database used for execution of operation</param>
+        /// <param name="descriptor">descriptor used to create entities</param>
+        /// <param name="commandtext">command text to execute</param>
+        /// <param name="parameters">initial parameters of operation</param>
         public PreparedLoadEntitiesOperation(IDBClient dbclient, EntityDescriptor descriptor, string commandtext, params object[] parameters)
             : base(dbclient, commandtext, parameters)
         {
-            this.dbclient = dbclient;
             this.descriptor = descriptor;
         }
 
         /// <summary>
         /// executes the statement
         /// </summary>
-        public IEnumerable<T> Execute()
+        /// <returns>entities created from result set</returns>
+        public new IEnumerable<T> Execute()
         {
             return Execute(Parameters);
         }
@@ -41,20 +38,33 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <summary>
         /// executes the statement
         /// </summary>
-        /// <returns></returns>
-        public IEnumerable<T> Execute(Transaction transaction, params object[] parameters)
+        /// <returns>entities created from result set</returns>
+        public new IEnumerable<T> Execute(params object[] parameters)
         {
-            Clients.Tables.DataTable data = dbclient.Query(transaction, CommandText, parameters);
+            Clients.Tables.DataTable data = DBClient.Query(CommandText, parameters);
             return CreateObjects(data);
         }
 
         /// <summary>
         /// executes the statement
         /// </summary>
-        /// <returns></returns>
-        public IEnumerable<T> Execute(params object[] parameters) {
-            Clients.Tables.DataTable data = dbclient.Query(CommandText, parameters);
-            return CreateObjects(data);            
+        /// <param name="transaction">transaction to use for execution</param>
+        /// <returns>entities created from result set</returns>
+        public new IEnumerable<T> Execute(Transaction transaction)
+        {
+            return Execute(Parameters);
+        }
+
+        /// <summary>
+        /// executes the statement
+        /// </summary>
+        /// <param name="transaction">transaction to use for execution</param>
+        /// <param name="parameters">parameters to use for execution</param>
+        /// <returns>entities created from result set</returns>
+        public new IEnumerable<T> Execute(Transaction transaction, params object[] parameters)
+        {
+            Clients.Tables.DataTable data = DBClient.Query(transaction, CommandText, parameters);
+            return CreateObjects(data);
         }
 
         IEnumerable<T> CreateObjects(Clients.Tables.DataTable dt) {
@@ -85,10 +95,6 @@ namespace NightlyCode.Database.Entities.Operations {
                 }
                 yield return obj;
             }
-        }
-
-        public override string ToString() {
-            return CommandText;
         }
     }
 }

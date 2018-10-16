@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Entities.Operations.Prepared;
 using Converter = NightlyCode.Database.Extern.Converter;
 
 namespace NightlyCode.Database.Entities.Operations {

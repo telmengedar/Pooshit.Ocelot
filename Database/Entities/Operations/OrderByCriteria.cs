@@ -7,6 +7,11 @@ namespace NightlyCode.Database.Entities.Operations {
     /// </summary>
     public class OrderByCriteria {
 
+        /// <summary>
+        /// creates a new <see cref="OrderByCriteria"/>
+        /// </summary>
+        /// <param name="field">field by which to order result set</param>
+        /// <param name="ascending">whether to sort ascending</param>
         public OrderByCriteria(IDBField field, bool @ascending=true) {
             Field = field;
             Ascending = @ascending;

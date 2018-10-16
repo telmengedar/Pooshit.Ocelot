@@ -3,11 +3,12 @@ using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Expressions;
+using NightlyCode.Database.Entities.Operations.Prepared;
 
 namespace NightlyCode.Database.Entities.Operations {
 
     /// <summary>
-    /// operation used to load entities
+    /// operation used to delete entities
     /// </summary>
     public class DeleteOperation<T> {
         readonly IDBClient dbclient;
@@ -16,16 +17,8 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <summary>
         /// creates a new delete operation
         /// </summary>
-        /// <param name="origin"></param>
-        internal DeleteOperation(DeleteOperation<T> origin)
-            : this(origin.dbclient, origin.descriptorgetter) {
-        }
-
-        /// <summary>
-        /// creates a new delete operation
-        /// </summary>
-        /// <param name="dbclient"> </param>
-        /// <param name="descriptorgetter"></param>
+        /// <param name="dbclient">access to database used for execution</param>
+        /// <param name="descriptorgetter">information about entities</param>
         public DeleteOperation(IDBClient dbclient, Func<Type, EntityDescriptor> descriptorgetter) {
             this.descriptorgetter = descriptorgetter;
             this.dbclient = dbclient;
@@ -58,7 +51,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <summary>
         /// prepares the operation for execution
         /// </summary>
-        /// <returns></returns>
+        /// <returns>prepared operation to be executed</returns>
         public PreparedOperation Prepare() {
             OperationPreparator preparator = new OperationPreparator(dbclient.DBInfo);
             preparator.CommandBuilder.Append("DELETE ");
@@ -76,8 +69,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <summary>
         /// specifies criterias for the operation
         /// </summary>
-        /// <param name="criterias"></param>
-        /// <returns></returns>
+        /// <param name="criterias">criterias of entities to delete</param>
         public DeleteOperation<T> Where(Expression<Func<T,bool>> criterias) {
             Criterias = criterias;
             return this;

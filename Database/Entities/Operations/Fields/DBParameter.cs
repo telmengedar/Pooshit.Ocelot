@@ -23,7 +23,7 @@ namespace NightlyCode.Database.Entities.Operations.Fields {
         /// <summary>
         /// field to use in expressions when referencing a <see cref="Guid"/> parameter
         /// </summary>
-        public static Guid Guid => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+        public new static Guid Guid => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
 
         /// <summary>
         /// field to use in expressions when referencing a <see cref="int"/> parameter
@@ -33,27 +33,27 @@ namespace NightlyCode.Database.Entities.Operations.Fields {
         /// <summary>
         /// field to use in expressions when referencing a <see cref="long"/> parameter
         /// </summary>
-        public static long Int64 => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+        public new static long Int64 => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
 
         /// <summary>
         /// field to use in expressions when referencing a <see cref="string"/> parameter
         /// </summary>
-        public static string String => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+        public new static string String => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
 
         /// <summary>
         /// field to use in expressions when referencing a <see cref="string"/> parameter
         /// </summary>
-        public static float Single => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+        public new static float Single => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
 
         /// <summary>
         /// field to use in expressions when referencing a <see cref="string"/> parameter
         /// </summary>
-        public static double Double => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+        public new static double Double => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
 
         /// <summary>
         /// field to use in expressions when referencing a <see cref="T:byte[]"/> parameter
         /// </summary>
-        public static byte[] Blob => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+        public new static byte[] Blob => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
         #endregion
     }
 

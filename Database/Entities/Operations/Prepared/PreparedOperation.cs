@@ -1,12 +1,11 @@
 ﻿using NightlyCode.Database.Clients;
 
-namespace NightlyCode.Database.Entities.Operations {
+namespace NightlyCode.Database.Entities.Operations.Prepared {
 
     /// <summary>
     /// a prepared db operation
     /// </summary>
     public class PreparedOperation {
-        readonly IDBClient dbclient;
 
         /// <summary>
         /// creates a new prepared operation
@@ -15,7 +14,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="commandText">sql query text</param>
         /// <param name="parameters">parameters for query</param>
         public PreparedOperation(IDBClient dbclient, string commandText, params object[] parameters) {
-            this.dbclient = dbclient;
+            this.DBClient = dbclient;
             CommandText = commandText;
             Parameters = parameters;
         }
@@ -26,7 +25,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <remarks>
         /// this usually is used to execute the operation
         /// </remarks>
-        protected IDBClient DBClient => dbclient;
+        protected IDBClient DBClient { get; }
 
         /// <summary>
         /// text to execute

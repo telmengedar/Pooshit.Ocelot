@@ -5,6 +5,7 @@ using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Expressions;
 using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Entities.Operations.Prepared;
 
 namespace NightlyCode.Database.Entities.Operations {
     /// <summary>
@@ -196,7 +197,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// prepares the operation for execution
         /// </summary>
         /// <returns></returns>
-        public PreparedLoadValuesOperation<T> Prepare() {
+        public PreparedLoadValuesOperation Prepare() {
             OperationPreparator preparator = new OperationPreparator(dbclient.DBInfo);
             preparator.CommandBuilder.Append("SELECT ");
 
@@ -261,7 +262,7 @@ namespace NightlyCode.Database.Entities.Operations {
                 dbclient.DBInfo.Append(LimitStatement, preparator, descriptorgetter);
             }
 
-            return new PreparedLoadValuesOperation<T>(dbclient, preparator.CommandBuilder.ToString(), preparator.Parameters.ToArray());
+            return new PreparedLoadValuesOperation(dbclient, preparator.CommandBuilder.ToString(), preparator.Parameters.ToArray());
         }
 
         /// <summary>

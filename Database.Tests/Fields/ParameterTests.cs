@@ -2,6 +2,7 @@
 using NightlyCode.Database.Entities;
 using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Tests.Data;
 using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;
 

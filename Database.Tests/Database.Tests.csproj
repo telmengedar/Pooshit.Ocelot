@@ -69,8 +69,10 @@
     <Compile Include="Entities\DescriptorAccessTests.cs" />
     <Compile Include="Entities\EntityDescriptorTest.cs" />
     <Compile Include="Entities\EntityManagerTest.cs" />
-    <Compile Include="Entities\SchemaUpdateTests.cs" />
+    <Compile Include="Models\GuidEntity.cs" />
+    <Compile Include="SchemaUpdateTests.cs" />
     <Compile Include="Fields\ParameterTests.cs" />
+    <Compile Include="ValueMethodTests.cs" />
     <Compile Include="Models\AddEntity.cs" />
     <Compile Include="Models\AlteredEntity.cs" />
     <Compile Include="Models\SquareValue.cs" />
@@ -82,7 +84,7 @@
     <Compile Include="Models\ValueModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sqlite\SqliteInfoTests.cs" />
-    <Compile Include="TestData.cs" />
+    <Compile Include="Data\TestData.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

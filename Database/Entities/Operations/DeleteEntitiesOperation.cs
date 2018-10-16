@@ -20,6 +20,10 @@ namespace NightlyCode.Database.Entities.Operations {
         public DeleteEntitiesOperation(IDBClient dbclient, IEnumerable entities, Func<Type, EntityDescriptor> descriptor)
             : base(dbclient, entities, descriptor) {}
 
+        /// <summary>
+        /// executes the operation
+        /// </summary>
+        /// <returns></returns>
         public override int Execute() {
             int affected = 0;
             using(Transaction transaction=DBClient.BeginTransaction()) {

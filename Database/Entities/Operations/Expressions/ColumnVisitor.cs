@@ -2,18 +2,9 @@
 using System.Reflection;
 using NightlyCode.Database.Entities.Descriptors;
 
-#if UNITY
-using NightlyCode.Unity.DB.Entities.Operations;
-#endif
-
 namespace NightlyCode.Database.Entities.Operations.Expressions {
-    public class ColumnVisitor
-#if UNITY
-        : ExpressionVisitor {
-#else
-        : ExpressionVisitor
+    public class ColumnVisitor : ExpressionVisitor
     {
-#endif 
         readonly EntityDescriptor descriptor;
         string columnname;
 
@@ -40,11 +31,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             return column.Name;
         }
 
-#if UNITY
-        protected override Expression VisitMemberAccess(MemberExpression node) {
-#else
         protected override Expression VisitMember(MemberExpression node) {
-#endif
             if(node.Member is PropertyInfo && (node.Expression ?? node).NodeType == ExpressionType.Parameter)
                 columnname = GetColumnName((PropertyInfo)node.Member);
             return base.VisitMember(node);

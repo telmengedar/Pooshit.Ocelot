@@ -45,6 +45,7 @@ namespace NightlyCode.Database.Extern {
             specificconverters[new ConversionKey(typeof(string), typeof(byte[]))] = v => System.Convert.FromBase64String((string)v);
             specificconverters[new ConversionKey(typeof(byte[]), typeof(Guid))] = v => new Guid((byte[])v);
             specificconverters[new ConversionKey(typeof(Guid), typeof(byte[]))] = v => ((Guid)v).ToByteArray();
+            specificconverters[new ConversionKey(typeof(string), typeof(Guid))] = v => Guid.Parse((string) v);
         }
 
         /// <summary>

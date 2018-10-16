@@ -3,6 +3,7 @@ using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Schema;
+using NightlyCode.Database.Tests.Data;
 using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;
 
@@ -126,6 +127,21 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.That(descriptor.Uniques.Any(u => u.Columns.SequenceEqual(new[] { "single", "string" })));
         }
 
+        [Test]
+        public void AddGuidColumn() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+            entitymanager.Model<GuidEntity>().DropColumn(e => e.Guid);
+            entitymanager.UpdateSchema<GuidEntity>();
+
+            for (int i = 0; i < 5; ++i)
+                entitymanager.Insert<GuidEntity>().Columns(e => e.SomeValue).Values(i).Execute();
+
+            entitymanager.Model<GuidEntity>().AddColumn(e => e.Guid);
+            entitymanager.UpdateSchema<GuidEntity>();
+
+            Assert.DoesNotThrow(() => entitymanager.LoadEntities<GuidEntity>().Execute().ToArray());
+        }
     }
 
 }

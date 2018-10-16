@@ -36,6 +36,13 @@ namespace NightlyCode.Database.Entities.Descriptors
                 PrimaryKeyColumn = column;
         }
 
+        internal void RemoveColumn(EntityColumnDescriptor column) {
+            columndescriptors.Remove(column.Name);
+            properties.Remove(column.Property.Name);
+            if (column.PrimaryKey)
+                PrimaryKeyColumn = null;
+        }
+
         /// <summary>
         /// changes the column name in model
         /// </summary>
@@ -116,6 +123,23 @@ namespace NightlyCode.Database.Entities.Descriptors
             return properties[property];
         }
 
+        internal static EntityColumnDescriptor CreateColumnDescriptor(PropertyInfo property) {
+            ColumnAttribute column = ColumnAttribute.Get(property);
+            string columnname = column == null ? property.Name.ToLower() : column.Column;
+
+            EntityColumnDescriptor columndescriptor = new EntityColumnDescriptor(columnname, property)
+            {
+                PrimaryKey = PrimaryKeyAttribute.IsPrimaryKey(property),
+                AutoIncrement = AutoIncrementAttribute.IsAutoIncrement(property),
+                NotNull = NotNullAttribute.HasNotNull(property) || (property.PropertyType.IsValueType && !(property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))),
+            };
+
+            if (!columndescriptor.PrimaryKey)
+                columndescriptor.DefaultValue = DefaultValueAttribute.GetDefaultValue(property);
+
+            return columndescriptor;
+        }
+
         /// <summary>
         /// creates a new entity descriptor for a type
         /// </summary>
@@ -137,26 +161,16 @@ namespace NightlyCode.Database.Entities.Descriptors
                 if (IgnoreAttribute.HasIgnore(propertyinfo))
                     continue;
 
-                ColumnAttribute column = ColumnAttribute.Get(propertyinfo);
-                string columnname = column == null ? propertyinfo.Name.ToLower() : column.Column;
-
-                EntityColumnDescriptor columndescriptor = new EntityColumnDescriptor(columnname, propertyinfo) {
-                    PrimaryKey = PrimaryKeyAttribute.IsPrimaryKey(propertyinfo),
-                    AutoIncrement = AutoIncrementAttribute.IsAutoIncrement(propertyinfo),
-                    NotNull = NotNullAttribute.HasNotNull(propertyinfo) || (propertyinfo.PropertyType.IsValueType && !(propertyinfo.PropertyType.IsGenericType && propertyinfo.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))),
-                };
-
-                if (!columndescriptor.PrimaryKey)
-                    columndescriptor.DefaultValue = DefaultValueAttribute.GetDefaultValue(propertyinfo);
+                EntityColumnDescriptor columndescriptor = CreateColumnDescriptor(propertyinfo);
 
                 if (propertyinfo.GetCustomAttributes(typeof(IndexAttribute), true) is IndexAttribute[] ia)
                 {
                     foreach (IndexAttribute indexattr in ia)
                     {
-                        string indexname = indexattr.Name ?? columnname;
+                        string indexname = indexattr.Name ?? columndescriptor.Name;
                         if (!indices.TryGetValue(indexname, out List<string> columns))
                             indices[indexname] = columns = new List<string>();
-                        columns.Add(columnname);
+                        columns.Add(columndescriptor.Name);
                     }
                 }
 
@@ -172,9 +186,10 @@ namespace NightlyCode.Database.Entities.Descriptors
 
                         if (!unique.TryGetValue(uniqueattr.Name, out List<string> columns))
                             unique[uniqueattr.Name] = columns = new List<string>();
-                        columns.Add(columnname);
+                        columns.Add(columndescriptor.Name);
                     }
                 }
+
                 descriptor.AddColumn(columndescriptor);
             }
 

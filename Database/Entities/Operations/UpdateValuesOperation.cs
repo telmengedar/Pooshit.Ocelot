@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Expressions;
+using NightlyCode.Database.Entities.Operations.Prepared;
 
 namespace NightlyCode.Database.Entities.Operations {
 

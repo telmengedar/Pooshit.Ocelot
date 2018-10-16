@@ -301,7 +301,7 @@ namespace NightlyCode.Database.Info
                 operation.CommandBuilder.Append(" NOT NULL");
 
                 // SQLite doesn't like no default values on nullable columns in add column case
-                if(defaultvalue == null)
+                if (defaultvalue == null)
                     defaultvalue = Activator.CreateInstance(columntype);
             }
 

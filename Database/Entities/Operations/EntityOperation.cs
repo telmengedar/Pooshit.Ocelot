@@ -10,8 +10,6 @@ namespace NightlyCode.Database.Entities.Operations {
     /// updates entities in db
     /// </summary>
     public abstract class EntityOperation {
-        readonly IDBClient dbclient;
-        readonly IEnumerable entities;
         readonly Func<Type, EntityDescriptor> descriptor;
 
         /// <summary>
@@ -21,20 +19,20 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="entities"></param>
         /// <param name="descriptor"></param>
         protected EntityOperation(IDBClient dbclient, IEnumerable entities, Func<Type, EntityDescriptor> descriptor) {
-            this.dbclient = dbclient;
-            this.entities = entities;
+            this.DBClient = dbclient;
+            this.Entities = entities;
             this.descriptor = descriptor;
         }
 
         /// <summary>
         /// dbclient used to access db
         /// </summary>
-        protected IDBClient DBClient { get { return dbclient; } }
+        protected IDBClient DBClient { get; }
 
         /// <summary>
         /// entities to process
         /// </summary>
-        protected IEnumerable Entities { get { return entities; } }
+        protected IEnumerable Entities { get; }
 
         /// <summary>
         /// get the entity descriptor for the specified type

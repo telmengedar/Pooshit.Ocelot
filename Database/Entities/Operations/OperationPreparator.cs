@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using NightlyCode.Database.Clients;
+using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Info;
 
 namespace NightlyCode.Database.Entities.Operations {

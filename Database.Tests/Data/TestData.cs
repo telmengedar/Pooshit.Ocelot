@@ -2,7 +2,7 @@
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Info;
 
-namespace NightlyCode.Database.Tests {
+namespace NightlyCode.Database.Tests.Data {
     public static class TestData {
 
         public static IDBClient CreateDatabaseAccess() {

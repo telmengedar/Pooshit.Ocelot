@@ -8,7 +8,6 @@ using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Schema;
 using NightlyCode.Database.Extern;
-using Converter = NightlyCode.Database.Extern.Converter;
 
 namespace NightlyCode.Database.Entities {
 

@@ -16,6 +16,7 @@ namespace NightlyCode.Database.Entities.Descriptors {
     public class EntityDescriptorAccess<T> {
         readonly EntityDescriptor descriptor;
         readonly ColumnVisitor visitor;
+        readonly PropertyVisitor propertyvisitor = new PropertyVisitor();
 
         /// <summary>
         /// creates a new <see cref="EntityDescriptorAccess{T}"/>
@@ -151,6 +152,23 @@ namespace NightlyCode.Database.Entities.Descriptors {
         {
             descriptor.ChangeColumnName(descriptor.GetColumn(visitor.GetColumnName(column)), name);
             return this;
+        }
+
+        /// <summary>
+        /// removes a column from descriptor
+        /// </summary>
+        /// <param name="column">column to remove</param>
+        public EntityDescriptorAccess<T> DropColumn(Expression<Func<T, object>> column) {
+            descriptor.RemoveColumn(descriptor.GetColumn(visitor.GetColumnName(column)));
+            return this;
+        }
+
+        /// <summary>
+        /// adds a column to descriptor
+        /// </summary>
+        /// <param name="column">property to add as column</param>
+        public void AddColumn(Expression<Func<T, object>> column) {
+            descriptor.AddColumn(EntityDescriptor.CreateColumnDescriptor(propertyvisitor.GetProperty(column)));
         }
     }
 }
