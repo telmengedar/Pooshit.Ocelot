@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
@@ -262,6 +263,8 @@ namespace NightlyCode.Database.Entities.Operations {
                 dbclient.DBInfo.Append(LimitStatement, preparator, descriptorgetter);
             }
 
+            if (preparator.ArrayParameters.Any())
+                return new PreparedArrayLoadValuesOperation(dbclient, preparator.CommandBuilder.ToString(), preparator.Parameters.ToArray(), preparator.ArrayParameters.ToArray());
             return new PreparedLoadValuesOperation(dbclient, preparator.CommandBuilder.ToString(), preparator.Parameters.ToArray());
         }
 

@@ -2191,6 +2191,12 @@
             </summary>
             <param name="dbinfo">db specific information</param>
         </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.OperationPreparator.AppendArrayParameter(System.Object)">
+            <summary>
+            appends an array parameter to the command
+            </summary>
+            <param name="value"></param>
+        </member>
         <member name="M:NightlyCode.Database.Entities.Operations.OperationPreparator.AppendParameter(System.Object)">
             <summary>
             appends a parameter to the command
@@ -2211,6 +2217,11 @@
         <member name="P:NightlyCode.Database.Entities.Operations.OperationPreparator.Parameters">
             <summary>
             parameters
+            </summary>
+        </member>
+        <member name="P:NightlyCode.Database.Entities.Operations.OperationPreparator.ArrayParameters">
+            <summary>
+            parameters containing arrays
             </summary>
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.OperationPreparator.GetOperation(NightlyCode.Database.Clients.IDBClient)">
@@ -2241,6 +2252,236 @@
             <summary>
             whether to order ascending or descending
             </summary>
+        </member>
+        <member name="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1">
+            <summary>
+            a <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadEntitiesOperation`1"/> using array parameters
+            </summary>
+            <typeparam name="T">type of entities to load</typeparam>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1.#ctor(NightlyCode.Database.Clients.IDBClient,NightlyCode.Database.Entities.Descriptors.EntityDescriptor,System.String,System.Object[],System.Object[])">
+            <summary>
+            creates a new <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1"/>
+            </summary>
+            <param name="dbclient">access to database used for execution of operation</param>
+            <param name="descriptor">descriptor used to create entities</param>
+            <param name="commandtext">command text to execute</param>
+            <param name="parameters">initial parameters of operation</param>
+            <param name="arrayparameters">array parameters of operation</param>
+        </member>
+        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1.ArrayParameters">
+            <summary>
+            array parameters for command
+            </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1.Execute">
+            <summary>
+            executes the statement
+            </summary>
+            <returns>entities created from result set</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1.Execute(System.Object[])">
+            <summary>
+            executes the statement
+            </summary>
+            <returns>entities created from result set</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1.Execute(NightlyCode.Database.Clients.Transaction)">
+            <summary>
+            executes the statement
+            </summary>
+            <param name="transaction">transaction to use for execution</param>
+            <returns>entities created from result set</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1.Execute(NightlyCode.Database.Clients.Transaction,System.Object[])">
+            <summary>
+            executes the statement
+            </summary>
+            <param name="transaction">transaction to use for execution</param>
+            <param name="parameters">parameters to use for execution</param>
+            <returns>entities created from result set</returns>
+        </member>
+        <member name="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation">
+            <summary>
+            <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation"/> containing array parameters
+            </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.#ctor(NightlyCode.Database.Clients.IDBClient,System.String,System.Object[],System.Object[])">
+            <summary>
+            creates a new <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation"/>
+            </summary>
+            <param name="dbclient">database access</param>
+            <param name="commandtext">command text</param>
+            <param name="parameters">parameters for operation</param>
+            <param name="arrayparameters">array parameters for operation</param>
+        </member>
+        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ArrayParameters">
+            <summary>
+            array parameters for command
+            </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.Execute">
+            <summary>
+            executes the statement
+            </summary>
+            <returns>data table containing results</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.Execute(System.Object[])">
+            <summary>
+            executes the statement
+            </summary>
+            <param name="parameters">parameters for execution</param>
+            <returns>data table containing results</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.Execute(NightlyCode.Database.Clients.Transaction)">
+            <summary>
+            executes the statement
+            </summary>
+            <param name="transaction">transaction used to execute operation</param>
+            <returns>data table containing results</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.Execute(NightlyCode.Database.Clients.Transaction,System.Object[])">
+            <summary>
+            executes the statement
+            </summary>
+            <param name="transaction">transaction used to execute operation</param>
+            <param name="parameters">parameters for execution</param>
+            <returns>data table containing results</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteScalar``1">
+            <summary>
+            executes the statement returning a scalar
+            </summary>
+            <returns>first value of the result set or default of TScalar</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteScalar``1(System.Object[])">
+            <summary>
+            executes the statement returning a scalar
+            </summary>
+            <returns>first value of the result set or default of TScalar</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteScalar``1(NightlyCode.Database.Clients.Transaction)">
+            <summary>
+            executes the statement returning a scalar
+            </summary>
+            <returns>first value of the result set or default of TScalar</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteScalar``1(NightlyCode.Database.Clients.Transaction,System.Object[])">
+            <summary>
+            executes the statement returning a scalar
+            </summary>
+            <returns>first value of the result set or default of TScalar</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteSet``1">
+            <summary>
+            executes the statement returning a set of scalars
+            </summary>
+            <typeparam name="TScalar">type of scalar to return</typeparam>
+            <returns>values of first column of result set converted to TScalar</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteSet``1(System.Object[])">
+            <summary>
+            executes the statement returning a set of scalars
+            </summary>
+            <typeparam name="TScalar">type of scalar to return</typeparam>
+            <returns>values of first column of result set converted to TScalar</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteSet``1(NightlyCode.Database.Clients.Transaction)">
+            <summary>
+            executes the statement returning a set of scalars
+            </summary>
+            <typeparam name="TScalar">type of scalar to return</typeparam>
+            <returns>values of first column of result set converted to TScalar</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteSet``1(NightlyCode.Database.Clients.Transaction,System.Object[])">
+            <summary>
+            executes the statement returning a set of scalars
+            </summary>
+            <typeparam name="TScalar">type of scalar to return</typeparam>
+            <returns>values of first column of result set converted to TScalar</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteType``1(System.Action{NightlyCode.Database.Clients.Tables.DataRow,``0})">
+            <summary>
+            executes a query and stores the result in a custom result type
+            </summary>
+            <typeparam name="TType">type of result</typeparam>
+            <param name="assignments">action used to assign values</param>
+            <returns>enumeration of result types</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteType``1(System.Action{NightlyCode.Database.Clients.Tables.DataRow,``0},System.Object[])">
+            <summary>
+            executes a query and stores the result in a custom result type
+            </summary>
+            <typeparam name="TType">type of result</typeparam>
+            <param name="assignments">action used to assign values</param>
+            <param name="parameters">custom parameters for query execution</param>
+            <returns>enumeration of result types</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteType``1(System.Action{NightlyCode.Database.Clients.Tables.DataRow,``0},NightlyCode.Database.Clients.Transaction)">
+            <summary>
+            executes a query and stores the result in a custom result type
+            </summary>
+            <typeparam name="TType">type of result</typeparam>
+            <param name="assignments">action used to assign values</param>
+            <param name="transaction">transaction to use for execution</param>
+            <returns>enumeration of result types</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteType``1(System.Action{NightlyCode.Database.Clients.Tables.DataRow,``0},NightlyCode.Database.Clients.Transaction,System.Object[])">
+            <summary>
+            executes a query and stores the result in a custom result type
+            </summary>
+            <typeparam name="TType">type of result</typeparam>
+            <param name="assignments">action used to assign values</param>
+            <param name="transaction">transaction to use for execution</param>
+            <param name="parameters">custom parameters for query execution</param>
+            <returns>enumeration of result types</returns>
+        </member>
+        <member name="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayOperation">
+            <summary>
+            <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedOperation"/> containing array parameters
+            </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayOperation.#ctor(NightlyCode.Database.Clients.IDBClient,System.String,System.Object[],System.Object[])">
+            <summary>
+            creates a new <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayOperation"/>
+            </summary>
+            <param name="dbclient">access to database</param>
+            <param name="commandText">sql query text</param>
+            <param name="parameters">parameters for query</param>
+            <param name="arrayparameters">array parameters for query</param>
+        </member>
+        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayOperation.ArrayParameters">
+            <summary>
+            array parameters for command
+            </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayOperation.Execute">
+            <summary>
+            executes the operation
+            </summary>
+            <returns>number of affected rows if applicable</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayOperation.Execute(System.Object[])">
+            <summary>
+            executes the operation using custom parameters
+            </summary>
+            <param name="parameters">parameters for operation</param>
+            <returns>number of affected rows if applicable</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayOperation.Execute(NightlyCode.Database.Clients.Transaction)">
+            <summary>
+            executes the operation using custom parameters
+            </summary>
+            <param name="transaction">transaction used to execute operation</param>
+            <returns>number of affected rows if applicable</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayOperation.Execute(NightlyCode.Database.Clients.Transaction,System.Object[])">
+            <summary>
+            executes the operation using custom parameters
+            </summary>
+            <param name="transaction">transaction used to execute operation</param>
+            <param name="parameters">parameters for operation</param>
+            <returns>number of affected rows if applicable</returns>
         </member>
         <member name="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadEntitiesOperation`1">
             <summary>

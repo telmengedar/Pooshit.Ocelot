@@ -30,7 +30,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// executes the statement
         /// </summary>
         /// <returns>entities created from result set</returns>
-        public new IEnumerable<T> Execute()
+        public new virtual IEnumerable<T> Execute()
         {
             return Execute(Parameters);
         }
@@ -39,7 +39,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// executes the statement
         /// </summary>
         /// <returns>entities created from result set</returns>
-        public new IEnumerable<T> Execute(params object[] parameters)
+        public new virtual IEnumerable<T> Execute(params object[] parameters)
         {
             Clients.Tables.DataTable data = DBClient.Query(CommandText, parameters);
             return CreateObjects(data);
@@ -50,7 +50,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <param name="transaction">transaction to use for execution</param>
         /// <returns>entities created from result set</returns>
-        public new IEnumerable<T> Execute(Transaction transaction)
+        public new virtual IEnumerable<T> Execute(Transaction transaction)
         {
             return Execute(Parameters);
         }
@@ -61,13 +61,13 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="transaction">transaction to use for execution</param>
         /// <param name="parameters">parameters to use for execution</param>
         /// <returns>entities created from result set</returns>
-        public new IEnumerable<T> Execute(Transaction transaction, params object[] parameters)
+        public new virtual IEnumerable<T> Execute(Transaction transaction, params object[] parameters)
         {
             Clients.Tables.DataTable data = DBClient.Query(transaction, CommandText, parameters);
             return CreateObjects(data);
         }
 
-        IEnumerable<T> CreateObjects(Clients.Tables.DataTable dt) {
+        protected IEnumerable<T> CreateObjects(Clients.Tables.DataTable dt) {
             foreach(Clients.Tables.DataRow row in dt.Rows) {
                 T obj = (T)Activator.CreateInstance(typeof(T), true);
                 foreach(string column in dt.Columns.Names) {

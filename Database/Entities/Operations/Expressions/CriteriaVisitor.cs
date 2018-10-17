@@ -309,26 +309,39 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 }
                 return node;
             }
-            if(node.Method.DeclaringType == typeof(Enumerable)) {
-                switch(node.Method.Name) {
-                    case "Contains":
-                        Visit(node.Arguments[1]);
-                        preparator.CommandBuilder.Append(" IN (");
+
+            if (node.Method.DeclaringType == typeof(Enumerable)) {
+                switch (node.Method.Name) {
+                case "Contains":
+                    Visit(node.Arguments[1]);
+                    preparator.CommandBuilder.Append(" IN ");
+
+                    if (node.Arguments[0].NodeType == ExpressionType.MemberAccess
+                        && (((MemberExpression) node.Arguments[0]).Member.DeclaringType == typeof(DBParameter)
+                            || ((MemberExpression) node.Arguments[0]).Member.DeclaringType?.BaseType == typeof(DBParameter))) {
+                        preparator.AppendArrayParameter();
+                    }
+                    else {
+                        preparator.CommandBuilder.Append("(");
                         bool first = true;
-                        foreach (object item in (IEnumerable)GetValue(node.Arguments[0]))
-                        {
+                        foreach (object item in (IEnumerable) GetValue(node.Arguments[0])) {
                             if (first)
                                 first = false;
                             else preparator.CommandBuilder.Append(",");
                             AppendConstantValue(item);
                         }
+
                         preparator.CommandBuilder.Append(")");
-                        break;
-                    default:
-                        throw new NotImplementedException();
+                    }
+
+                    break;
+                default:
+                    throw new NotImplementedException();
                 }
+
                 return node;
             }
+
             if(node.Method.DeclaringType == typeof(string)) {
                 switch(node.Method.Name) {
                     case "ToUpper":

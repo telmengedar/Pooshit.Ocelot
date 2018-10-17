@@ -135,6 +135,8 @@ namespace NightlyCode.Database.Entities.Operations {
                 dbclient.DBInfo.Append(LimitStatement, preparator, descriptorgetter);
             }
 
+            if (preparator.ArrayParameters.Any())
+                return new PreparedArrayLoadEntitiesOperation<T>(dbclient, descriptor, preparator.CommandBuilder.ToString(), preparator.Parameters.ToArray(), preparator.ArrayParameters.ToArray());
             return new PreparedLoadEntitiesOperation<T>(dbclient, descriptor, preparator.CommandBuilder.ToString(), preparator.Parameters.ToArray());
         }
 

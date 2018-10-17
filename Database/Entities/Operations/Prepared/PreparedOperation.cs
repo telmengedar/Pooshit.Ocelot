@@ -14,7 +14,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="commandText">sql query text</param>
         /// <param name="parameters">parameters for query</param>
         public PreparedOperation(IDBClient dbclient, string commandText, params object[] parameters) {
-            this.DBClient = dbclient;
+            DBClient = dbclient;
             CommandText = commandText;
             Parameters = parameters;
         }
@@ -41,7 +41,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// executes the operation
         /// </summary>
         /// <returns>number of affected rows if applicable</returns>
-        public int Execute() {
+        public virtual int Execute() {
             return DBClient.NonQuery(CommandText, Parameters);
         }
 
@@ -50,7 +50,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <param name="parameters">parameters for operation</param>
         /// <returns>number of affected rows if applicable</returns>
-        public int Execute(params object[] parameters) {
+        public virtual int Execute(params object[] parameters) {
             return DBClient.NonQuery(CommandText, parameters);
         }
 
@@ -59,7 +59,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <param name="transaction">transaction used to execute operation</param>
         /// <returns>number of affected rows if applicable</returns>
-        public int Execute(Transaction transaction) {
+        public virtual int Execute(Transaction transaction) {
             return DBClient.NonQuery(transaction, CommandText, Parameters);
         }
 
@@ -69,7 +69,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="transaction">transaction used to execute operation</param>
         /// <param name="parameters">parameters for operation</param>
         /// <returns>number of affected rows if applicable</returns>
-        public int Execute(Transaction transaction, params object[] parameters) {
+        public virtual int Execute(Transaction transaction, params object[] parameters) {
             return DBClient.NonQuery(transaction, CommandText, parameters);
         }
 

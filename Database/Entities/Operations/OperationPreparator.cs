@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Operations.Prepared;
@@ -20,6 +21,16 @@ namespace NightlyCode.Database.Entities.Operations {
             this.dbinfo = dbinfo;
             CommandBuilder = new StringBuilder();
             Parameters = new List<object>();
+            ArrayParameters = new List<object>();
+        }
+
+        /// <summary>
+        /// appends an array parameter to the command
+        /// </summary>
+        /// <param name="value"></param>
+        public void AppendArrayParameter(object value = null) {
+            CommandBuilder.Append($"[{ArrayParameters.Count}]");
+            ArrayParameters.Add(value);
         }
 
         /// <summary>
@@ -49,11 +60,18 @@ namespace NightlyCode.Database.Entities.Operations {
         public List<object> Parameters { get; }
 
         /// <summary>
+        /// parameters containing arrays
+        /// </summary>
+        public List<object> ArrayParameters { get; }
+
+        /// <summary>
         /// create prepared operation
         /// </summary>
         /// <param name="dbclient">client used to execute operation</param>
         /// <returns>operation which can get executed</returns>
         public PreparedOperation GetOperation(IDBClient dbclient) {
+            if (ArrayParameters.Any())
+                return new PreparedArrayOperation(dbclient, CommandBuilder.ToString(), Parameters.ToArray(), ArrayParameters.ToArray());
             return new PreparedOperation(dbclient, CommandBuilder.ToString(), Parameters.ToArray());
         }
     }

@@ -1,31 +1,40 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NightlyCode.Database.Clients;
-using Converter = NightlyCode.Database.Extern.Converter;
+using NightlyCode.Database.Clients.Tables;
+using NightlyCode.Database.Extern;
 
 namespace NightlyCode.Database.Entities.Operations.Prepared {
 
     /// <summary>
-    /// a prepared load values operation
+    /// <see cref="PreparedArrayLoadValuesOperation"/> containing array parameters
     /// </summary>
-    public class PreparedLoadValuesOperation : PreparedOperation {
+    public class PreparedArrayLoadValuesOperation : PreparedLoadValuesOperation {
 
         /// <summary>
-        /// creates a new <see cref="PreparedLoadValuesOperation"/>
+        /// creates a new <see cref="PreparedArrayLoadValuesOperation"/>
         /// </summary>
         /// <param name="dbclient">database access</param>
         /// <param name="commandtext">command text</param>
         /// <param name="parameters">parameters for operation</param>
-        public PreparedLoadValuesOperation(IDBClient dbclient, string commandtext, params object[] parameters)
-            : base(dbclient, commandtext, parameters) { }
+        /// <param name="arrayparameters">array parameters for operation</param>
+        public PreparedArrayLoadValuesOperation(IDBClient dbclient, string commandtext, object[] parameters, object[] arrayparameters)
+            : base(dbclient, commandtext, parameters) {
+            ArrayParameters = arrayparameters;
+        }
+
+        /// <summary>
+        /// array parameters for command
+        /// </summary>
+        public object[] ArrayParameters { get; }
 
         /// <summary>
         /// executes the statement
         /// </summary>
         /// <returns>data table containing results</returns>
-        public new virtual Clients.Tables.DataTable Execute()
-        {
-            return DBClient.Query(CommandText, Parameters);
+        public override DataTable Execute() {
+            return Execute(Parameters.Concat(ArrayParameters).ToArray());
         }
 
         /// <summary>
@@ -33,9 +42,9 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>data table containing results</returns>
-        public new virtual Clients.Tables.DataTable Execute(params object[] parameters)
-        {
-            return DBClient.Query(CommandText, parameters);
+        public override DataTable Execute(params object[] parameters) {
+            PreparedOperationData operation = PreparedOperationData.Create(DBClient, CommandText, parameters);
+            return DBClient.Query(operation.Command, operation.Parameters);
         }
 
         /// <summary>
@@ -43,9 +52,8 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <param name="transaction">transaction used to execute operation</param>
         /// <returns>data table containing results</returns>
-        public new virtual Clients.Tables.DataTable Execute(Transaction transaction)
-        {
-            return DBClient.Query(transaction, CommandText, Parameters);
+        public override DataTable Execute(Transaction transaction) {
+            return Execute(transaction, Parameters.Concat(ArrayParameters).ToArray());
         }
 
         /// <summary>
@@ -54,44 +62,43 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="transaction">transaction used to execute operation</param>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>data table containing results</returns>
-        public new virtual Clients.Tables.DataTable Execute(Transaction transaction, params object[] parameters)
-        {
-            return DBClient.Query(transaction, CommandText, parameters);
+        public override DataTable Execute(Transaction transaction, params object[] parameters) {
+            PreparedOperationData operation = PreparedOperationData.Create(DBClient, CommandText, parameters);
+            return DBClient.Query(transaction, operation.Command, operation.Parameters);
         }
 
         /// <summary>
         /// executes the statement returning a scalar
         /// </summary>
         /// <returns>first value of the result set or default of TScalar</returns>
-        public virtual TScalar ExecuteScalar<TScalar>()
-        {
-            return Converter.Convert<TScalar>(DBClient.Scalar(CommandText, Parameters), true);
+        public override TScalar ExecuteScalar<TScalar>() {
+            return ExecuteScalar<TScalar>(Parameters.Concat(ArrayParameters).ToArray());
         }
 
         /// <summary>
         /// executes the statement returning a scalar
         /// </summary>
         /// <returns>first value of the result set or default of TScalar</returns>
-        public virtual TScalar ExecuteScalar<TScalar>(params object[] parameters)
-        {
-            return Converter.Convert<TScalar>(DBClient.Scalar(CommandText, parameters), true);
+        public override TScalar ExecuteScalar<TScalar>(params object[] parameters) {
+            PreparedOperationData operation = PreparedOperationData.Create(DBClient, CommandText, parameters);
+            return Converter.Convert<TScalar>(DBClient.Scalar(operation.Command, operation.Parameters), true);
         }
 
         /// <summary>
         /// executes the statement returning a scalar
         /// </summary>
         /// <returns>first value of the result set or default of TScalar</returns>
-        public virtual TScalar ExecuteScalar<TScalar>(Transaction transaction)
-        {
-            return Converter.Convert<TScalar>(DBClient.Scalar(transaction, CommandText, Parameters), true);
+        public override TScalar ExecuteScalar<TScalar>(Transaction transaction) {
+            return ExecuteScalar<TScalar>(transaction, Parameters.Concat(ArrayParameters).ToArray());
         }
 
         /// <summary>
         /// executes the statement returning a scalar
         /// </summary>
         /// <returns>first value of the result set or default of TScalar</returns>
-        public virtual TScalar ExecuteScalar<TScalar>(Transaction transaction, params object[] parameters) {
-            return Converter.Convert<TScalar>(DBClient.Scalar(transaction, CommandText, parameters), true);
+        public override TScalar ExecuteScalar<TScalar>(Transaction transaction, params object[] parameters) {
+            PreparedOperationData operation = PreparedOperationData.Create(DBClient, CommandText, parameters);
+            return Converter.Convert<TScalar>(DBClient.Scalar(transaction, operation.Command, operation.Parameters), true);
         }
 
         /// <summary>
@@ -99,9 +106,18 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <typeparam name="TScalar">type of scalar to return</typeparam>
         /// <returns>values of first column of result set converted to TScalar</returns>
-        public virtual IEnumerable<TScalar> ExecuteSet<TScalar>()
-        {
-            foreach (object value in DBClient.Set(CommandText, Parameters))
+        public override IEnumerable<TScalar> ExecuteSet<TScalar>() {
+            return ExecuteSet<TScalar>(Parameters.Concat(ArrayParameters).ToArray());
+        }
+
+        /// <summary>
+        /// executes the statement returning a set of scalars
+        /// </summary>
+        /// <typeparam name="TScalar">type of scalar to return</typeparam>
+        /// <returns>values of first column of result set converted to TScalar</returns>
+        public override IEnumerable<TScalar> ExecuteSet<TScalar>(params object[] parameters) {
+            PreparedOperationData operation = PreparedOperationData.Create(DBClient, CommandText, parameters);
+            foreach (object value in DBClient.Set(operation.Command, operation.Parameters))
                 yield return Converter.Convert<TScalar>(value, true);
         }
 
@@ -110,10 +126,8 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <typeparam name="TScalar">type of scalar to return</typeparam>
         /// <returns>values of first column of result set converted to TScalar</returns>
-        public virtual IEnumerable<TScalar> ExecuteSet<TScalar>(params object[] parameters)
-        {
-            foreach (object value in DBClient.Set(CommandText, parameters))
-                yield return Converter.Convert<TScalar>(value, true);
+        public override IEnumerable<TScalar> ExecuteSet<TScalar>(Transaction transaction) {
+            return ExecuteSet<TScalar>(transaction, Parameters.Concat(ArrayParameters).ToArray());
         }
 
         /// <summary>
@@ -121,20 +135,9 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <typeparam name="TScalar">type of scalar to return</typeparam>
         /// <returns>values of first column of result set converted to TScalar</returns>
-        public virtual IEnumerable<TScalar> ExecuteSet<TScalar>(Transaction transaction)
-        {
-            foreach (object value in DBClient.Set(transaction, CommandText, Parameters))
-                yield return Converter.Convert<TScalar>(value, true);
-        }
-
-        /// <summary>
-        /// executes the statement returning a set of scalars
-        /// </summary>
-        /// <typeparam name="TScalar">type of scalar to return</typeparam>
-        /// <returns>values of first column of result set converted to TScalar</returns>
-        public virtual IEnumerable<TScalar> ExecuteSet<TScalar>(Transaction transaction, params object[] parameters)
-        {
-            foreach (object value in DBClient.Set(transaction, CommandText, parameters))
+        public override IEnumerable<TScalar> ExecuteSet<TScalar>(Transaction transaction, params object[] parameters) {
+            PreparedOperationData operation = PreparedOperationData.Create(DBClient, CommandText, parameters);
+            foreach (object value in DBClient.Set(transaction, operation.Command, operation.Parameters))
                 yield return Converter.Convert<TScalar>(value, true);
         }
 
@@ -144,15 +147,8 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <typeparam name="TType">type of result</typeparam>
         /// <param name="assignments">action used to assign values</param>
         /// <returns>enumeration of result types</returns>
-        public virtual IEnumerable<TType> ExecuteType<TType>(Action<Clients.Tables.DataRow, TType> assignments)
-            where TType : new()
-        {
-            Clients.Tables.DataTable table = Execute();
-            foreach(Clients.Tables.DataRow row in table.Rows) {
-                TType type = new TType();
-                assignments(row, type);
-                yield return type;
-            }
+        public override IEnumerable<TType> ExecuteType<TType>(Action<DataRow, TType> assignments) {
+            return ExecuteType(assignments, Parameters.Concat(ArrayParameters).ToArray());
         }
 
         /// <summary>
@@ -162,11 +158,9 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="assignments">action used to assign values</param>
         /// <param name="parameters">custom parameters for query execution</param>
         /// <returns>enumeration of result types</returns>
-        public virtual IEnumerable<TType> ExecuteType<TType>(Action<Clients.Tables.DataRow, TType> assignments, params object[] parameters)
-            where TType : new()
-        {
-            Clients.Tables.DataTable table = Execute(parameters);
-            foreach (Clients.Tables.DataRow row in table.Rows)
+        public override IEnumerable<TType> ExecuteType<TType>(Action<DataRow, TType> assignments, params object[] parameters) {
+            DataTable table = Execute(parameters);
+            foreach (DataRow row in table.Rows)
             {
                 TType type = new TType();
                 assignments(row, type);
@@ -181,16 +175,8 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="assignments">action used to assign values</param>
         /// <param name="transaction">transaction to use for execution</param>
         /// <returns>enumeration of result types</returns>
-        public virtual IEnumerable<TType> ExecuteType<TType>(Action<Clients.Tables.DataRow, TType> assignments, Transaction transaction)
-            where TType : new()
-        {
-            Clients.Tables.DataTable table = Execute(transaction);
-            foreach (Clients.Tables.DataRow row in table.Rows)
-            {
-                TType type = new TType();
-                assignments(row, type);
-                yield return type;
-            }
+        public override IEnumerable<TType> ExecuteType<TType>(Action<DataRow, TType> assignments, Transaction transaction) {
+            return ExecuteType(assignments, transaction, Parameters.Concat(ArrayParameters).ToArray());
         }
 
         /// <summary>
@@ -201,17 +187,14 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="transaction">transaction to use for execution</param>
         /// <param name="parameters">custom parameters for query execution</param>
         /// <returns>enumeration of result types</returns>
-        public virtual IEnumerable<TType> ExecuteType<TType>(Action<Clients.Tables.DataRow, TType> assignments, Transaction transaction, params object[] parameters)
-            where TType : new()
-        {
-            Clients.Tables.DataTable table = Execute(transaction, parameters);
-            foreach (Clients.Tables.DataRow row in table.Rows)
+        public override IEnumerable<TType> ExecuteType<TType>(Action<DataRow, TType> assignments, Transaction transaction, params object[] parameters) {
+            DataTable table = Execute(transaction, parameters);
+            foreach (DataRow row in table.Rows)
             {
                 TType type = new TType();
                 assignments(row, type);
                 yield return type;
             }
         }
-
     }
 }
