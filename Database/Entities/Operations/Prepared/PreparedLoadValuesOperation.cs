@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NightlyCode.Database.Clients;
+using NightlyCode.Database.Clients.Tables;
 using Converter = NightlyCode.Database.Extern.Converter;
 
 namespace NightlyCode.Database.Entities.Operations.Prepared {
@@ -23,7 +25,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// executes the statement
         /// </summary>
         /// <returns>data table containing results</returns>
-        public new virtual Clients.Tables.DataTable Execute()
+        public new virtual DataTable Execute()
         {
             return DBClient.Query(CommandText, Parameters);
         }
@@ -33,7 +35,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>data table containing results</returns>
-        public new virtual Clients.Tables.DataTable Execute(params object[] parameters)
+        public new virtual DataTable Execute(params object[] parameters)
         {
             return DBClient.Query(CommandText, parameters);
         }
@@ -43,7 +45,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <param name="transaction">transaction used to execute operation</param>
         /// <returns>data table containing results</returns>
-        public new virtual Clients.Tables.DataTable Execute(Transaction transaction)
+        public new virtual DataTable Execute(Transaction transaction)
         {
             return DBClient.Query(transaction, CommandText, Parameters);
         }
@@ -54,7 +56,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="transaction">transaction used to execute operation</param>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>data table containing results</returns>
-        public new virtual Clients.Tables.DataTable Execute(Transaction transaction, params object[] parameters)
+        public new virtual DataTable Execute(Transaction transaction, params object[] parameters)
         {
             return DBClient.Query(transaction, CommandText, parameters);
         }
@@ -144,15 +146,10 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <typeparam name="TType">type of result</typeparam>
         /// <param name="assignments">action used to assign values</param>
         /// <returns>enumeration of result types</returns>
-        public virtual IEnumerable<TType> ExecuteType<TType>(Action<Clients.Tables.DataRow, TType> assignments)
-            where TType : new()
+        public virtual IEnumerable<TType> ExecuteType<TType>(Func<DataRow, TType> assignments)
         {
-            Clients.Tables.DataTable table = Execute();
-            foreach(Clients.Tables.DataRow row in table.Rows) {
-                TType type = new TType();
-                assignments(row, type);
-                yield return type;
-            }
+            DataTable table = Execute();
+            return table.Rows.Select(assignments);
         }
 
         /// <summary>
@@ -162,16 +159,10 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="assignments">action used to assign values</param>
         /// <param name="parameters">custom parameters for query execution</param>
         /// <returns>enumeration of result types</returns>
-        public virtual IEnumerable<TType> ExecuteType<TType>(Action<Clients.Tables.DataRow, TType> assignments, params object[] parameters)
-            where TType : new()
+        public virtual IEnumerable<TType> ExecuteType<TType>(Func<DataRow, TType> assignments, params object[] parameters)
         {
-            Clients.Tables.DataTable table = Execute(parameters);
-            foreach (Clients.Tables.DataRow row in table.Rows)
-            {
-                TType type = new TType();
-                assignments(row, type);
-                yield return type;
-            }
+            DataTable table = Execute(parameters);
+            return table.Rows.Select(assignments);
         }
 
         /// <summary>
@@ -181,16 +172,10 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="assignments">action used to assign values</param>
         /// <param name="transaction">transaction to use for execution</param>
         /// <returns>enumeration of result types</returns>
-        public virtual IEnumerable<TType> ExecuteType<TType>(Action<Clients.Tables.DataRow, TType> assignments, Transaction transaction)
-            where TType : new()
+        public virtual IEnumerable<TType> ExecuteType<TType>(Transaction transaction, Func<DataRow, TType> assignments)
         {
-            Clients.Tables.DataTable table = Execute(transaction);
-            foreach (Clients.Tables.DataRow row in table.Rows)
-            {
-                TType type = new TType();
-                assignments(row, type);
-                yield return type;
-            }
+            DataTable table = Execute(transaction);
+            return table.Rows.Select(assignments);
         }
 
         /// <summary>
@@ -201,17 +186,10 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="transaction">transaction to use for execution</param>
         /// <param name="parameters">custom parameters for query execution</param>
         /// <returns>enumeration of result types</returns>
-        public virtual IEnumerable<TType> ExecuteType<TType>(Action<Clients.Tables.DataRow, TType> assignments, Transaction transaction, params object[] parameters)
-            where TType : new()
+        public virtual IEnumerable<TType> ExecuteType<TType>(Transaction transaction, Func<DataRow, TType> assignments, params object[] parameters)
         {
-            Clients.Tables.DataTable table = Execute(transaction, parameters);
-            foreach (Clients.Tables.DataRow row in table.Rows)
-            {
-                TType type = new TType();
-                assignments(row, type);
-                yield return type;
-            }
+            DataTable table = Execute(transaction, parameters);
+            return table.Rows.Select(assignments);
         }
-
     }
 }

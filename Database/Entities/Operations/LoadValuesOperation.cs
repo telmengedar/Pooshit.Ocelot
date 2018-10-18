@@ -188,10 +188,21 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <typeparam name="TType">type of result</typeparam>
         /// <param name="assignments">action used to assign values</param>
         /// <returns>enumeration of result types</returns>
-        public IEnumerable<TType> ExecuteType<TType>(Action<Clients.Tables.DataRow, TType> assignments)
-            where TType : new()
+        public IEnumerable<TType> ExecuteType<TType>(Func<Clients.Tables.DataRow, TType> assignments)
         {
             return Prepare().ExecuteType(assignments);
+        }
+
+        /// <summary>
+        /// executes a query and stores the result in a custom result type
+        /// </summary>
+        /// <typeparam name="TType">type of result</typeparam>
+        /// <param name="transaction">transaction to use for operation execution</param>
+        /// <param name="assignments">action used to assign values</param>
+        /// <returns>enumeration of result types</returns>
+        public IEnumerable<TType> ExecuteType<TType>(Transaction transaction, Func<Clients.Tables.DataRow, TType> assignments)
+        {
+            return Prepare().ExecuteType(transaction, assignments);
         }
 
         /// <summary>

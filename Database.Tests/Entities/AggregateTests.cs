@@ -18,10 +18,11 @@ namespace NightlyCode.Database.Tests.Entities {
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            entitymanager.InsertEntities(new ValueModel {Integer = 5}, 
-                new ValueModel(), 
-                new ValueModel {Integer = 11}, 
-                new ValueModel {Integer = 3}, 
+            entitymanager.InsertEntities<ValueModel>().Execute(
+                new ValueModel {Integer = 5},
+                new ValueModel(),
+                new ValueModel {Integer = 11},
+                new ValueModel {Integer = 3},
                 new ValueModel {Integer = 7});
 
             int result = entitymanager.Load<ValueModel>(DBFunction.Sum(EntityField.Create<ValueModel>(m => m.Integer))).ExecuteScalar<int>();
@@ -36,7 +37,8 @@ namespace NightlyCode.Database.Tests.Entities {
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            entitymanager.InsertEntities(new ValueModel { Integer = 5 },
+            entitymanager.InsertEntities<ValueModel>().Execute(
+                new ValueModel { Integer = 5 },
                 new ValueModel(),
                 new ValueModel { Integer = 11 },
                 new ValueModel { Integer = 3 },
@@ -54,7 +56,8 @@ namespace NightlyCode.Database.Tests.Entities {
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            entitymanager.InsertEntities(new ValueModel { Double = 5 },
+            entitymanager.InsertEntities<ValueModel>().Execute(
+                new ValueModel { Double = 5 },
                 new ValueModel(),
                 new ValueModel { Double = 11.3 },
                 new ValueModel { Double = 3 },
@@ -72,7 +75,8 @@ namespace NightlyCode.Database.Tests.Entities {
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            entitymanager.InsertEntities(new ValueModel { Double = 5 },
+            entitymanager.InsertEntities<ValueModel>().Execute(
+                new ValueModel { Double = 5 },
                 new ValueModel(),
                 new ValueModel { Double = 11.3 },
                 new ValueModel { Double = 3 },
@@ -90,7 +94,8 @@ namespace NightlyCode.Database.Tests.Entities {
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            entitymanager.InsertEntities(new ValueModel { Integer = 5 },
+            entitymanager.InsertEntities<ValueModel>().Execute(
+                new ValueModel { Integer = 5 },
                 new ValueModel(),
                 new ValueModel { Integer = 11 },
                 new ValueModel { Integer = 3 },
@@ -108,7 +113,8 @@ namespace NightlyCode.Database.Tests.Entities {
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            entitymanager.InsertEntities(new ValueModel { Integer = 5 },
+            entitymanager.InsertEntities<ValueModel>().Execute(
+                new ValueModel { Integer = 5 },
                 new ValueModel(),
                 new ValueModel { Integer = 11 },
                 new ValueModel { Integer = 3 },
@@ -126,7 +132,8 @@ namespace NightlyCode.Database.Tests.Entities {
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            entitymanager.InsertEntities(new ValueModel { Integer = 5 },
+            entitymanager.InsertEntities<ValueModel>().Execute(
+                new ValueModel { Integer = 5 },
                 new ValueModel(),
                 new ValueModel { Integer = 11 },
                 new ValueModel { Integer = 3 },
@@ -144,7 +151,8 @@ namespace NightlyCode.Database.Tests.Entities {
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            entitymanager.InsertEntities(new ValueModel { Integer = 5 },
+            entitymanager.InsertEntities<ValueModel>().Execute(
+                new ValueModel { Integer = 5 },
                 new ValueModel(),
                 new ValueModel { Integer = 11 },
                 new ValueModel { Integer = 3 },
@@ -162,7 +170,8 @@ namespace NightlyCode.Database.Tests.Entities {
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            entitymanager.InsertEntities(new ValueModel { Integer = 5 },
+            entitymanager.InsertEntities<ValueModel>().Execute(
+                new ValueModel { Integer = 5 },
                 new ValueModel(),
                 new ValueModel { Integer = 11 },
                 new ValueModel { Integer = 3 },
@@ -180,7 +189,8 @@ namespace NightlyCode.Database.Tests.Entities {
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            entitymanager.InsertEntities(new ValueModel { Integer = 5 },
+            entitymanager.InsertEntities<ValueModel>().Execute(
+                new ValueModel { Integer = 5 },
                 new ValueModel(),
                 new ValueModel { Integer = 11 },
                 new ValueModel { Integer = 3 },

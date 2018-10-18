@@ -69,6 +69,7 @@
     <Compile Include="Entities\DescriptorAccessTests.cs" />
     <Compile Include="Entities\EntityDescriptorTest.cs" />
     <Compile Include="Entities\EntityManagerTest.cs" />
+    <Compile Include="LoadValuesOperationTests.cs" />
     <Compile Include="Models\GuidEntity.cs" />
     <Compile Include="SchemaUpdateTests.cs" />
     <Compile Include="Fields\ParameterTests.cs" />

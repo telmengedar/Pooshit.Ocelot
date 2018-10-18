@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
+using NightlyCode.Database.Entities.Operations.Entities;
 using NightlyCode.Database.Entities.Operations.Fields;
 
 namespace NightlyCode.Database.Entities {
@@ -39,16 +40,27 @@ namespace NightlyCode.Database.Entities {
         /// <summary>
         /// inserts entities to the db
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="entities"></param>
-        void InsertEntities<T>(params T[] entities);
+        /// <typeparam name="T">type of entities to insert</typeparam>
+        IEntityOperation<T> InsertEntities<T>();
 
         /// <summary>
-        /// inserts entities to the db
+        /// get a load operation for the specified entity type
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="entities"></param>
-        void InsertEntities<T>(IEnumerable<T> entities);
+        /// <returns></returns>
+        LoadEntitiesOperation<T> LoadEntities<T>();
+
+        /// <summary>
+        /// updates entities in db
+        /// </summary>
+        /// <typeparam name="T">type of entities to update</typeparam>
+        IEntityOperation<T> UpdateEntities<T>();
+
+        /// <summary>
+        /// delete entities
+        /// </summary>
+        /// <typeparam name="T">type of entities to delete</typeparam>
+        IEntityOperation<T> DeleteEntities<T>();
 
         /// <summary>
         /// gets an operation which allows to update the values of an entity
@@ -56,20 +68,6 @@ namespace NightlyCode.Database.Entities {
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         UpdateValuesOperation<T> Update<T>();
-
-        /// <summary>
-        /// updates entities in db
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="entities"></param>
-        void UpdateEntities<T>(params T[] entities);
-
-        /// <summary>
-        /// updates entities in db
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="entities"></param>
-        void UpdateEntities<T>(IEnumerable<T> entities);
 
         /// <summary>
         /// inserts or updates the specified entities
@@ -86,13 +84,6 @@ namespace NightlyCode.Database.Entities {
         void Save<T>(IEnumerable<T> entities);
 
         /// <summary>
-        /// get a load operation for the specified entity type
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        LoadEntitiesOperation<T> LoadEntities<T>();
-
-        /// <summary>
         /// get a load operation to use to load values of an entity from the database
         /// </summary>
         /// <typeparam name="T">type of entity</typeparam>
@@ -101,12 +92,10 @@ namespace NightlyCode.Database.Entities {
         LoadValuesOperation<T> Load<T>(params IDBField[] fields);
 
         /// <summary>
-        /// delete entities
+        /// get an operation used to delete data from database
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="entities"></param>
-        void DeleteEntities<T>(params T[] entities);
-
+        /// <returns></returns>
         DeleteOperation<T> Delete<T>();
 
         /// <summary>

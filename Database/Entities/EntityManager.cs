@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
+using NightlyCode.Database.Entities.Operations.Entities;
 using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Schema;
 using NightlyCode.Database.Extern;
@@ -77,19 +78,37 @@ namespace NightlyCode.Database.Entities {
         /// <summary>
         /// inserts entities to the db
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="entities"></param>
-        public void InsertEntities<T>(params T[] entities) {
-            InsertEntities((IEnumerable<T>)entities);
+        /// <typeparam name="T">type of entities to insert</typeparam>
+        public IEntityOperation<T> InsertEntities<T>() {
+            return new InsertEntitiesOperation<T>(this, modelcache.Get);
         }
 
         /// <summary>
-        /// inserts entities to the db
+        /// get a load operation for the specified entity type
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="entities"></param>
-        public void InsertEntities<T>(IEnumerable<T> entities) {
-            new InsertEntitiesOperation(DBClient, entities, modelcache.Get).Execute();
+        /// <returns></returns>
+        public LoadEntitiesOperation<T> LoadEntities<T>()
+        {
+            return new LoadEntitiesOperation<T>(DBClient, modelcache.Get);
+        }
+
+        /// <summary>
+        /// updates entities in db
+        /// </summary>
+        /// <typeparam name="T">type of entity to update</typeparam>
+        public IEntityOperation<T> UpdateEntities<T>()
+        {
+            return new UpdateEntitiesOperation<T>(DBClient, modelcache.Get);
+        }
+
+        /// <summary>
+        /// delete entities
+        /// </summary>
+        /// <typeparam name="T">type of entities to delete</typeparam>
+        public IEntityOperation<T> DeleteEntities<T>()
+        {
+            return new DeleteEntitiesOperation<T>(DBClient, modelcache.Get);
         }
 
         /// <summary>
@@ -110,35 +129,8 @@ namespace NightlyCode.Database.Entities {
             return new InsertValuesOperation<T>(DBClient, modelcache.Get);
         }
 
-        /// <summary>
-        /// delete entities
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="entities"></param>
-        public void DeleteEntities<T>(params T[] entities) {
-            new DeleteEntitiesOperation(DBClient, entities, modelcache.Get).Execute();
-        }
-
         public DeleteOperation<T> Delete<T>() {
             return new DeleteOperation<T>(DBClient, modelcache.Get);
-        }
-
-        /// <summary>
-        /// updates entities in db
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="entities"></param>
-        public void UpdateEntities<T>(params T[] entities) {
-            UpdateEntities((IEnumerable<T>)entities);
-        }
-
-        /// <summary>
-        /// updates entities in db
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="entities"></param>
-        public void UpdateEntities<T>(IEnumerable<T> entities) {
-            new UpdateEntitiesOperation(DBClient, entities, modelcache.Get).Execute();
         }
 
         /// <summary>
@@ -180,22 +172,14 @@ namespace NightlyCode.Database.Entities {
             else toinsert.AddRange(entities);
 
             if(toinsert.Count>0)
-                InsertEntities<T>(toinsert);
+                InsertEntities<T>().Execute(toinsert.ToArray());
             if(toupdate.Count>0)
-                UpdateEntities<T>(toupdate);
+                UpdateEntities<T>().Execute(toupdate.ToArray());
         }
 
         bool PrimaryKeyEquals(object lhs, object rhs) {
             if(lhs == null) return rhs == null;
             return lhs.Equals(rhs);
-        }
-        /// <summary>
-        /// get a load operation for the specified entity type
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public LoadEntitiesOperation<T> LoadEntities<T>() {
-            return new LoadEntitiesOperation<T>(DBClient, modelcache.Get);
         }
 
         /// <summary>

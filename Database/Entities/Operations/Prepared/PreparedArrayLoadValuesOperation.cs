@@ -147,7 +147,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <typeparam name="TType">type of result</typeparam>
         /// <param name="assignments">action used to assign values</param>
         /// <returns>enumeration of result types</returns>
-        public override IEnumerable<TType> ExecuteType<TType>(Action<DataRow, TType> assignments) {
+        public override IEnumerable<TType> ExecuteType<TType>(Func<DataRow, TType> assignments) {
             return ExecuteType(assignments, Parameters.Concat(ArrayParameters).ToArray());
         }
 
@@ -158,14 +158,9 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="assignments">action used to assign values</param>
         /// <param name="parameters">custom parameters for query execution</param>
         /// <returns>enumeration of result types</returns>
-        public override IEnumerable<TType> ExecuteType<TType>(Action<DataRow, TType> assignments, params object[] parameters) {
+        public override IEnumerable<TType> ExecuteType<TType>(Func<DataRow, TType> assignments, params object[] parameters) {
             DataTable table = Execute(parameters);
-            foreach (DataRow row in table.Rows)
-            {
-                TType type = new TType();
-                assignments(row, type);
-                yield return type;
-            }
+            return table.Rows.Select(assignments);
         }
 
         /// <summary>
@@ -175,7 +170,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="assignments">action used to assign values</param>
         /// <param name="transaction">transaction to use for execution</param>
         /// <returns>enumeration of result types</returns>
-        public override IEnumerable<TType> ExecuteType<TType>(Action<DataRow, TType> assignments, Transaction transaction) {
+        public override IEnumerable<TType> ExecuteType<TType>(Transaction transaction, Func<DataRow, TType> assignments) {
             return ExecuteType(assignments, transaction, Parameters.Concat(ArrayParameters).ToArray());
         }
 
@@ -187,14 +182,9 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="transaction">transaction to use for execution</param>
         /// <param name="parameters">custom parameters for query execution</param>
         /// <returns>enumeration of result types</returns>
-        public override IEnumerable<TType> ExecuteType<TType>(Action<DataRow, TType> assignments, Transaction transaction, params object[] parameters) {
+        public override IEnumerable<TType> ExecuteType<TType>(Transaction transaction, Func<DataRow, TType> assignments, params object[] parameters) {
             DataTable table = Execute(transaction, parameters);
-            foreach (DataRow row in table.Rows)
-            {
-                TType type = new TType();
-                assignments(row, type);
-                yield return type;
-            }
+            return table.Rows.Select(assignments);
         }
     }
 }
