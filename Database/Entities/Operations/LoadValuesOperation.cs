@@ -210,40 +210,40 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <returns></returns>
         public PreparedLoadValuesOperation Prepare() {
-            OperationPreparator preparator = new OperationPreparator(dbclient.DBInfo);
-            preparator.CommandBuilder.Append("SELECT ");
-
+            OperationPreparator preparator = new OperationPreparator().AppendText("SELECT");
             EntityDescriptor descriptor = typeof(T) == typeof(object) ? null : descriptorgetter(typeof(T));
 
             bool flag = true;
             foreach(IDBField criteria in columns) {
                 if(flag) flag = false;
-                else preparator.CommandBuilder.Append(", ");
+                else preparator.AppendText(",");
                 dbclient.DBInfo.Append(criteria, preparator, descriptorgetter);
             }
 
             if(descriptor!=null)
-                preparator.CommandBuilder.Append(" FROM ").Append(descriptor.TableName);
+                preparator.AppendText("FROM").AppendText(descriptor.TableName);
 
             if(joinoperations.Count > 0) {
                 foreach(JoinOperation operation in joinoperations) {
-                    preparator.CommandBuilder.Append(" INNER JOIN ").Append(descriptorgetter(operation.JoinType).TableName).Append(" ON ");
+                    preparator.AppendText("INNER JOIN")
+                        .AppendText(descriptorgetter(operation.JoinType).TableName)
+                        .AppendText("ON");
                     CriteriaVisitor.GetCriteriaText(operation.Criterias, descriptorgetter, dbclient.DBInfo, preparator);
                 }
             }
 
             if(Criterias != null) {
-                preparator.CommandBuilder.Append(" WHERE ");
+                preparator.AppendText("WHERE");
                 CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator);
             }
 
             flag = true;
             if(groupbycriterias != null) {
-                preparator.CommandBuilder.Append(" GROUP BY ");
+                preparator.AppendText("GROUP BY");
 
                 foreach(IDBField criteria in groupbycriterias) {
                     if(flag) flag = false;
-                    else preparator.CommandBuilder.Append(", ");
+                    else preparator.AppendText(",");
                     dbclient.DBInfo.Append(criteria, preparator, descriptorgetter);
                 }
             }
@@ -251,32 +251,29 @@ namespace NightlyCode.Database.Entities.Operations {
             flag = true;
             if (orderbycriterias != null)
             {
-                preparator.CommandBuilder.Append(" ORDER BY ");
+                preparator.AppendText("ORDER BY");
 
                 foreach (OrderByCriteria criteria in orderbycriterias)
                 {
                     if (flag) flag = false;
-                    else preparator.CommandBuilder.Append(", ");
+                    else preparator.AppendText(",");
                     dbclient.DBInfo.Append(criteria.Field, preparator, descriptorgetter);
 
                     if (!criteria.Ascending)
-                        preparator.CommandBuilder.Append(" DESC");
+                        preparator.AppendText("DESC");
                 }
             }
 
             if (Havings != null) {
-                preparator.CommandBuilder.Append(" HAVING ");
+                preparator.AppendText("HAVING");
                 CriteriaVisitor.GetCriteriaText(Havings, descriptorgetter, dbclient.DBInfo, preparator);
             }
 
             if (!ReferenceEquals(LimitStatement, null)) {
-                preparator.CommandBuilder.Append(" ");
                 dbclient.DBInfo.Append(LimitStatement, preparator, descriptorgetter);
             }
 
-            if (preparator.ArrayParameters.Any())
-                return new PreparedArrayLoadValuesOperation(dbclient, preparator.CommandBuilder.ToString(), preparator.Parameters.ToArray(), preparator.ArrayParameters.ToArray());
-            return new PreparedLoadValuesOperation(dbclient, preparator.CommandBuilder.ToString(), preparator.Parameters.ToArray());
+            return preparator.GetLoadValuesOperation(dbclient);
         }
 
         /// <summary>

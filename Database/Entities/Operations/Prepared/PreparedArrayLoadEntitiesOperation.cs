@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
@@ -19,41 +20,29 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="commandtext">command text to execute</param>
         /// <param name="parameters">initial parameters of operation</param>
         /// <param name="arrayparameters">array parameters of operation</param>
-        public PreparedArrayLoadEntitiesOperation(IDBClient dbclient, EntityDescriptor descriptor, string commandtext, object[] parameters, object[] arrayparameters)
+        public PreparedArrayLoadEntitiesOperation(IDBClient dbclient, EntityDescriptor descriptor, string commandtext, object[] parameters, Array[] arrayparameters)
             : base(dbclient, descriptor, commandtext, parameters) {
-            ArrayParameters = arrayparameters;
+            ConstantArrayParameters = arrayparameters;
         }
 
         /// <summary>
         /// array parameters for command
         /// </summary>
-        public object[] ArrayParameters { get; }
-
-        /// <summary>
-        /// executes the statement
-        /// </summary>
-        /// <returns>entities created from result set</returns>
-        public override IEnumerable<T> Execute() {
-            return Execute(Parameters.Concat(ArrayParameters).ToArray());
-        }
+        public Array[] ConstantArrayParameters { get; }
 
         /// <summary>
         /// executes the statement
         /// </summary>
         /// <returns>entities created from result set</returns>
         public override IEnumerable<T> Execute(params object[] parameters) {
-            PreparedOperationData operation = PreparedOperationData.Create(DBClient, CommandText, parameters);
+            PreparedOperationData operation = PreparedOperationData.Create(DBClient,
+                CommandText,
+                ConstantParameters,
+                ConstantArrayParameters,
+                parameters.Where(p => !(p is Array)).ToArray(),
+                parameters.OfType<Array>().ToArray());
             Clients.Tables.DataTable data = DBClient.Query(operation.Command, operation.Parameters);
             return CreateObjects(data);
-        }
-
-        /// <summary>
-        /// executes the statement
-        /// </summary>
-        /// <param name="transaction">transaction to use for execution</param>
-        /// <returns>entities created from result set</returns>
-        public override IEnumerable<T> Execute(Transaction transaction) {
-            return Execute(transaction, Parameters.Concat(ArrayParameters).ToArray());
         }
 
         /// <summary>
@@ -63,7 +52,12 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="parameters">parameters to use for execution</param>
         /// <returns>entities created from result set</returns>
         public override IEnumerable<T> Execute(Transaction transaction, params object[] parameters) {
-            PreparedOperationData operation = PreparedOperationData.Create(DBClient, CommandText, parameters);
+            PreparedOperationData operation = PreparedOperationData.Create(DBClient,
+                CommandText,
+                ConstantParameters,
+                ConstantArrayParameters,
+                parameters.Where(p => !(p is Array)).ToArray(),
+                parameters.OfType<Array>().ToArray());
             Clients.Tables.DataTable data = DBClient.Query(transaction, operation.Command, operation.Parameters);
             return CreateObjects(data);
         }

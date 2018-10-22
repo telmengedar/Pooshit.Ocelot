@@ -1,4 +1,5 @@
-﻿using NightlyCode.Database.Clients;
+﻿using System.Linq;
+using NightlyCode.Database.Clients;
 
 namespace NightlyCode.Database.Entities.Operations.Prepared {
 
@@ -12,11 +13,11 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <param name="dbclient">access to database</param>
         /// <param name="commandText">sql query text</param>
-        /// <param name="parameters">parameters for query</param>
-        public PreparedOperation(IDBClient dbclient, string commandText, params object[] parameters) {
+        /// <param name="constantparameters">parameters for query</param>
+        public PreparedOperation(IDBClient dbclient, string commandText, object[] constantparameters) {
             DBClient = dbclient;
             CommandText = commandText;
-            Parameters = parameters;
+            ConstantParameters = constantparameters;
         }
 
         /// <summary>
@@ -35,15 +36,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <summary>
         /// parameters for command
         /// </summary>
-        public object[] Parameters { get; }
-
-        /// <summary>
-        /// executes the operation
-        /// </summary>
-        /// <returns>number of affected rows if applicable</returns>
-        public virtual int Execute() {
-            return DBClient.NonQuery(CommandText, Parameters);
-        }
+        public object[] ConstantParameters { get; }
 
         /// <summary>
         /// executes the operation using custom parameters
@@ -51,16 +44,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="parameters">parameters for operation</param>
         /// <returns>number of affected rows if applicable</returns>
         public virtual int Execute(params object[] parameters) {
-            return DBClient.NonQuery(CommandText, parameters);
-        }
-
-        /// <summary>
-        /// executes the operation using custom parameters
-        /// </summary>
-        /// <param name="transaction">transaction used to execute operation</param>
-        /// <returns>number of affected rows if applicable</returns>
-        public virtual int Execute(Transaction transaction) {
-            return DBClient.NonQuery(transaction, CommandText, Parameters);
+            return DBClient.NonQuery(CommandText, ConstantParameters.Concat(parameters));
         }
 
         /// <summary>
@@ -70,7 +54,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="parameters">parameters for operation</param>
         /// <returns>number of affected rows if applicable</returns>
         public virtual int Execute(Transaction transaction, params object[] parameters) {
-            return DBClient.NonQuery(transaction, CommandText, parameters);
+            return DBClient.NonQuery(transaction, CommandText, ConstantParameters.Concat(parameters));
         }
 
         /// <inheritdoc/>

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using NightlyCode.Database.Clients;
 
 namespace NightlyCode.Database.Entities.Operations.Prepared {
@@ -15,23 +16,15 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="commandText">sql query text</param>
         /// <param name="parameters">parameters for query</param>
         /// <param name="arrayparameters">array parameters for query</param>
-        public PreparedArrayOperation(IDBClient dbclient, string commandText, object[] parameters, object[] arrayparameters)
+        public PreparedArrayOperation(IDBClient dbclient, string commandText, object[] parameters, Array[] arrayparameters)
             : base(dbclient, commandText, parameters) {
-            ArrayParameters = arrayparameters;
+            ConstantArrayParameters = arrayparameters;
         }
 
         /// <summary>
         /// array parameters for command
         /// </summary>
-        public object[] ArrayParameters { get; }
-
-        /// <summary>
-        /// executes the operation
-        /// </summary>
-        /// <returns>number of affected rows if applicable</returns>
-        public override int Execute() {
-            return Execute(Parameters.Concat(ArrayParameters).ToArray());
-        }
+        public Array[] ConstantArrayParameters { get; }
 
         /// <summary>
         /// executes the operation using custom parameters
@@ -39,17 +32,13 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="parameters">parameters for operation</param>
         /// <returns>number of affected rows if applicable</returns>
         public override int Execute(params object[] parameters) {
-            PreparedOperationData operation = PreparedOperationData.Create(DBClient, CommandText, parameters);
+            PreparedOperationData operation = PreparedOperationData.Create(DBClient,
+                CommandText,
+                ConstantParameters,
+                ConstantArrayParameters,
+                parameters.Where(p => !(p is Array)).ToArray(),
+                parameters.OfType<Array>().ToArray());
             return DBClient.NonQuery(operation.Command, operation.Parameters);
-        }
-
-        /// <summary>
-        /// executes the operation using custom parameters
-        /// </summary>
-        /// <param name="transaction">transaction used to execute operation</param>
-        /// <returns>number of affected rows if applicable</returns>
-        public override int Execute(Transaction transaction) {
-            return Execute(transaction, Parameters.Concat(ArrayParameters).ToArray());
         }
 
         /// <summary>
@@ -59,7 +48,12 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="parameters">parameters for operation</param>
         /// <returns>number of affected rows if applicable</returns>
         public override int Execute(Transaction transaction, params object[] parameters) {
-            PreparedOperationData operation = PreparedOperationData.Create(DBClient, CommandText, parameters);
+            PreparedOperationData operation = PreparedOperationData.Create(DBClient,
+                CommandText,
+                ConstantParameters,
+                ConstantArrayParameters,
+                parameters.Where(p => !(p is Array)).ToArray(),
+                parameters.OfType<Array>().ToArray());
             return DBClient.NonQuery(transaction, operation.Command, operation.Parameters);
         }
     }

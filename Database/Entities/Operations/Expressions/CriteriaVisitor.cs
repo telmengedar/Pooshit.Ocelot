@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Info;
 using Converter = NightlyCode.Database.Extern.Converter;
 
@@ -83,7 +84,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 remainder = type;
                 break;
             default:
-                preparator.CommandBuilder.Append(GetOperant(type));
+                preparator.AppendText(GetOperant(type));
                 break;
             }
         }
@@ -91,10 +92,10 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
         void AppendValueRemainder() {
             switch(remainder) {
                 case ExpressionType.Equal:
-                    preparator.CommandBuilder.Append(" = ");
+                    preparator.AppendText("=");
                     break;
                 case ExpressionType.NotEqual:
-                    preparator.CommandBuilder.Append(" <> ");
+                    preparator.AppendText("<>");
                     break;
             }
             remainder = ExpressionType.Default;
@@ -104,13 +105,13 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             if(value == null) {
                 switch(remainder) {
                     case ExpressionType.Equal:
-                        preparator.CommandBuilder.Append(" IS ");
+                        preparator.AppendText("IS");
                         break;
                     case ExpressionType.NotEqual:
-                        preparator.CommandBuilder.Append(" IS NOT ");
+                        preparator.AppendText("IS NOT");
                         break;
                 }
-                preparator.CommandBuilder.Append(" NULL");
+                preparator.AppendText("NULL");
             }
             else if(DBConverterCollection.ContainsConverter(value.GetType())) {
                 AppendValueRemainder();
@@ -126,7 +127,6 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 if (value is IDBField field)
                     dbinfo.Append(field, preparator, descriptorgetter);
                 else {
-                    preparator.CommandBuilder.Append(" ");
                     preparator.AppendParameter(Converter.Convert(value, dbinfo.GetDBRepresentation(value.GetType())));
                 }
             }
@@ -210,7 +210,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 AppendConstantValue(value);
             }
             else if(expression.NodeType == ExpressionType.Parameter) {
-                preparator.CommandBuilder.Append(GetColumnName((PropertyInfo)member));
+                preparator.AppendText(GetColumnName((PropertyInfo)member));
             }
             else if(expression.NodeType == ExpressionType.MemberAccess) {
                 // references a parameter to be specified later when executing the operation
@@ -284,9 +284,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             }
 
             Visit(node.Left);
-            preparator.CommandBuilder.Append(" ");
             AddOperant(node.NodeType);
-            preparator.CommandBuilder.Append(" ");
             Visit(node.Right);
             return node;
         }
@@ -298,7 +296,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 switch(node.Method.Name) {
                 case "Like":
                     Visit(node.Arguments[0]);
-                    preparator.CommandBuilder.Append(" ").Append(dbinfo.LikeTerm).Append(" ");
+                    preparator.AppendText(dbinfo.LikeTerm);
                     Visit(node.Arguments[1]);
                     break;
                 case "Replace":
@@ -314,7 +312,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 switch (node.Method.Name) {
                 case "Contains":
                     Visit(node.Arguments[1]);
-                    preparator.CommandBuilder.Append(" IN ");
+                    preparator.AppendText("IN");
 
                     if (node.Arguments[0].NodeType == ExpressionType.MemberAccess
                         && (((MemberExpression) node.Arguments[0]).Member.DeclaringType == typeof(DBParameter)
@@ -322,16 +320,16 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                         preparator.AppendArrayParameter();
                     }
                     else {
-                        preparator.CommandBuilder.Append("(");
+                        preparator.AppendText("(");
                         bool first = true;
                         foreach (object item in (IEnumerable) GetValue(node.Arguments[0])) {
                             if (first)
                                 first = false;
-                            else preparator.CommandBuilder.Append(",");
+                            else preparator.AppendText(",");
                             AppendConstantValue(item);
                         }
 
-                        preparator.CommandBuilder.Append(")");
+                        preparator.AppendText(")");
                     }
 
                     break;

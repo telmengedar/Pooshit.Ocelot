@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
@@ -54,23 +53,21 @@ namespace NightlyCode.Database.Entities.Operations {
 
         public int Execute(Transaction transaction)
         {
-            PreparedOperation operation = Prepare();
-            return dbclient.NonQuery(transaction, operation.CommandText, operation.Parameters);
+            return Prepare().Execute(transaction);
         }
 
         public int Execute() {
-            PreparedOperation operation = Prepare();
-            return dbclient.NonQuery(operation.CommandText, operation.Parameters);
+            return Prepare().Execute();
         }
 
         public PreparedOperation Prepare() {
-            OperationPreparator preparator = new OperationPreparator(dbclient.DBInfo);
-            preparator.CommandBuilder.Append("UPDATE ");
+            OperationPreparator preparator = new OperationPreparator();
+            preparator.AppendText("UPDATE");
 
             EntityDescriptor descriptor = descriptorgetter(typeof(T));
 
-            preparator.CommandBuilder.Append(descriptor.TableName);
-            preparator.CommandBuilder.Append(" SET ");
+            preparator.AppendText(descriptor.TableName);
+            preparator.AppendText("SET");
 
             if(updatesetters == null)
                 throw new InvalidOperationException("No update operations specified");
@@ -78,14 +75,14 @@ namespace NightlyCode.Database.Entities.Operations {
             bool first=true;
             foreach(Expression setter in updatesetters) {
                 if(!first)
-                    preparator.CommandBuilder.Append(", ");
+                    preparator.AppendText(",");
                 else first = false;
 
                 CriteriaVisitor.GetCriteriaText(setter, descriptorgetter, dbclient.DBInfo, preparator);
             }
 
             if(Criterias != null) {
-                preparator.CommandBuilder.Append(" WHERE ");
+                preparator.AppendText("WHERE");
                 CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator);
             }
             return preparator.GetOperation(dbclient);

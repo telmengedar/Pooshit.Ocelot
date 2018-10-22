@@ -7,6 +7,7 @@ using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Expressions;
 using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
 
 namespace NightlyCode.Database.Info {
@@ -36,21 +37,21 @@ namespace NightlyCode.Database.Info {
         }
 
         void AppendAggregate(Aggregate aggregate, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter) {
-            preparator.CommandBuilder.Append(aggregate.Method).Append("(");
+            preparator.AppendText(aggregate.Method).AppendText("(");
             if (aggregate.Arguments.Length > 0) {
                 Append(aggregate.Arguments[0], preparator, descriptorgetter);
                 foreach (IDBField field in aggregate.Arguments.Skip(1)) {
-                    preparator.CommandBuilder.Append(", ");
+                    preparator.AppendText(", ");
                     Append(field, preparator, descriptorgetter);
                 }
             }
 
-            preparator.CommandBuilder.Append(")");
+            preparator.AppendText(")");
         }
 
         void AppendConstant(Constant constant, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter) {
             if (constant.Value == null)
-                preparator.CommandBuilder.Append("NULL");
+                preparator.AppendText("NULL");
             else
             {
                 if (constant.Value is Expression expression)

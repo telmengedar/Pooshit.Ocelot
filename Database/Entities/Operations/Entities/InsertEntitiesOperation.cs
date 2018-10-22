@@ -33,14 +33,14 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         }
 
         PreparedOperation PrepareOperation() {
-            OperationPreparator preparator = new OperationPreparator(dbclient.DBInfo);
-            preparator.CommandBuilder.Append($"INSERT INTO {entitydescriptor.TableName} ({dbclient.DBInfo.ColumnIndicator}{string.Join(string.Format("{0}, {0}", dbclient.DBInfo.ColumnIndicator), interestingcolumns.Select(c => c.Name))}{dbclient.DBInfo.ColumnIndicator}) VALUES(");
-            foreach (EntityColumnDescriptor unused in interestingcolumns) {
-                if (preparator.Parameters.Count > 0)
-                    preparator.CommandBuilder.Append(", ");
+            OperationPreparator preparator = new OperationPreparator();
+            preparator.AppendText($"INSERT INTO {entitydescriptor.TableName} ({dbclient.DBInfo.ColumnIndicator}{string.Join(string.Format("{0}, {0}", dbclient.DBInfo.ColumnIndicator), interestingcolumns.Select(c => c.Name))}{dbclient.DBInfo.ColumnIndicator}) VALUES(");
+            preparator.AppendParameter();
+            foreach (EntityColumnDescriptor unused in interestingcolumns.Skip(1)) {
+                preparator.AppendText(",");
                 preparator.AppendParameter();
             }
-            preparator.CommandBuilder.Append(")");
+            preparator.AppendText(")");
 
             return preparator.GetOperation(dbclient);
         }

@@ -7,6 +7,7 @@ using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Attributes;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
+using NightlyCode.Database.Entities.Operations.Prepared;
 
 namespace NightlyCode.Database.Entities.Schema {
 
@@ -31,33 +32,34 @@ namespace NightlyCode.Database.Entities.Schema {
         /// <param name="descriptor"><see cref="EntityDescriptor"/> which describes schema of entity</param>
         /// <param name="transaction"></param>
         public void CreateTable(IDBClient client, EntityDescriptor descriptor, Transaction transaction=null) {
-            OperationPreparator preparator = new OperationPreparator(client.DBInfo);
-            preparator.CommandBuilder.Append($"CREATE TABLE {descriptor.TableName} (");
+            OperationPreparator preparator = new OperationPreparator();
+            preparator.AppendText($"CREATE TABLE {descriptor.TableName} (");
 
             bool firstindicator = true;
             foreach (EntityColumnDescriptor column in descriptor.Columns)
             {
                 if (firstindicator) firstindicator = false;
-                else preparator.CommandBuilder.Append(", ");
+                else preparator.AppendText(",");
 
                 client.DBInfo.CreateColumn(preparator, column);
             }
 
             foreach (UniqueDescriptor unique in descriptor.Uniques.Where(u => u.Columns.Count() > 1))
             {
-                preparator.CommandBuilder.Append(", UNIQUE (");
-                preparator.CommandBuilder.Append(string.Join(",", unique.Columns.Select(client.DBInfo.MaskColumn).ToArray()));
-                preparator.CommandBuilder.Append(")");
+                preparator.AppendText(", UNIQUE (");
+                preparator.AppendText(string.Join(",", unique.Columns.Select(client.DBInfo.MaskColumn).ToArray()));
+                preparator.AppendText(")");
             }
 
-            preparator.CommandBuilder.Append(")");
+            preparator.AppendText(")");
 
             if (!string.IsNullOrEmpty(client.DBInfo.CreateSuffix))
-                preparator.CommandBuilder.Append(" ").Append(client.DBInfo.CreateSuffix);
+                preparator.AppendText(client.DBInfo.CreateSuffix);
 
-            if(transaction!=null)
-                client.NonQuery(transaction, preparator.CommandBuilder.ToString(), preparator.Parameters);
-            else client.NonQuery(preparator.CommandBuilder.ToString(), preparator.Parameters);
+
+            if(transaction != null)
+                preparator.GetOperation(client).Execute(transaction);
+            else preparator.GetOperation(client).Execute();
 
             CreateIndices(client, descriptor.TableName, descriptor.Indices);
         }

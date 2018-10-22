@@ -6,6 +6,7 @@ using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Expressions;
 using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
 using Converter = NightlyCode.Database.Extern.Converter;
 
@@ -34,18 +35,18 @@ namespace NightlyCode.Database.Info {
             switch (function.Type)
             {
             case DBFunctionType.Random:
-                preparator.CommandBuilder.Append("RANDOM()");
+                preparator.AppendText("RANDOM()");
                 break;
             case DBFunctionType.Count:
-                preparator.CommandBuilder.Append("COUNT(*)");
+                preparator.AppendText("COUNT(*)");
                 break;
             case DBFunctionType.RowID:
-                preparator.CommandBuilder.Append("OID");
+                preparator.AppendText("OID");
                 break;
             case DBFunctionType.Length:
-                preparator.CommandBuilder.Append("char_length(");
+                preparator.AppendText("char_length(");
                 CriteriaVisitor.GetCriteriaText(function.Parameter, descriptorgetter, this, preparator);
-                preparator.CommandBuilder.Append(")");
+                preparator.AppendText(")");
                 break;
             default:
                 throw new NotSupportedException($"Unsupported function {function.Type}");
@@ -87,13 +88,13 @@ namespace NightlyCode.Database.Info {
         /// <param name="visitor"> </param>
         /// <returns></returns>
         public override void Replace(ExpressionVisitor visitor, OperationPreparator preparator, Expression value, Expression src, Expression target) {
-            preparator.CommandBuilder.Append("replace(");
+            preparator.AppendText("replace(");
             visitor.Visit(value);
-            preparator.CommandBuilder.Append(",");
+            preparator.AppendText(",");
             visitor.Visit(src);
-            preparator.CommandBuilder.Append(",");
+            preparator.AppendText(",");
             visitor.Visit(target);
-            preparator.CommandBuilder.Append(")");
+            preparator.AppendText(")");
         }
 
         public override void ToUpper(ExpressionVisitor visitor, OperationPreparator preparator, Expression value) {
@@ -206,31 +207,31 @@ namespace NightlyCode.Database.Info {
         /// <param name="column"></param>
         /// <returns></returns>
         public override void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column) {
-            operation.CommandBuilder.Append($"\"{column.Name}\" ");
+            operation.AppendText($"\"{column.Name}\" ");
             if (column.AutoIncrement)
             {
                 if (column.Property.PropertyType == typeof(int))
-                    operation.CommandBuilder.Append("serial4");
+                    operation.AppendText("serial4");
                 else if (column.Property.PropertyType == typeof(long))
-                    operation.CommandBuilder.Append("serial8");
+                    operation.AppendText("serial8");
                 else throw new InvalidOperationException("Autoincrement with postgre only allowed with integer types");
             }
             else {
                 if (DBConverterCollection.ContainsConverter(column.Property.PropertyType))
-                    operation.CommandBuilder.Append(GetDBType(DBConverterCollection.GetDBType(column.Property.PropertyType)));
-                else operation.CommandBuilder.Append(GetDBType(column.Property.PropertyType));
+                    operation.AppendText(GetDBType(DBConverterCollection.GetDBType(column.Property.PropertyType)));
+                else operation.AppendText(GetDBType(column.Property.PropertyType));
             }
 
             if (column.PrimaryKey)
-                operation.CommandBuilder.Append(" PRIMARY KEY");
+                operation.AppendText("PRIMARY KEY");
             if (column.IsUnique)
-                operation.CommandBuilder.Append(" UNIQUE");
+                operation.AppendText("UNIQUE");
             if (column.NotNull)
-                operation.CommandBuilder.Append(" NOT NULL");
+                operation.AppendText("NOT NULL");
 
             if (column.DefaultValue != null)
             {
-                operation.CommandBuilder.Append(" DEFAULT ");
+                operation.AppendText("DEFAULT");
                 operation.AppendParameter(column.DefaultValue);
             }
 

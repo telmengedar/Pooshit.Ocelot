@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using Converter = NightlyCode.Database.Extern.Converter;
@@ -30,29 +31,10 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// executes the statement
         /// </summary>
         /// <returns>entities created from result set</returns>
-        public new virtual IEnumerable<T> Execute()
-        {
-            return Execute(Parameters);
-        }
-
-        /// <summary>
-        /// executes the statement
-        /// </summary>
-        /// <returns>entities created from result set</returns>
         public new virtual IEnumerable<T> Execute(params object[] parameters)
         {
-            Clients.Tables.DataTable data = DBClient.Query(CommandText, parameters);
+            Clients.Tables.DataTable data = DBClient.Query(CommandText, ConstantParameters.Concat(parameters));
             return CreateObjects(data);
-        }
-
-        /// <summary>
-        /// executes the statement
-        /// </summary>
-        /// <param name="transaction">transaction to use for execution</param>
-        /// <returns>entities created from result set</returns>
-        public new virtual IEnumerable<T> Execute(Transaction transaction)
-        {
-            return Execute(Parameters);
         }
 
         /// <summary>
@@ -63,7 +45,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <returns>entities created from result set</returns>
         public new virtual IEnumerable<T> Execute(Transaction transaction, params object[] parameters)
         {
-            Clients.Tables.DataTable data = DBClient.Query(transaction, CommandText, parameters);
+            Clients.Tables.DataTable data = DBClient.Query(transaction, CommandText, ConstantParameters.Concat(parameters));
             return CreateObjects(data);
         }
 

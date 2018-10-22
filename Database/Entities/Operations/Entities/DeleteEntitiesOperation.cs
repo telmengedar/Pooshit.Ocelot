@@ -25,9 +25,9 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
                 throw new InvalidOperationException("Entity to remove needs a primary key");
 
 
-            OperationPreparator preparator = new OperationPreparator(dbclient.DBInfo);
-            preparator.CommandBuilder.Append($"DELETE FROM {entitydescriptor.TableName} WHERE ");
-            preparator.CommandBuilder.Append($"{dbclient.DBInfo.ColumnIndicator}{entitydescriptor.PrimaryKeyColumn.Name}{dbclient.DBInfo.ColumnIndicator} IN ");
+            OperationPreparator preparator = new OperationPreparator();
+            preparator.AppendText($"DELETE FROM {entitydescriptor.TableName} WHERE ");
+            preparator.AppendText($"{dbclient.DBInfo.ColumnIndicator}{entitydescriptor.PrimaryKeyColumn.Name}{dbclient.DBInfo.ColumnIndicator} IN ");
             preparator.AppendArrayParameter();
             preparedoperation = preparator.GetOperation(dbclient);
         }

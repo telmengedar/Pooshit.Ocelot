@@ -4,6 +4,7 @@ using System.Linq;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
+using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Extern;
 
 namespace NightlyCode.Database.Entities.Schema {
@@ -136,17 +137,17 @@ namespace NightlyCode.Database.Entities.Schema {
                     client.NonQuery(transaction, $"INSERT INTO {newdescriptor.TableName} ({columnlist}) SELECT {columnlist} FROM {olddescriptor.Name}{appendix}");
                 else {
                     // new schema has columns which mustn't be null
-                    OperationPreparator operation = new OperationPreparator(client.DBInfo);
-                    operation.CommandBuilder.Append($"INSERT INTO {newdescriptor.TableName} ({columnlist},{newcolumnlist}) SELECT {columnlist}");
+                    OperationPreparator operation = new OperationPreparator();
+                    operation.AppendText($"INSERT INTO {newdescriptor.TableName} ({columnlist},{newcolumnlist}) SELECT {columnlist}");
                     foreach(EntityColumnDescriptor column in newcolumns) {
-                        operation.CommandBuilder.Append(",");
+                        operation.AppendText(",");
                         if(column.DefaultValue != null)
                             operation.AppendParameter(column.DefaultValue);
                         else operation.AppendParameter(column.CreateDefaultValue());
                     }
 
-                    operation.CommandBuilder.Append($" FROM {olddescriptor.Name}{appendix}");
-                    client.NonQuery(transaction, operation.CommandBuilder.ToString(), operation.Parameters.ToArray());
+                    operation.AppendText($"FROM {olddescriptor.Name}{appendix}");
+                    operation.GetOperation(client).Execute(transaction);
                 }
 
                 // remove old data

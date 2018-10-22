@@ -34,18 +34,15 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <returns>number of rows deleted</returns>
         public int Execute() {
-            PreparedOperation operation = Prepare();
-            return dbclient.NonQuery(operation.CommandText, operation.Parameters);
+            return Prepare().Execute();
         }
 
         /// <summary>
         /// loads entities using the operation
         /// </summary>
         /// <returns>number of rows deleted</returns>
-        public int Execute(Transaction transaction)
-        {
-            PreparedOperation operation = Prepare();
-            return dbclient.NonQuery(transaction, operation.CommandText, operation.Parameters);
+        public int Execute(Transaction transaction) {
+            return Prepare().Execute(transaction);
         }
 
         /// <summary>
@@ -53,14 +50,14 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <returns>prepared operation to be executed</returns>
         public PreparedOperation Prepare() {
-            OperationPreparator preparator = new OperationPreparator(dbclient.DBInfo);
-            preparator.CommandBuilder.Append("DELETE ");
+            OperationPreparator preparator = new OperationPreparator();
+            preparator.AppendText("DELETE");
 
             EntityDescriptor descriptor = descriptorgetter(typeof(T));
-            preparator.CommandBuilder.Append(" FROM ").Append(descriptor.TableName);
+            preparator.AppendText("FROM").AppendText(descriptor.TableName);
 
             if(Criterias != null) {
-                preparator.CommandBuilder.Append(" WHERE ");
+                preparator.AppendText("WHERE");
                 CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator);
             }
             return preparator.GetOperation(dbclient);

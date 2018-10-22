@@ -65,37 +65,37 @@ namespace NightlyCode.Database.Entities.Operations {
 
             PreparedOperation operation = Prepare();
 
-            if(transaction==null)
-                return dbclient.NonQuery(operation.CommandText, operation.Parameters);
-            return dbclient.NonQuery(transaction, operation.CommandText, operation.Parameters);
+            if(transaction == null)
+                return Prepare().Execute();
+            return Prepare().Execute(transaction);
         }
 
         public PreparedOperation Prepare() {
-            OperationPreparator preparator = new OperationPreparator(dbclient.DBInfo);
-            preparator.CommandBuilder.Append("INSERT INTO ");
+            OperationPreparator preparator = new OperationPreparator();
+            preparator.AppendText("INSERT INTO");
 
             EntityDescriptor descriptor = descriptorgetter(typeof(T));
 
-            preparator.CommandBuilder.Append(descriptor.TableName);
+            preparator.AppendText(descriptor.TableName);
 
             bool first = true;
             if(insertcolumns.Length > 0) {
-                preparator.CommandBuilder.Append(" (");
+                preparator.AppendText(" (");
                 foreach(IDBField field in insertcolumns) {
                     if(!first)
-                        preparator.CommandBuilder.Append(", ");
+                        preparator.AppendText(",");
                     else first = false;
                     dbclient.DBInfo.Append(field, preparator, descriptorgetter);
                 }
-                preparator.CommandBuilder.Append(")");
+                preparator.AppendText(")");
             }
 
             first = true;
-            preparator.CommandBuilder.Append(" VALUES(");
+            preparator.AppendText("VALUES(");
             if (insertvalues?.Length > 0) {
                 foreach(object value in insertvalues) {
                     if(!first)
-                        preparator.CommandBuilder.Append(", ");
+                        preparator.AppendText(",");
                     else first = false;
 
                     object dbvalue = value;
@@ -108,12 +108,12 @@ namespace NightlyCode.Database.Entities.Operations {
                 foreach (IDBField column in insertcolumns)
                 {
                     if (!first)
-                        preparator.CommandBuilder.Append(", ");
+                        preparator.AppendText(", ");
                     else first = false;
                     preparator.AppendParameter();
                 }
             }
-            preparator.CommandBuilder.Append(")");
+            preparator.AppendText(")");
 
             return preparator.GetOperation(dbclient);
         }

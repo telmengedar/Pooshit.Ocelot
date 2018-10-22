@@ -9,6 +9,7 @@ using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Expressions;
 using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
 using Converter = NightlyCode.Database.Extern.Converter;
 
@@ -30,15 +31,15 @@ namespace NightlyCode.Database.Info
         }
 
         void AppendLimit(LimitField limit, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter) {
-            preparator.CommandBuilder.Append("LIMIT ");
+            preparator.AppendText("LIMIT");
             if (limit.Offset.HasValue) {
-                preparator.CommandBuilder.Append(limit.Offset.Value).Append(",");
+                preparator.AppendText(limit.Offset.Value.ToString()).AppendText(",");
                 if (limit.Limit.HasValue)
-                    preparator.CommandBuilder.Append(limit.Limit.Value);
-                else preparator.CommandBuilder.Append("-1");
+                    preparator.AppendText(limit.Limit.Value.ToString());
+                else preparator.AppendText("-1");
             }
             // ReSharper disable once PossibleInvalidOperationException
-            else preparator.CommandBuilder.Append(limit.Limit.Value);
+            else preparator.AppendText(limit.Limit.Value.ToString());
         }
 
         void Append(DBFunction function, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter)
@@ -46,21 +47,21 @@ namespace NightlyCode.Database.Info
             switch (function.Type)
             {
             case DBFunctionType.Random:
-                preparator.CommandBuilder.Append("RANDOM()");
+                preparator.AppendText("RANDOM()");
                 break;
             case DBFunctionType.Count:
-                preparator.CommandBuilder.Append("COUNT(*)");
+                preparator.AppendText("COUNT(*)");
                 break;
             case DBFunctionType.RowID:
-                preparator.CommandBuilder.Append("ROWID");
+                preparator.AppendText("ROWID");
                 break;
             case DBFunctionType.Length:
-                preparator.CommandBuilder.Append("LENGTH(");
+                preparator.AppendText("LENGTH(");
                 CriteriaVisitor.GetCriteriaText(function.Parameter, descriptorgetter, this, preparator);
-                preparator.CommandBuilder.Append(")");
+                preparator.AppendText(")");
                 break;
             case DBFunctionType.LastInsertID:
-                preparator.CommandBuilder.Append("last_insert_rowid()");
+                preparator.AppendText("last_insert_rowid()");
                 break;
             default:
                 throw new NotSupportedException($"Unsupported function {function.Type}");
@@ -103,13 +104,13 @@ namespace NightlyCode.Database.Info
         /// <param name="visitor"> </param>
         /// <returns></returns>
         public override void Replace(ExpressionVisitor visitor, OperationPreparator preparator, Expression value, Expression src, Expression target) {
-            preparator.CommandBuilder.Append("replace(");
+            preparator.AppendText("replace(");
             visitor.Visit(value);
-            preparator.CommandBuilder.Append(",");
+            preparator.AppendText(",");
             visitor.Visit(src);
-            preparator.CommandBuilder.Append(",");
+            preparator.AppendText(",");
             visitor.Visit(target);
-            preparator.CommandBuilder.Append(")");
+            preparator.AppendText(")");
         }
 
         /// <summary>
@@ -119,9 +120,9 @@ namespace NightlyCode.Database.Info
         /// <param name="preparator"></param>
         /// <param name="value"></param>
         public override void ToUpper(ExpressionVisitor visitor, OperationPreparator preparator, Expression value) {
-            preparator.CommandBuilder.Append("upper(");
+            preparator.AppendText("upper(");
             visitor.Visit(value);
-            preparator.CommandBuilder.Append(")");
+            preparator.AppendText(")");
         }
 
         /// <summary>
@@ -132,9 +133,9 @@ namespace NightlyCode.Database.Info
         /// <param name="value"></param>
         public override void ToLower(ExpressionVisitor visitor, OperationPreparator preparator, Expression value)
         {
-            preparator.CommandBuilder.Append("lower(");
+            preparator.AppendText("lower(");
             visitor.Visit(value);
-            preparator.CommandBuilder.Append(")");
+            preparator.AppendText(")");
         }
 
         /// <summary>
@@ -251,24 +252,24 @@ namespace NightlyCode.Database.Info
         }
 
         void CreateColumn(OperationPreparator operation, string name, string type, bool primarykey, bool autoincrement, bool unique, bool notnull, object defaultvalue) {
-            operation.CommandBuilder.Append(MaskColumn(name)).Append(" ");
-            operation.CommandBuilder.Append(type);
+            operation.AppendText(MaskColumn(name));
+            operation.AppendText(type);
 
             if (primarykey)
-                operation.CommandBuilder.Append(" PRIMARY KEY");
+                operation.AppendText("PRIMARY KEY");
             if (autoincrement)
-                operation.CommandBuilder.Append(" ").Append(AutoIncrement);
+                operation.AppendText(AutoIncrement);
             if (unique)
-                operation.CommandBuilder.Append(" UNIQUE");
+                operation.AppendText("UNIQUE");
             if(notnull) {
-                operation.CommandBuilder.Append(" NOT NULL");
+                operation.AppendText("NOT NULL");
             }
 
             if(defaultvalue != null) {
-                operation.CommandBuilder.Append(" DEFAULT ");
+                operation.AppendText("DEFAULT");
                 if (defaultvalue is string || defaultvalue is Guid || defaultvalue is DateTime || defaultvalue is TimeSpan)
-                    operation.CommandBuilder.Append($"'{defaultvalue}'");
-                else operation.CommandBuilder.Append(defaultvalue);
+                    operation.AppendText($"'{defaultvalue}'");
+                else operation.AppendText(defaultvalue.ToString());
             }
         }
 
@@ -287,18 +288,18 @@ namespace NightlyCode.Database.Info
 
         void AddColumn(OperationPreparator operation, string name, string type, bool primarykey, bool autoincrement, bool unique, bool notnull, object defaultvalue, Type columntype)
         {
-            operation.CommandBuilder.Append(MaskColumn(name)).Append(" ");
-            operation.CommandBuilder.Append(type);
+            operation.AppendText(MaskColumn(name));
+            operation.AppendText(type);
 
             if (primarykey)
-                operation.CommandBuilder.Append(" PRIMARY KEY");
+                operation.AppendText("PRIMARY KEY");
             if (autoincrement)
-                operation.CommandBuilder.Append(" ").Append(AutoIncrement);
+                operation.AppendText(AutoIncrement);
             if (unique)
-                operation.CommandBuilder.Append(" UNIQUE");
+                operation.AppendText("UNIQUE");
             if (notnull)
             {
-                operation.CommandBuilder.Append(" NOT NULL");
+                operation.AppendText("NOT NULL");
 
                 // SQLite doesn't like no default values on nullable columns in add column case
                 if (defaultvalue == null)
@@ -307,10 +308,10 @@ namespace NightlyCode.Database.Info
 
             if (defaultvalue != null)
             {
-                operation.CommandBuilder.Append(" DEFAULT ");
+                operation.AppendText("DEFAULT");
                 if (defaultvalue is string || defaultvalue is Guid || defaultvalue is DateTime || defaultvalue is TimeSpan)
-                    operation.CommandBuilder.Append($"'{defaultvalue}'");
-                else operation.CommandBuilder.Append(defaultvalue);
+                    operation.AppendText($"'{defaultvalue}'");
+                else operation.AppendText(defaultvalue.ToString());
             }
         }
 
@@ -370,12 +371,12 @@ namespace NightlyCode.Database.Info
         /// <param name="column">column to add</param>
         /// <param name="transaction">transaction to use (optional)</param>
         public override void AddColumn(IDBClient client, string table, EntityColumnDescriptor column, Transaction transaction=null) {
-            OperationPreparator operation = new OperationPreparator(this);
-            operation.CommandBuilder.Append($"ALTER TABLE {table} ADD COLUMN ");
+            OperationPreparator operation = new OperationPreparator();
+            operation.AppendText($"ALTER TABLE {table} ADD COLUMN");
             AddColumn(operation, column);
-            if(transaction!=null)
-                client.NonQuery(transaction, operation.CommandBuilder.ToString(), operation.Parameters);
-            else client.NonQuery(operation.CommandBuilder.ToString(), operation.Parameters);
+            if(transaction != null)
+                operation.GetOperation(client).Execute(transaction);
+            else operation.GetOperation(client).Execute();
         }
 
         /// <summary>
@@ -401,17 +402,17 @@ namespace NightlyCode.Database.Info
             // create new table without the column
             bool flag=false;
 
-            OperationPreparator preparator = new OperationPreparator(this);
-            preparator.CommandBuilder.Append($"CREATE TABLE {table} (");
+            OperationPreparator preparator = new OperationPreparator();
+            preparator.AppendText($"CREATE TABLE {table} (");
             foreach(SchemaColumnDescriptor columndesc in remainingcolumns)
             {
                 if (flag)
-                    preparator.CommandBuilder.Append(",");
+                    preparator.AppendText(",");
                 CreateColumn(preparator, columndesc.Name, columndesc.Type, columndesc.PrimaryKey, columndesc.AutoIncrement, columndesc.IsUnique, columndesc.NotNull, columndesc.DefaultValue);
                 flag = true;
             }
-            preparator.CommandBuilder.Append(")");
-            client.NonQuery(preparator.CommandBuilder.ToString(), preparator.Parameters);
+            preparator.AppendText(")");
+            preparator.GetOperation(client).Execute();
 
             // transfer data to new table
             client.NonQuery($"INSERT INTO {table} ({columnlist}) SELECT {columnlist} FROM {table}_original");
@@ -440,7 +441,7 @@ namespace NightlyCode.Database.Info
         /// <param name="descriptor">descriptor to fill</param>
         /// <param name="sql">sql to analyse</param>
         public void AnalyseTableSql(TableDescriptor descriptor, string sql) {
-            Match match = Regex.Match(sql, @"^CREATE TABLE (?<name>[^ ]+) \((?<columns>.+?)(, UNIQUE \((?<unique>.+?)\))*\)$");
+            Match match = Regex.Match(sql, @"^CREATE TABLE\s+(?<name>[^ ]+)\s+\((?<columns>.+?)(\s*,\s*UNIQUE\s*\((?<unique>.+?)\))*\s*\)$");
             if(!match.Success)
                 throw new InvalidOperationException("Unable to analyse table information");
 
@@ -453,7 +454,7 @@ namespace NightlyCode.Database.Info
 
         IEnumerable<UniqueDescriptor> AnalyseUniques(IEnumerable<string> definitions) {
             foreach(string definition in definitions) {
-                string[] columns = definition.Split(',').Select(s => s.Trim('\'')).ToArray();
+                string[] columns = definition.Trim().Split(',').Select(s => s.Trim(' ', '\'')).ToArray();
 
                 yield return new UniqueDescriptor(columns);
             }
@@ -466,7 +467,7 @@ namespace NightlyCode.Database.Info
         }
 
         SchemaColumnDescriptor GetColumnDescriptor(string sql) {
-            Match match = Regex.Match(sql, @"^'?(?<name>[^ ']+)'? (?<type>[^ ]+)(?<pk> PRIMARY KEY)?(?<ai> AUTOINCREMENT)?(?<uq> UNIQUE)?(?<nn> NOT NULL)?( DEFAULT '?(?<default>.+)'?)?$");
+            Match match = Regex.Match(sql, @"^'?(?<name>[^ ']+)'?\s+(?<type>[^ ]+)(?<pk> PRIMARY KEY)?(?<ai> AUTOINCREMENT)?(?<uq> UNIQUE)?(?<nn> NOT NULL)?( DEFAULT '?(?<default>.+)'?)?$");
             if(!match.Success)
                 throw new InvalidOperationException("Error analysing column description sql");
 

@@ -32,16 +32,16 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         }
 
         PreparedOperation Prepare() {
-            OperationPreparator preparator = new OperationPreparator(dbclient.DBInfo);
-            preparator.CommandBuilder.Append($"UPDATE {entitydescription.TableName} SET ");
-            foreach (EntityColumnDescriptor column in interestingcolumns) {
-                if (preparator.Parameters.Count > 0)
-                    preparator.CommandBuilder.Append(", ");
-                preparator.CommandBuilder.Append($"{dbclient.DBInfo.ColumnIndicator}{column.Name}{dbclient.DBInfo.ColumnIndicator}=");
+            OperationPreparator preparator = new OperationPreparator();
+            preparator.AppendText($"UPDATE {entitydescription.TableName} SET ");
+            preparator.AppendText($"{dbclient.DBInfo.ColumnIndicator}{interestingcolumns.First().Name}{dbclient.DBInfo.ColumnIndicator}=");
+            preparator.AppendParameter();
+            foreach (EntityColumnDescriptor column in interestingcolumns.Skip(1)) {
+                preparator.AppendText($",{dbclient.DBInfo.ColumnIndicator}{column.Name}{dbclient.DBInfo.ColumnIndicator}=");
                 preparator.AppendParameter();
             }
 
-            preparator.CommandBuilder.Append($" WHERE {dbclient.DBInfo.ColumnIndicator}{entitydescription.PrimaryKeyColumn.Name}{dbclient.DBInfo.ColumnIndicator}=");
+            preparator.AppendText($"WHERE {dbclient.DBInfo.ColumnIndicator}{entitydescription.PrimaryKeyColumn.Name}{dbclient.DBInfo.ColumnIndicator}=");
             preparator.AppendParameter();
             return preparator.GetOperation(dbclient);
         }
