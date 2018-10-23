@@ -21,13 +21,21 @@
             database information
             </summary>
         </member>
-        <member name="M:NightlyCode.Database.Clients.DBClient.BeginTransaction">
+        <member name="M:NightlyCode.Database.Clients.DBClient.Transaction">
             <summary>
             begins a transaction
             </summary>
             <returns>Transaction object to use</returns>
         </member>
         <member name="M:NightlyCode.Database.Clients.DBClient.Query(System.String,System.Object[])">
+            <summary>
+            executes a query
+            </summary>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>table containing result data</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Clients.DBClient.Query(System.String,System.Collections.Generic.IEnumerable{System.Object})">
             <summary>
             executes a query
             </summary>
@@ -42,7 +50,22 @@
             <param name="commandstring">command text to execute</param>
             <param name="parameters">parameters for command</param>
         </member>
+        <member name="M:NightlyCode.Database.Clients.DBClient.NonQuery(System.String,System.Collections.Generic.IEnumerable{System.Object})">
+            <summary>
+            executes a non query
+            </summary>
+            <param name="commandstring">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+        </member>
         <member name="M:NightlyCode.Database.Clients.DBClient.Scalar(System.String,System.Object[])">
+            <summary>
+            executes a query returning a scalar
+            </summary>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>resulting scalar</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Clients.DBClient.Scalar(System.String,System.Collections.Generic.IEnumerable{System.Object})">
             <summary>
             executes a query returning a scalar
             </summary>
@@ -58,6 +81,14 @@
             <param name="parameters">parameters for command</param>
             <returns>resulting set of values</returns>
         </member>
+        <member name="M:NightlyCode.Database.Clients.DBClient.Set(System.String,System.Collections.Generic.IEnumerable{System.Object})">
+            <summary>
+            executes a query returning a set of values
+            </summary>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>resulting set of values</returns>
+        </member>
         <member name="M:NightlyCode.Database.Clients.DBClient.NonQuery(NightlyCode.Database.Clients.Transaction,System.String,System.Object[])">
             <summary>
             executes a non query
@@ -66,7 +97,24 @@
             <param name="commandstring">command text to execute</param>
             <param name="parameters">parameters for command</param>
         </member>
+        <member name="M:NightlyCode.Database.Clients.DBClient.NonQuery(NightlyCode.Database.Clients.Transaction,System.String,System.Collections.Generic.IEnumerable{System.Object})">
+            <summary>
+            executes a non query
+            </summary>
+            <param name="transaction">transaction to use</param>
+            <param name="commandstring">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+        </member>
         <member name="M:NightlyCode.Database.Clients.DBClient.Query(NightlyCode.Database.Clients.Transaction,System.String,System.Object[])">
+            <summary>
+            executes a query
+            </summary>
+            <param name="transaction">transaction to use</param>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>table containing result data</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Clients.DBClient.Query(NightlyCode.Database.Clients.Transaction,System.String,System.Collections.Generic.IEnumerable{System.Object})">
             <summary>
             executes a query
             </summary>
@@ -84,7 +132,25 @@
             <param name="parameters">parameters for command</param>
             <returns>resulting scalar</returns>
         </member>
+        <member name="M:NightlyCode.Database.Clients.DBClient.Scalar(NightlyCode.Database.Clients.Transaction,System.String,System.Collections.Generic.IEnumerable{System.Object})">
+            <summary>
+            executes a query returning a scalar
+            </summary>
+            <param name="transaction">transaction to use</param>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>resulting scalar</returns>
+        </member>
         <member name="M:NightlyCode.Database.Clients.DBClient.Set(NightlyCode.Database.Clients.Transaction,System.String,System.Object[])">
+            <summary>
+            executes a query returning a set of values
+            </summary>
+            <param name="transaction">transaction to use</param>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>resulting set of values</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Clients.DBClient.Set(NightlyCode.Database.Clients.Transaction,System.String,System.Collections.Generic.IEnumerable{System.Object})">
             <summary>
             executes a query returning a set of values
             </summary>
@@ -110,6 +176,13 @@
             <param name="commandstring">command text to execute</param>
             <param name="parameters">parameters for command</param>
         </member>
+        <member name="M:NightlyCode.Database.Clients.IDBClient.NonQuery(System.String,System.Collections.Generic.IEnumerable{System.Object})">
+            <summary>
+            executes a non query
+            </summary>
+            <param name="commandstring">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+        </member>
         <member name="M:NightlyCode.Database.Clients.IDBClient.NonQuery(NightlyCode.Database.Clients.Transaction,System.String,System.Object[])">
             <summary>
             executes a non query
@@ -118,7 +191,23 @@
             <param name="commandstring">command text to execute</param>
             <param name="parameters">parameters for command</param>
         </member>
+        <member name="M:NightlyCode.Database.Clients.IDBClient.NonQuery(NightlyCode.Database.Clients.Transaction,System.String,System.Collections.Generic.IEnumerable{System.Object})">
+            <summary>
+            executes a non query
+            </summary>
+            <param name="transaction">transaction to use</param>
+            <param name="commandstring">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+        </member>
         <member name="M:NightlyCode.Database.Clients.IDBClient.Query(System.String,System.Object[])">
+            <summary>
+            executes a query
+            </summary>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>table containing result data</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Clients.IDBClient.Query(System.String,System.Collections.Generic.IEnumerable{System.Object})">
             <summary>
             executes a query
             </summary>
@@ -135,7 +224,24 @@
             <param name="parameters">parameters for command</param>
             <returns>table containing result data</returns>
         </member>
+        <member name="M:NightlyCode.Database.Clients.IDBClient.Query(NightlyCode.Database.Clients.Transaction,System.String,System.Collections.Generic.IEnumerable{System.Object})">
+            <summary>
+            executes a query
+            </summary>
+            <param name="transaction">transaction to use</param>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>table containing result data</returns>
+        </member>
         <member name="M:NightlyCode.Database.Clients.IDBClient.Scalar(System.String,System.Object[])">
+            <summary>
+            executes a query returning a scalar
+            </summary>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>resulting scalar</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Clients.IDBClient.Scalar(System.String,System.Collections.Generic.IEnumerable{System.Object})">
             <summary>
             executes a query returning a scalar
             </summary>
@@ -152,7 +258,24 @@
             <param name="parameters">parameters for command</param>
             <returns>resulting scalar</returns>
         </member>
+        <member name="M:NightlyCode.Database.Clients.IDBClient.Scalar(NightlyCode.Database.Clients.Transaction,System.String,System.Collections.Generic.IEnumerable{System.Object})">
+            <summary>
+            executes a query returning a scalar
+            </summary>
+            <param name="transaction">transaction to use</param>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>resulting scalar</returns>
+        </member>
         <member name="M:NightlyCode.Database.Clients.IDBClient.Set(System.String,System.Object[])">
+            <summary>
+            executes a query returning a set of values
+            </summary>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>resulting set of values</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Clients.IDBClient.Set(System.String,System.Collections.Generic.IEnumerable{System.Object})">
             <summary>
             executes a query returning a set of values
             </summary>
@@ -169,7 +292,16 @@
             <param name="parameters">parameters for command</param>
             <returns>resulting set of values</returns>
         </member>
-        <member name="M:NightlyCode.Database.Clients.IDBClient.BeginTransaction">
+        <member name="M:NightlyCode.Database.Clients.IDBClient.Set(NightlyCode.Database.Clients.Transaction,System.String,System.Collections.Generic.IEnumerable{System.Object})">
+            <summary>
+            executes a query returning a set of values
+            </summary>
+            <param name="transaction">transaction to use</param>
+            <param name="query">command text to execute</param>
+            <param name="parameters">parameters for command</param>
+            <returns>resulting set of values</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Clients.IDBClient.Transaction">
             <summary>
             begins a transaction
             </summary>
@@ -2240,57 +2372,6 @@
             <param name="criteria"></param>
             <returns></returns>
         </member>
-        <member name="T:NightlyCode.Database.Entities.Operations.OperationPreparator">
-            <summary>
-            preparator for operations
-            </summary>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.OperationPreparator.#ctor(NightlyCode.Database.Info.IDBInfo)">
-            <summary>
-            creates a new <see cref="T:NightlyCode.Database.Entities.Operations.OperationPreparator"/>
-            </summary>
-            <param name="dbinfo">db specific information</param>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.OperationPreparator.AppendArrayParameter(System.Object)">
-            <summary>
-            appends an array parameter to the command
-            </summary>
-            <param name="value"></param>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.OperationPreparator.AppendParameter(System.Object)">
-            <summary>
-            appends a parameter to the command
-            </summary>
-            <param name="value">value of parameter (optional)</param>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.OperationPreparator.AppendParameterIndex(System.Int32)">
-            <summary>
-            appends a reference to a parameter index to the command
-            </summary>
-            <param name="index">index of parameter to reference</param>
-        </member>
-        <member name="P:NightlyCode.Database.Entities.Operations.OperationPreparator.CommandBuilder">
-            <summary>
-            command text
-            </summary>
-        </member>
-        <member name="P:NightlyCode.Database.Entities.Operations.OperationPreparator.Parameters">
-            <summary>
-            parameters
-            </summary>
-        </member>
-        <member name="P:NightlyCode.Database.Entities.Operations.OperationPreparator.ArrayParameters">
-            <summary>
-            parameters containing arrays
-            </summary>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.OperationPreparator.GetOperation(NightlyCode.Database.Clients.IDBClient)">
-            <summary>
-            create prepared operation
-            </summary>
-            <param name="dbclient">client used to execute operation</param>
-            <returns>operation which can get executed</returns>
-        </member>
         <member name="T:NightlyCode.Database.Entities.Operations.OrderByCriteria">
             <summary>
             criteria used for ordering of results
@@ -2313,13 +2394,150 @@
             whether to order ascending or descending
             </summary>
         </member>
+        <member name="T:NightlyCode.Database.Entities.Operations.Prepared.CommandTextToken">
+            <summary>
+            token representing a raw command text
+            </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.CommandTextToken.#ctor(System.String)">
+            <summary>
+            creates a new <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.CommandTextToken"/>
+            </summary>
+            <param name="text">raw command text</param>
+        </member>
+        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.CommandTextToken.Text">
+            <summary>
+            command text
+            </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.CommandTextToken.GetText(NightlyCode.Database.Info.IDBInfo)">
+            <summary>
+            get text for database command
+            </summary>
+            <param name="dbinfo">database specific information</param>
+            <returns>text representing this token</returns>
+        </member>
+        <member name="T:NightlyCode.Database.Entities.Operations.Prepared.IOperationToken">
+            <summary>
+            token in <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator"/>
+            </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.IOperationToken.GetText(NightlyCode.Database.Info.IDBInfo)">
+            <summary>
+            get text for database command
+            </summary>
+            <param name="dbinfo">database specific information</param>
+            <returns>text representing this token</returns>
+        </member>
+        <member name="T:NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator">
+            <summary>
+            preparator for operations
+            </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator.AppendArrayParameter">
+            <summary>
+            appends a custom array parameter to the command
+            </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator.AppendArrayParameterIndex(System.Int32)">
+            <summary>
+            appends a custom array parameter to the command
+            </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator.AppendParameter">
+            <summary>
+            appends a reference to a parameter index to the command
+            </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator.AppendParameterIndex(System.Int32)">
+            <summary>
+            appends a reference to a parameter index to the command
+            </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator.AppendParameter(System.Object)">
+            <summary>
+            appends a parameter to the command
+            </summary>
+            <param name="value">value of parameter (optional)</param>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator.AppendText(System.String)">
+            <summary>
+            appends a raw command text to the operation
+            </summary>
+            <param name="text"></param>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator.GetOperation(NightlyCode.Database.Clients.IDBClient)">
+            <summary>
+            create prepared operation
+            </summary>
+            <param name="dbclient">client used to execute operation</param>
+            <returns>operation which can get executed</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator.GetLoadValuesOperation(NightlyCode.Database.Clients.IDBClient)">
+            <summary>
+            create prepared operation
+            </summary>
+            <param name="dbclient">client used to execute operation</param>
+            <returns>operation which can get executed</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator.GetLoadEntitiesOperation``1(NightlyCode.Database.Clients.IDBClient,NightlyCode.Database.Entities.Descriptors.EntityDescriptor)">
+            <summary>
+            create prepared operation
+            </summary>
+            <param name="dbclient">client used to execute operation</param>
+            <returns>operation which can get executed</returns>
+        </member>
+        <member name="T:NightlyCode.Database.Entities.Operations.Prepared.ParameterToken">
+            <summary>
+            token representing a parameter
+            </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.ParameterToken.#ctor(System.Boolean)">
+            <summary>
+            creates a new parameter token
+            </summary>
+            <param name="isArray">true if parameter will contain an array, false otherwise</param>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.ParameterToken.#ctor(System.Object)">
+            <summary>
+            creates a new <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.ParameterToken"/>
+            </summary>
+            <param name="value">value of constant parameter</param>
+        </member>
+        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.ParameterToken.IsArray">
+            <summary>
+            determines whether the parameter value is an array
+            </summary>
+        </member>
+        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.ParameterToken.IsConstant">
+            <summary>
+            determines whether the value is predefined or to be specified on execution
+            </summary>
+        </member>
+        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.ParameterToken.Value">
+            <summary>
+            value of constant
+            </summary>
+        </member>
+        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.ParameterToken.Index">
+            <summary>
+            index for parameter
+            </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.ParameterToken.GetText(NightlyCode.Database.Info.IDBInfo)">
+            <summary>
+            get text for database command
+            </summary>
+            <param name="dbinfo">database specific information</param>
+            <returns>text representing this token</returns>
+        </member>
         <member name="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1">
             <summary>
             a <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadEntitiesOperation`1"/> using array parameters
             </summary>
             <typeparam name="T">type of entities to load</typeparam>
         </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1.#ctor(NightlyCode.Database.Clients.IDBClient,NightlyCode.Database.Entities.Descriptors.EntityDescriptor,System.String,System.Object[],System.Object[])">
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1.#ctor(NightlyCode.Database.Clients.IDBClient,NightlyCode.Database.Entities.Descriptors.EntityDescriptor,System.String,System.Object[],System.Array[])">
             <summary>
             creates a new <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1"/>
             </summary>
@@ -2329,28 +2547,15 @@
             <param name="parameters">initial parameters of operation</param>
             <param name="arrayparameters">array parameters of operation</param>
         </member>
-        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1.ArrayParameters">
+        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1.ConstantArrayParameters">
             <summary>
             array parameters for command
             </summary>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1.Execute">
-            <summary>
-            executes the statement
-            </summary>
-            <returns>entities created from result set</returns>
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1.Execute(System.Object[])">
             <summary>
             executes the statement
             </summary>
-            <returns>entities created from result set</returns>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1.Execute(NightlyCode.Database.Clients.Transaction)">
-            <summary>
-            executes the statement
-            </summary>
-            <param name="transaction">transaction to use for execution</param>
             <returns>entities created from result set</returns>
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadEntitiesOperation`1.Execute(NightlyCode.Database.Clients.Transaction,System.Object[])">
@@ -2366,7 +2571,7 @@
             <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation"/> containing array parameters
             </summary>
         </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.#ctor(NightlyCode.Database.Clients.IDBClient,System.String,System.Object[],System.Object[])">
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.#ctor(NightlyCode.Database.Clients.IDBClient,System.String,System.Object[],System.Array[])">
             <summary>
             creates a new <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation"/>
             </summary>
@@ -2375,29 +2580,16 @@
             <param name="parameters">parameters for operation</param>
             <param name="arrayparameters">array parameters for operation</param>
         </member>
-        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ArrayParameters">
+        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ConstantArrayParameters">
             <summary>
             array parameters for command
             </summary>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.Execute">
-            <summary>
-            executes the statement
-            </summary>
-            <returns>data table containing results</returns>
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.Execute(System.Object[])">
             <summary>
             executes the statement
             </summary>
             <param name="parameters">parameters for execution</param>
-            <returns>data table containing results</returns>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.Execute(NightlyCode.Database.Clients.Transaction)">
-            <summary>
-            executes the statement
-            </summary>
-            <param name="transaction">transaction used to execute operation</param>
             <returns>data table containing results</returns>
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.Execute(NightlyCode.Database.Clients.Transaction,System.Object[])">
@@ -2408,19 +2600,7 @@
             <param name="parameters">parameters for execution</param>
             <returns>data table containing results</returns>
         </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteScalar``1">
-            <summary>
-            executes the statement returning a scalar
-            </summary>
-            <returns>first value of the result set or default of TScalar</returns>
-        </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteScalar``1(System.Object[])">
-            <summary>
-            executes the statement returning a scalar
-            </summary>
-            <returns>first value of the result set or default of TScalar</returns>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteScalar``1(NightlyCode.Database.Clients.Transaction)">
             <summary>
             executes the statement returning a scalar
             </summary>
@@ -2432,21 +2612,7 @@
             </summary>
             <returns>first value of the result set or default of TScalar</returns>
         </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteSet``1">
-            <summary>
-            executes the statement returning a set of scalars
-            </summary>
-            <typeparam name="TScalar">type of scalar to return</typeparam>
-            <returns>values of first column of result set converted to TScalar</returns>
-        </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteSet``1(System.Object[])">
-            <summary>
-            executes the statement returning a set of scalars
-            </summary>
-            <typeparam name="TScalar">type of scalar to return</typeparam>
-            <returns>values of first column of result set converted to TScalar</returns>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteSet``1(NightlyCode.Database.Clients.Transaction)">
             <summary>
             executes the statement returning a set of scalars
             </summary>
@@ -2460,14 +2626,6 @@
             <typeparam name="TScalar">type of scalar to return</typeparam>
             <returns>values of first column of result set converted to TScalar</returns>
         </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteType``1(System.Func{NightlyCode.Database.Clients.Tables.DataRow,``0})">
-            <summary>
-            executes a query and stores the result in a custom result type
-            </summary>
-            <typeparam name="TType">type of result</typeparam>
-            <param name="assignments">action used to assign values</param>
-            <returns>enumeration of result types</returns>
-        </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteType``1(System.Func{NightlyCode.Database.Clients.Tables.DataRow,``0},System.Object[])">
             <summary>
             executes a query and stores the result in a custom result type
@@ -2475,15 +2633,6 @@
             <typeparam name="TType">type of result</typeparam>
             <param name="assignments">action used to assign values</param>
             <param name="parameters">custom parameters for query execution</param>
-            <returns>enumeration of result types</returns>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteType``1(NightlyCode.Database.Clients.Transaction,System.Func{NightlyCode.Database.Clients.Tables.DataRow,``0})">
-            <summary>
-            executes a query and stores the result in a custom result type
-            </summary>
-            <typeparam name="TType">type of result</typeparam>
-            <param name="assignments">action used to assign values</param>
-            <param name="transaction">transaction to use for execution</param>
             <returns>enumeration of result types</returns>
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayLoadValuesOperation.ExecuteType``1(NightlyCode.Database.Clients.Transaction,System.Func{NightlyCode.Database.Clients.Tables.DataRow,``0},System.Object[])">
@@ -2501,7 +2650,7 @@
             <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedOperation"/> containing array parameters
             </summary>
         </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayOperation.#ctor(NightlyCode.Database.Clients.IDBClient,System.String,System.Object[],System.Object[])">
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayOperation.#ctor(NightlyCode.Database.Clients.IDBClient,System.String,System.Object[],System.Array[])">
             <summary>
             creates a new <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayOperation"/>
             </summary>
@@ -2510,29 +2659,16 @@
             <param name="parameters">parameters for query</param>
             <param name="arrayparameters">array parameters for query</param>
         </member>
-        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayOperation.ArrayParameters">
+        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayOperation.ConstantArrayParameters">
             <summary>
             array parameters for command
             </summary>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayOperation.Execute">
-            <summary>
-            executes the operation
-            </summary>
-            <returns>number of affected rows if applicable</returns>
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayOperation.Execute(System.Object[])">
             <summary>
             executes the operation using custom parameters
             </summary>
             <param name="parameters">parameters for operation</param>
-            <returns>number of affected rows if applicable</returns>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayOperation.Execute(NightlyCode.Database.Clients.Transaction)">
-            <summary>
-            executes the operation using custom parameters
-            </summary>
-            <param name="transaction">transaction used to execute operation</param>
             <returns>number of affected rows if applicable</returns>
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedArrayOperation.Execute(NightlyCode.Database.Clients.Transaction,System.Object[])">
@@ -2558,23 +2694,10 @@
             <param name="commandtext">command text to execute</param>
             <param name="parameters">initial parameters of operation</param>
         </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadEntitiesOperation`1.Execute">
-            <summary>
-            executes the statement
-            </summary>
-            <returns>entities created from result set</returns>
-        </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadEntitiesOperation`1.Execute(System.Object[])">
             <summary>
             executes the statement
             </summary>
-            <returns>entities created from result set</returns>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadEntitiesOperation`1.Execute(NightlyCode.Database.Clients.Transaction)">
-            <summary>
-            executes the statement
-            </summary>
-            <param name="transaction">transaction to use for execution</param>
             <returns>entities created from result set</returns>
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadEntitiesOperation`1.Execute(NightlyCode.Database.Clients.Transaction,System.Object[])">
@@ -2598,24 +2721,11 @@
             <param name="commandtext">command text</param>
             <param name="parameters">parameters for operation</param>
         </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadValuesOperation.Execute">
-            <summary>
-            executes the statement
-            </summary>
-            <returns>data table containing results</returns>
-        </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadValuesOperation.Execute(System.Object[])">
             <summary>
             executes the statement
             </summary>
             <param name="parameters">parameters for execution</param>
-            <returns>data table containing results</returns>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadValuesOperation.Execute(NightlyCode.Database.Clients.Transaction)">
-            <summary>
-            executes the statement
-            </summary>
-            <param name="transaction">transaction used to execute operation</param>
             <returns>data table containing results</returns>
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadValuesOperation.Execute(NightlyCode.Database.Clients.Transaction,System.Object[])">
@@ -2626,19 +2736,7 @@
             <param name="parameters">parameters for execution</param>
             <returns>data table containing results</returns>
         </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadValuesOperation.ExecuteScalar``1">
-            <summary>
-            executes the statement returning a scalar
-            </summary>
-            <returns>first value of the result set or default of TScalar</returns>
-        </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadValuesOperation.ExecuteScalar``1(System.Object[])">
-            <summary>
-            executes the statement returning a scalar
-            </summary>
-            <returns>first value of the result set or default of TScalar</returns>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadValuesOperation.ExecuteScalar``1(NightlyCode.Database.Clients.Transaction)">
             <summary>
             executes the statement returning a scalar
             </summary>
@@ -2650,21 +2748,7 @@
             </summary>
             <returns>first value of the result set or default of TScalar</returns>
         </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadValuesOperation.ExecuteSet``1">
-            <summary>
-            executes the statement returning a set of scalars
-            </summary>
-            <typeparam name="TScalar">type of scalar to return</typeparam>
-            <returns>values of first column of result set converted to TScalar</returns>
-        </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadValuesOperation.ExecuteSet``1(System.Object[])">
-            <summary>
-            executes the statement returning a set of scalars
-            </summary>
-            <typeparam name="TScalar">type of scalar to return</typeparam>
-            <returns>values of first column of result set converted to TScalar</returns>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadValuesOperation.ExecuteSet``1(NightlyCode.Database.Clients.Transaction)">
             <summary>
             executes the statement returning a set of scalars
             </summary>
@@ -2678,14 +2762,6 @@
             <typeparam name="TScalar">type of scalar to return</typeparam>
             <returns>values of first column of result set converted to TScalar</returns>
         </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadValuesOperation.ExecuteType``1(System.Func{NightlyCode.Database.Clients.Tables.DataRow,``0})">
-            <summary>
-            executes a query and stores the result in a custom result type
-            </summary>
-            <typeparam name="TType">type of result</typeparam>
-            <param name="assignments">action used to assign values</param>
-            <returns>enumeration of result types</returns>
-        </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadValuesOperation.ExecuteType``1(System.Func{NightlyCode.Database.Clients.Tables.DataRow,``0},System.Object[])">
             <summary>
             executes a query and stores the result in a custom result type
@@ -2693,15 +2769,6 @@
             <typeparam name="TType">type of result</typeparam>
             <param name="assignments">action used to assign values</param>
             <param name="parameters">custom parameters for query execution</param>
-            <returns>enumeration of result types</returns>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadValuesOperation.ExecuteType``1(NightlyCode.Database.Clients.Transaction,System.Func{NightlyCode.Database.Clients.Tables.DataRow,``0})">
-            <summary>
-            executes a query and stores the result in a custom result type
-            </summary>
-            <typeparam name="TType">type of result</typeparam>
-            <param name="assignments">action used to assign values</param>
-            <param name="transaction">transaction to use for execution</param>
             <returns>enumeration of result types</returns>
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedLoadValuesOperation.ExecuteType``1(NightlyCode.Database.Clients.Transaction,System.Func{NightlyCode.Database.Clients.Tables.DataRow,``0},System.Object[])">
@@ -2725,7 +2792,7 @@
             </summary>
             <param name="dbclient">access to database</param>
             <param name="commandText">sql query text</param>
-            <param name="parameters">parameters for query</param>
+            <param name="constantparameters">parameters for query</param>
         </member>
         <member name="P:NightlyCode.Database.Entities.Operations.Prepared.PreparedOperation.DBClient">
             <summary>
@@ -2740,29 +2807,16 @@
             text to execute
             </summary>
         </member>
-        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.PreparedOperation.Parameters">
+        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.PreparedOperation.ConstantParameters">
             <summary>
             parameters for command
             </summary>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedOperation.Execute">
-            <summary>
-            executes the operation
-            </summary>
-            <returns>number of affected rows if applicable</returns>
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedOperation.Execute(System.Object[])">
             <summary>
             executes the operation using custom parameters
             </summary>
             <param name="parameters">parameters for operation</param>
-            <returns>number of affected rows if applicable</returns>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedOperation.Execute(NightlyCode.Database.Clients.Transaction)">
-            <summary>
-            executes the operation using custom parameters
-            </summary>
-            <param name="transaction">transaction used to execute operation</param>
             <returns>number of affected rows if applicable</returns>
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedOperation.Execute(NightlyCode.Database.Clients.Transaction,System.Object[])">
@@ -2775,6 +2829,33 @@
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedOperation.ToString">
             <inheritdoc/>
+        </member>
+        <member name="T:NightlyCode.Database.Entities.Operations.Prepared.PreparedOperationData">
+            <summary>
+            operation data prepared for execution
+            </summary>
+        </member>
+        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.PreparedOperationData.Command">
+            <summary>
+            command text
+            </summary>
+        </member>
+        <member name="P:NightlyCode.Database.Entities.Operations.Prepared.PreparedOperationData.Parameters">
+            <summary>
+            final parameters of operation
+            </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Prepared.PreparedOperationData.Create(NightlyCode.Database.Clients.IDBClient,System.String,System.Object[],System.Array[],System.Object[],System.Array[])">
+            <summary>
+            prepares an operation for execution
+            </summary>
+            <param name="dbclient">db client used to execute operation</param>
+            <param name="commandtext">command text</param>
+            <param name="constantparameters">constant parameters</param>
+            <param name="constantarrayparameters">constant array parameters</param>
+            <param name="parameters">user parameters</param>
+            <param name="arrayparameters">user array parameters</param>
+            <returns>prepared operation data which can get executed</returns>
         </member>
         <member name="T:NightlyCode.Database.Entities.Operations.UpdateValuesOperation`1">
             <summary>
@@ -3165,7 +3246,7 @@
             creates a new <see cref="T:NightlyCode.Database.Info.DBInfo"/>
             </summary>
         </member>
-        <member name="M:NightlyCode.Database.Info.DBInfo.AddFieldLogic``1(System.Action{``0,NightlyCode.Database.Entities.Operations.OperationPreparator,System.Func{System.Type,NightlyCode.Database.Entities.Descriptors.EntityDescriptor}})">
+        <member name="M:NightlyCode.Database.Info.DBInfo.AddFieldLogic``1(System.Action{``0,NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,System.Func{System.Type,NightlyCode.Database.Entities.Descriptors.EntityDescriptor}})">
             <summary>
             adds a logic to use when generating code for a database field
             </summary>
@@ -3197,7 +3278,7 @@
             term used for like expression
             </summary>
         </member>
-        <member name="M:NightlyCode.Database.Info.DBInfo.Replace(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)">
+        <member name="M:NightlyCode.Database.Info.DBInfo.Replace(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)">
             <summary>
             method used to create a replace function
             </summary>
@@ -3208,7 +3289,7 @@
             <param name="visitor"> </param>
             <returns></returns>
         </member>
-        <member name="M:NightlyCode.Database.Info.DBInfo.ToUpper(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression)">
+        <member name="M:NightlyCode.Database.Info.DBInfo.ToUpper(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,System.Linq.Expressions.Expression)">
             <summary>
             converts an expression to uppercase using database command
             </summary>
@@ -3216,7 +3297,7 @@
             <param name="preparator"></param>
             <param name="value"></param>
         </member>
-        <member name="M:NightlyCode.Database.Info.DBInfo.ToLower(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression)">
+        <member name="M:NightlyCode.Database.Info.DBInfo.ToLower(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,System.Linq.Expressions.Expression)">
             <summary>
             converts an expression to lowercase using database command
             </summary>
@@ -3231,11 +3312,6 @@
             <param name="db"></param>
             <param name="table"></param>
             <returns></returns>
-        </member>
-        <member name="P:NightlyCode.Database.Info.DBInfo.TransactionHint">
-            <summary>
-            determines whether db supports transactions
-            </summary>
         </member>
         <member name="M:NightlyCode.Database.Info.DBInfo.GetDBType(System.Type)">
             <summary>
@@ -3263,7 +3339,7 @@
             suffix to use when creating tables
             </summary>
         </member>
-        <member name="M:NightlyCode.Database.Info.DBInfo.CreateColumn(NightlyCode.Database.Entities.Operations.OperationPreparator,NightlyCode.Database.Entities.Descriptors.EntityColumnDescriptor)">
+        <member name="M:NightlyCode.Database.Info.DBInfo.CreateColumn(NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,NightlyCode.Database.Entities.Descriptors.EntityColumnDescriptor)">
             <summary>
             text used to create a column
             </summary>
@@ -3304,13 +3380,24 @@
             <param name="table">table to modify</param>
             <param name="column">column to modify</param>
         </member>
-        <member name="M:NightlyCode.Database.Info.DBInfo.Append(NightlyCode.Database.Entities.Operations.Fields.IDBField,NightlyCode.Database.Entities.Operations.OperationPreparator,System.Func{System.Type,NightlyCode.Database.Entities.Descriptors.EntityDescriptor})">
+        <member name="M:NightlyCode.Database.Info.DBInfo.Append(NightlyCode.Database.Entities.Operations.Fields.IDBField,NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,System.Func{System.Type,NightlyCode.Database.Entities.Descriptors.EntityDescriptor})">
             <summary>
-            appends a database field to an <see cref="T:NightlyCode.Database.Entities.Operations.OperationPreparator"/>
+            appends a database field to an <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator"/>
             </summary>
             <param name="field">field to append</param>
             <param name="preparator">operation to append function to</param>
             <param name="descriptorgetter">function used to get <see cref="T:NightlyCode.Database.Entities.Descriptors.EntityDescriptor"/>s for types</param>
+        </member>
+        <member name="M:NightlyCode.Database.Info.DBInfo.BeginTransaction(System.Data.IDbConnection)">
+            <summary>
+            begins a new transaction
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:NightlyCode.Database.Info.DBInfo.EndTransaction">
+            <summary>
+            ends a transaction
+            </summary>
         </member>
         <member name="T:NightlyCode.Database.Info.IDBInfo">
             <summary>
@@ -3342,7 +3429,7 @@
             term used for like expression
             </summary>
         </member>
-        <member name="M:NightlyCode.Database.Info.IDBInfo.Replace(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)">
+        <member name="M:NightlyCode.Database.Info.IDBInfo.Replace(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)">
             <summary>
             method used to create a replace function
             </summary>
@@ -3353,7 +3440,7 @@
             <param name="visitor"> </param>
             <returns></returns>
         </member>
-        <member name="M:NightlyCode.Database.Info.IDBInfo.ToUpper(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression)">
+        <member name="M:NightlyCode.Database.Info.IDBInfo.ToUpper(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,System.Linq.Expressions.Expression)">
             <summary>
             converts an expression to uppercase using database command
             </summary>
@@ -3361,7 +3448,7 @@
             <param name="preparator"></param>
             <param name="value"></param>
         </member>
-        <member name="M:NightlyCode.Database.Info.IDBInfo.ToLower(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression)">
+        <member name="M:NightlyCode.Database.Info.IDBInfo.ToLower(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,System.Linq.Expressions.Expression)">
             <summary>
             converts an expression to lowercase using database command
             </summary>
@@ -3376,11 +3463,6 @@
             <param name="db"></param>
             <param name="table"></param>
             <returns></returns>
-        </member>
-        <member name="P:NightlyCode.Database.Info.IDBInfo.TransactionHint">
-            <summary>
-            determines whether db supports transactions
-            </summary>
         </member>
         <member name="M:NightlyCode.Database.Info.IDBInfo.GetDBType(System.Type)">
             <summary>
@@ -3408,7 +3490,7 @@
             suffix to use when creating tables
             </summary>
         </member>
-        <member name="M:NightlyCode.Database.Info.IDBInfo.CreateColumn(NightlyCode.Database.Entities.Operations.OperationPreparator,NightlyCode.Database.Entities.Descriptors.EntityColumnDescriptor)">
+        <member name="M:NightlyCode.Database.Info.IDBInfo.CreateColumn(NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,NightlyCode.Database.Entities.Descriptors.EntityColumnDescriptor)">
             <summary>
             text used to create a column
             </summary>
@@ -3449,17 +3531,39 @@
             <param name="table">table to modify</param>
             <param name="column">column to modify</param>
         </member>
-        <member name="M:NightlyCode.Database.Info.IDBInfo.Append(NightlyCode.Database.Entities.Operations.Fields.IDBField,NightlyCode.Database.Entities.Operations.OperationPreparator,System.Func{System.Type,NightlyCode.Database.Entities.Descriptors.EntityDescriptor})">
+        <member name="M:NightlyCode.Database.Info.IDBInfo.Append(NightlyCode.Database.Entities.Operations.Fields.IDBField,NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,System.Func{System.Type,NightlyCode.Database.Entities.Descriptors.EntityDescriptor})">
             <summary>
-            appends a database field to an <see cref="T:NightlyCode.Database.Entities.Operations.OperationPreparator"/>
+            appends a database field to an <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator"/>
             </summary>
             <param name="field">field to append</param>
             <param name="preparator">operation to append function to</param>
             <param name="descriptorgetter">function used to get <see cref="T:NightlyCode.Database.Entities.Descriptors.EntityDescriptor"/>s for types</param>
         </member>
+        <member name="M:NightlyCode.Database.Info.IDBInfo.BeginTransaction(System.Data.IDbConnection)">
+            <summary>
+            begins a new transaction
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:NightlyCode.Database.Info.IDBInfo.EndTransaction">
+            <summary>
+            ends a transaction
+            </summary>
+        </member>
         <member name="T:NightlyCode.Database.Info.MySQLInfo">
             <summary>
             information for mysql db
+            </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Info.MySQLInfo.BeginTransaction(System.Data.IDbConnection)">
+            <summary>
+            begins a new transaction
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:NightlyCode.Database.Info.MySQLInfo.EndTransaction">
+            <summary>
+            ends a transaction
             </summary>
         </member>
         <member name="T:NightlyCode.Database.Info.PostgreInfo">
@@ -3472,9 +3576,9 @@
             creates a new <see cref="T:NightlyCode.Database.Info.PostgreInfo"/>
             </summary>
         </member>
-        <member name="M:NightlyCode.Database.Info.PostgreInfo.AppendFunction(NightlyCode.Database.Entities.Operations.Fields.DBFunction,NightlyCode.Database.Entities.Operations.OperationPreparator,System.Func{System.Type,NightlyCode.Database.Entities.Descriptors.EntityDescriptor})">
+        <member name="M:NightlyCode.Database.Info.PostgreInfo.AppendFunction(NightlyCode.Database.Entities.Operations.Fields.DBFunction,NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,System.Func{System.Type,NightlyCode.Database.Entities.Descriptors.EntityDescriptor})">
             <summary>
-            appends a database function to an <see cref="T:NightlyCode.Database.Entities.Operations.OperationPreparator"/>
+            appends a database function to an <see cref="T:NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator"/>
             </summary>
             <param name="function">function to be executed</param>
             <param name="preparator">operation to append function to</param>
@@ -3505,7 +3609,7 @@
             term used for like expression
             </summary>
         </member>
-        <member name="M:NightlyCode.Database.Info.PostgreInfo.Replace(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)">
+        <member name="M:NightlyCode.Database.Info.PostgreInfo.Replace(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)">
             <summary>
             method used to create a replace function
             </summary>
@@ -3523,11 +3627,6 @@
             <param name="db"></param>
             <param name="table"></param>
             <returns></returns>
-        </member>
-        <member name="P:NightlyCode.Database.Info.PostgreInfo.TransactionHint">
-            <summary>
-            determines whether db supports transactions
-            </summary>
         </member>
         <member name="M:NightlyCode.Database.Info.PostgreInfo.GetDBType(System.Type)">
             <summary>
@@ -3555,12 +3654,23 @@
             suffix to use when creating tables
             </summary>
         </member>
-        <member name="M:NightlyCode.Database.Info.PostgreInfo.CreateColumn(NightlyCode.Database.Entities.Operations.OperationPreparator,NightlyCode.Database.Entities.Descriptors.EntityColumnDescriptor)">
+        <member name="M:NightlyCode.Database.Info.PostgreInfo.CreateColumn(NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,NightlyCode.Database.Entities.Descriptors.EntityColumnDescriptor)">
             <summary>
             text used to create a column
             </summary>
             <param name="column"></param>
             <returns></returns>
+        </member>
+        <member name="M:NightlyCode.Database.Info.PostgreInfo.BeginTransaction(System.Data.IDbConnection)">
+            <summary>
+            begins a new transaction
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:NightlyCode.Database.Info.PostgreInfo.EndTransaction">
+            <summary>
+            ends a transaction
+            </summary>
         </member>
         <member name="T:NightlyCode.Database.Info.SQLiteInfo">
             <summary>
@@ -3597,7 +3707,7 @@
             term used for like expression
             </summary>
         </member>
-        <member name="M:NightlyCode.Database.Info.SQLiteInfo.Replace(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)">
+        <member name="M:NightlyCode.Database.Info.SQLiteInfo.Replace(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)">
             <summary>
             method used to create a replace function
             </summary>
@@ -3608,7 +3718,7 @@
             <param name="visitor"> </param>
             <returns></returns>
         </member>
-        <member name="M:NightlyCode.Database.Info.SQLiteInfo.ToUpper(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression)">
+        <member name="M:NightlyCode.Database.Info.SQLiteInfo.ToUpper(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,System.Linq.Expressions.Expression)">
             <summary>
             converts an expression to uppercase using database command
             </summary>
@@ -3616,7 +3726,7 @@
             <param name="preparator"></param>
             <param name="value"></param>
         </member>
-        <member name="M:NightlyCode.Database.Info.SQLiteInfo.ToLower(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.OperationPreparator,System.Linq.Expressions.Expression)">
+        <member name="M:NightlyCode.Database.Info.SQLiteInfo.ToLower(System.Linq.Expressions.ExpressionVisitor,NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,System.Linq.Expressions.Expression)">
             <summary>
             converts an expression to lowercase using database command
             </summary>
@@ -3631,11 +3741,6 @@
             <param name="db"></param>
             <param name="table"></param>
             <returns></returns>
-        </member>
-        <member name="P:NightlyCode.Database.Info.SQLiteInfo.TransactionHint">
-            <summary>
-            determines whether db supports transactions
-            </summary>
         </member>
         <member name="M:NightlyCode.Database.Info.SQLiteInfo.GetDBType(System.Type)">
             <summary>
@@ -3663,7 +3768,7 @@
             suffix to use when creating tables
             </summary>
         </member>
-        <member name="M:NightlyCode.Database.Info.SQLiteInfo.CreateColumn(NightlyCode.Database.Entities.Operations.OperationPreparator,NightlyCode.Database.Entities.Descriptors.EntityColumnDescriptor)">
+        <member name="M:NightlyCode.Database.Info.SQLiteInfo.CreateColumn(NightlyCode.Database.Entities.Operations.Prepared.OperationPreparator,NightlyCode.Database.Entities.Descriptors.EntityColumnDescriptor)">
             <summary>
             text used to create a column
             </summary>
@@ -3709,6 +3814,17 @@
             <remarks>
             Removes the column and recreates it. So you will lose all your data in that column.
             </remarks>
+        </member>
+        <member name="M:NightlyCode.Database.Info.SQLiteInfo.BeginTransaction(System.Data.IDbConnection)">
+            <summary>
+            begins a new transaction
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:NightlyCode.Database.Info.SQLiteInfo.EndTransaction">
+            <summary>
+            ends a transaction
+            </summary>
         </member>
         <member name="M:NightlyCode.Database.Info.SQLiteInfo.AnalyseTableSql(NightlyCode.Database.Entities.Schema.TableDescriptor,System.String)">
             <summary>

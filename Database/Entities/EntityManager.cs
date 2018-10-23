@@ -220,7 +220,7 @@ namespace NightlyCode.Database.Entities {
         /// <returns>Transaction object to use</returns>
         public Transaction Transaction()
         {
-            return DBClient.BeginTransaction();
+            return DBClient.Transaction();
         }
     }
 }

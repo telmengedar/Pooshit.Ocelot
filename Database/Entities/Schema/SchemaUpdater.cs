@@ -94,7 +94,7 @@ namespace NightlyCode.Database.Entities.Schema {
             }
             else
             {
-                using (Transaction transaction = client.BeginTransaction())
+                using (Transaction transaction = client.Transaction())
                 {
                     if (missing.Count > 0)
                         missing.ForEach(c => client.DBInfo.AddColumn(client, descriptor.TableName, c, transaction));
@@ -115,7 +115,7 @@ namespace NightlyCode.Database.Entities.Schema {
         void RecreateTable(IDBClient client, TableDescriptor olddescriptor, EntityDescriptor newdescriptor) {
             string appendix = "_original";
 
-            using(Transaction transaction = client.BeginTransaction()) {
+            using(Transaction transaction = client.Transaction()) {
                 // check if an old backup table exists for whatever reason
                 if(client.DBInfo.CheckIfTableExists(client, "{olddescriptor.Name}{appendix}"))
                     client.NonQuery(transaction, $"DROP TABLE {olddescriptor.Name}{appendix}");

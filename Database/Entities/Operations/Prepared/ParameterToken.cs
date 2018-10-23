@@ -25,7 +25,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         public ParameterToken(object value) {
             Value = value;
             IsConstant = true;
-            IsArray = value is Array;
+            IsArray = value is Array && !(value is byte[]);
         }
 
         /// <summary>

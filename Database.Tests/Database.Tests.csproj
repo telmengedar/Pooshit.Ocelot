@@ -70,7 +70,9 @@
     <Compile Include="Entities\EntityDescriptorTest.cs" />
     <Compile Include="Entities\EntityManagerTest.cs" />
     <Compile Include="LoadValuesOperationTests.cs" />
+    <Compile Include="Models\ConstructOption.cs" />
     <Compile Include="Models\GuidEntity.cs" />
+    <Compile Include="Models\Option.cs" />
     <Compile Include="SchemaUpdateTests.cs" />
     <Compile Include="Fields\ParameterTests.cs" />
     <Compile Include="ValueMethodTests.cs" />

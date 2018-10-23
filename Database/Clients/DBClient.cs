@@ -56,9 +56,9 @@ namespace NightlyCode.Database.Clients
         /// begins a transaction
         /// </summary>
         /// <returns>Transaction object to use</returns>
-        public Transaction BeginTransaction() {
+        public Transaction Transaction() {
             lock (connectionlock)
-                return new Transaction(connection.BeginTransaction());
+                return new Transaction(dbinfo, connection);
         }
 
         Tables.DataTable CreateTable(IDataReader reader) {

@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Data;
 using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
 using NightlyCode.Database.Entities.Descriptors;
-using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Expressions;
 using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
@@ -114,11 +114,6 @@ namespace NightlyCode.Database.Info {
         public override bool CheckIfTableExists(IDBClient db, string table) {
             return Converter.Convert<long>(db.Scalar("SELECT count(*) FROM pg_class WHERE relname = @1", table)) > 0;
         }
-
-        /// <summary>
-        /// determines whether db supports transactions
-        /// </summary>
-        public override bool TransactionHint => false;
 
         /// <summary>
         /// get db type of an application type
@@ -247,6 +242,20 @@ namespace NightlyCode.Database.Info {
 
         public override void AlterColumn(IDBClient client, string table, EntityColumnDescriptor column) {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// begins a new transaction
+        /// </summary>
+        /// <returns></returns>
+        public override IDbTransaction BeginTransaction(IDbConnection connection) {
+            return connection.BeginTransaction();
+        }
+
+        /// <summary>
+        /// ends a transaction
+        /// </summary>
+        public override void EndTransaction() {
         }
 
         public override SchemaDescriptor GetSchema(IDBClient client, string name)

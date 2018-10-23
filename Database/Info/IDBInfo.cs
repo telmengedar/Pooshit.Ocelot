@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
@@ -76,11 +77,6 @@ namespace NightlyCode.Database.Info
         bool CheckIfTableExists(IDBClient db, string table);
 
         /// <summary>
-        /// determines whether db supports transactions
-        /// </summary>
-        bool TransactionHint { get; }
-
-        /// <summary>
         /// get db type of an application type
         /// </summary>
         /// <param name="type"></param>
@@ -154,5 +150,16 @@ namespace NightlyCode.Database.Info
         /// <param name="preparator">operation to append function to</param>
         /// <param name="descriptorgetter">function used to get <see cref="EntityDescriptor"/>s for types</param>
         void Append(IDBField field, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter);
+
+        /// <summary>
+        /// begins a new transaction
+        /// </summary>
+        /// <returns></returns>
+        IDbTransaction BeginTransaction(IDbConnection connection);
+
+        /// <summary>
+        /// ends a transaction
+        /// </summary>
+        void EndTransaction();
     }
 }

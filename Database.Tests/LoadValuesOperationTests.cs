@@ -287,5 +287,19 @@ namespace NightlyCode.Database.Tests {
             }
         }
 
+        [Test]
+        public void ExecuteJoin() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+
+            entitymanager.UpdateSchema<Option>();
+            entitymanager.UpdateSchema<ConstructOption>();
+
+            Guid guid = new Guid();
+            entitymanager.LoadEntities<Option>()
+                .Join<ConstructOption>((o, co) => co.OptionId == o.Id)
+                .Where((o, co) => co.ConstructId == guid)
+                .Execute();
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using NightlyCode.Database.Info;
 
 namespace NightlyCode.Database.Clients {
 
@@ -7,11 +8,13 @@ namespace NightlyCode.Database.Clients {
     /// transaction of db clients
     /// </summary>
     public class Transaction : IDisposable {
+        readonly IDBInfo dbinfo;
         bool commited;
         
 
-        internal Transaction(IDbTransaction transaction) {
-            DbTransaction = transaction;
+        internal Transaction(IDBInfo dbinfo, IDbConnection connection) {
+            this.dbinfo = dbinfo;
+            DbTransaction = dbinfo.BeginTransaction(connection);
         }
 
         /// <summary>
@@ -41,8 +44,12 @@ namespace NightlyCode.Database.Clients {
         /// </summary>
         public void Dispose() {
             GC.SuppressFinalize(this);
-            if(!commited)
-                DbTransaction.Rollback();
+            if (DbTransaction != null) {
+                if (!commited)
+                    DbTransaction.Rollback();
+                DbTransaction.Dispose();
+                dbinfo.EndTransaction();
+            }
         }
 
         /// <summary>

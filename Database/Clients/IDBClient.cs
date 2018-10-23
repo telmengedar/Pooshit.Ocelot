@@ -150,6 +150,6 @@ namespace NightlyCode.Database.Clients
         /// begins a transaction
         /// </summary>
         /// <returns>Transaction object to use</returns>
-        Transaction BeginTransaction();
+        Transaction Transaction();
     }
 }

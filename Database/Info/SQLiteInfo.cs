@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
+using System.Threading;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
 using NightlyCode.Database.Entities.Descriptors;
-using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Expressions;
 using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
@@ -19,8 +20,8 @@ namespace NightlyCode.Database.Info
     /// <summary>
     /// information for sqlite
     /// </summary>
-    public class SQLiteInfo : DBInfo
-    {
+    public class SQLiteInfo : DBInfo {
+        object transactionlock = new object();
 
         /// <summary>
         /// creates a new <see cref="SQLiteInfo"/>
@@ -148,11 +149,6 @@ namespace NightlyCode.Database.Info
         {
             return db.Query("SELECT name FROM sqlite_master WHERE (type='table' OR type='view') AND name like @1", table).Rows.Length > 0;
         }
-
-        /// <summary>
-        /// determines whether db supports transactions
-        /// </summary>
-        public override bool TransactionHint => true;
 
         /// <summary>
         /// get db type of an application type
@@ -433,6 +429,28 @@ namespace NightlyCode.Database.Info
         public override void AlterColumn(IDBClient client, string table, EntityColumnDescriptor column) {
             RemoveColumn(client, table, column.Name);
             AddColumn(client, table, column, null);
+        }
+
+        /// <summary>
+        /// begins a new transaction
+        /// </summary>
+        /// <returns></returns>
+        public override IDbTransaction BeginTransaction(IDbConnection connection) {
+            try {
+                Monitor.Enter(transactionlock);
+                return connection.BeginTransaction();
+            }
+            catch (Exception) {
+                Monitor.Exit(transactionlock);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// ends a transaction
+        /// </summary>
+        public override void EndTransaction() {
+            Monitor.Exit(transactionlock);
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
@@ -125,11 +126,6 @@ namespace NightlyCode.Database.Info {
         public abstract bool CheckIfTableExists(IDBClient db, string table);
 
         /// <summary>
-        /// determines whether db supports transactions
-        /// </summary>
-        public abstract bool TransactionHint { get; }
-
-        /// <summary>
         /// get db type of an application type
         /// </summary>
         /// <param name="type"></param>
@@ -208,5 +204,15 @@ namespace NightlyCode.Database.Info {
             logic(field, preparator, descriptorgetter);
         }
 
+        /// <summary>
+        /// begins a new transaction
+        /// </summary>
+        /// <returns></returns>
+        public abstract IDbTransaction BeginTransaction(IDbConnection connection);
+
+        /// <summary>
+        /// ends a transaction
+        /// </summary>
+        public abstract void EndTransaction();
     }
 }
