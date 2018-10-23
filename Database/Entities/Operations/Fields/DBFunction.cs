@@ -70,21 +70,6 @@ namespace NightlyCode.Database.Entities.Operations.Fields {
         }
 
         /// <summary>
-        /// sums up a field in db
-        /// </summary>
-        public static Aggregate Sum(params IDBField[] field)
-        {
-            return new Aggregate("sum", field);
-        }
-
-        /// <summary>
-        /// sums up a field in db
-        /// </summary>
-        public static Aggregate Sum<T>(params Expression<Func<T, object>>[] fields) {
-            return new Aggregate("sum", ToFieldArray(fields));
-        }
-
-        /// <summary>
         /// sums up a field in db returning a floating point result
         /// </summary>
         public static Aggregate Total(params IDBField[] field)
@@ -101,63 +86,45 @@ namespace NightlyCode.Database.Entities.Operations.Fields {
         }
 
         /// <summary>
-        /// maximum value of a field or multiple values
+        /// get the maximum of a series of values
         /// </summary>
-        /// <param name="fields">fields of which to select maximum value</param>
-        /// <returns>aggregate field</returns>
-        public static Aggregate Max(params IDBField[] fields)
-        {
-            return new Aggregate("max", fields);
+        /// <typeparam name="T">type of values</typeparam>
+        /// <param name="values">values of which to get max</param>
+        /// <returns>maximum value</returns>
+        public static T Max<T>(params T[] values) {
+            throw new NotImplementedException("Method has no implementation since it is only used for typed expressions");
         }
 
         /// <summary>
-        /// maximum value of a field or multiple values
+        /// get the minimum of a series of values
         /// </summary>
-        /// <param name="fields">fields of which to select maximum value</param>
-        /// <returns>aggregate field</returns>
-        public static Aggregate Max<T>(params Expression<Func<T, object>>[] fields)
-        {
-            return new Aggregate("max", ToFieldArray(fields));
+        /// <typeparam name="T">type of values</typeparam>
+        /// <param name="values">values of which to get min</param>
+        /// <returns>minimum value</returns>
+        public static T Min<T>(params T[] values) {
+            throw new NotImplementedException("Method has no implementation since it is only used for typed expressions");
         }
 
         /// <summary>
-        /// minimum value of a field or multiple values
+        /// get the average of a series of values
         /// </summary>
-        /// <param name="fields">fields of which to select minimum value</param>
-        /// <returns>aggregate field</returns>
-        public static Aggregate Min(params IDBField[] fields)
+        /// <typeparam name="T">type of values</typeparam>
+        /// <param name="values">values of which to get average</param>
+        /// <returns>average value</returns>
+        public static T Average<T>(params T[] values)
         {
-            return new Aggregate("min", fields);
+            throw new NotImplementedException("Method has no implementation since it is only used for typed expressions");
         }
 
         /// <summary>
-        /// minimum value of a field or multiple values
+        /// get the sum of a column
         /// </summary>
-        /// <param name="fields">fields of which to select minimum value</param>
-        /// <returns>aggregate field</returns>
-        public static Aggregate Min<T>(params Expression<Func<T, object>>[] fields)
+        /// <typeparam name="T">type of values</typeparam>
+        /// <param name="value">column in expression of which to get sum</param>
+        /// <returns>average value</returns>
+        public static T Sum<T>(T value)
         {
-            return new Aggregate("min", ToFieldArray(fields));
-        }
-
-        /// <summary>
-        /// average value of a field or multiple values
-        /// </summary>
-        /// <param name="fields">fields of which to select average value</param>
-        /// <returns>aggregate field</returns>
-        public static Aggregate Average(params IDBField[] fields)
-        {
-            return new Aggregate("avg", fields);
-        }
-
-        /// <summary>
-        /// average value of a field or multiple values
-        /// </summary>
-        /// <param name="fields">fields of which to select average value</param>
-        /// <returns>aggregate field</returns>
-        public static Aggregate Average<T>(params Expression<Func<T, object>>[] fields)
-        {
-            return new Aggregate("avg", ToFieldArray(fields));
+            throw new NotImplementedException("Method has no implementation since it is only used for typed expressions");
         }
     }
 }

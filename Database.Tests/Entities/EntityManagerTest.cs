@@ -298,7 +298,7 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(TestEntities);
             PreparedLoadEntitiesOperation<TestEntityWithoutAnySpecifications> preparedstatement = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>()
                                                                                                             .GroupBy(EntityField.Create<TestEntityWithoutAnySpecifications>(e => e.Column1))
-                                                                                                            .Having(t => DBFunction.Sum(EntityField.Create<TestEntityWithoutAnySpecifications>(e=>e.IntegerValue)) < Constant.Create(30))
+                                                                                                            .Having(t => DBFunction.Sum(t.IntegerValue) < 30)
                                                                                                             .Prepare();
             Console.WriteLine(preparedstatement.ToString());
             preparedstatement.Execute();

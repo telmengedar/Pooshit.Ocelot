@@ -365,6 +365,38 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 return node;
             }
 
+            if(node.Method.DeclaringType == typeof(DBFunction)) {
+                
+                switch(node.Method.Name) {
+                    case "Min":
+                        preparator.AppendText("min(");
+                        break;
+                    case "Max":
+                        preparator.AppendText("max(");
+                        break;
+                    case "Average":
+                        preparator.AppendText("avg(");
+                        break;
+                    case "Sum":
+                        preparator.AppendText("sum(");
+                        break;
+                }
+
+                if(node.Arguments[0] is NewArrayExpression arrayparameter) {
+                    NewArrayExpression parameter = (NewArrayExpression)node.Arguments[0];
+                    Visit(parameter.Expressions[0]);
+                    foreach(Expression funcparameter in parameter.Expressions.Skip(1)) {
+                        preparator.AppendText(",");
+                        Visit(funcparameter);
+                    }
+                }
+                else {
+                    Visit(node.Arguments[0]);
+                }
+                preparator.AppendText(")");
+                return node;
+            }
+
             object value = node.Method.Invoke(GetHost(node.Object), node.Arguments.Select(GetHost).ToArray());
             AppendConstantValue(value);
             return node;

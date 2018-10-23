@@ -64,7 +64,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Entities\AggregateTests.cs" />
+    <Compile Include="Fields\AggregateTests.cs" />
     <Compile Include="Entities\ConstraintTests.cs" />
     <Compile Include="Entities\DescriptorAccessTests.cs" />
     <Compile Include="Entities\EntityDescriptorTest.cs" />
