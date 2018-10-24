@@ -129,6 +129,11 @@ namespace NightlyCode.Database.Entities {
             return new InsertValuesOperation<T>(DBClient, modelcache.Get);
         }
 
+        /// <summary>
+        /// get an operation used to delete data from database
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public DeleteOperation<T> Delete<T>() {
             return new DeleteOperation<T>(DBClient, modelcache.Get);
         }

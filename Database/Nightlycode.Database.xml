@@ -1062,6 +1062,13 @@
             <typeparam name="T"></typeparam>
             <returns></returns>
         </member>
+        <member name="M:NightlyCode.Database.Entities.EntityManager.Delete``1">
+            <summary>
+            get an operation used to delete data from database
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
         <member name="M:NightlyCode.Database.Entities.EntityManager.Save``1(``0[])">
             <summary>
             inserts or updates the specified entities
@@ -1575,16 +1582,6 @@
             <param name="fieldexpression">expression targeting the field to measure</param>
             <returns></returns>
         </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Sum(NightlyCode.Database.Entities.Operations.Fields.IDBField[])">
-            <summary>
-            sums up a field in db
-            </summary>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Sum``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
-            <summary>
-            sums up a field in db
-            </summary>
-        </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Total(NightlyCode.Database.Entities.Operations.Fields.IDBField[])">
             <summary>
             sums up a field in db returning a floating point result
@@ -1595,47 +1592,37 @@
             sums up a field in db returning a floating point result
             </summary>
         </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Max(NightlyCode.Database.Entities.Operations.Fields.IDBField[])">
+        <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Max``1(``0[])">
             <summary>
-            maximum value of a field or multiple values
+            get the maximum of a series of values
             </summary>
-            <param name="fields">fields of which to select maximum value</param>
-            <returns>aggregate field</returns>
+            <typeparam name="T">type of values</typeparam>
+            <param name="values">values of which to get max</param>
+            <returns>maximum value</returns>
         </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Max``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
+        <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Min``1(``0[])">
             <summary>
-            maximum value of a field or multiple values
+            get the minimum of a series of values
             </summary>
-            <param name="fields">fields of which to select maximum value</param>
-            <returns>aggregate field</returns>
+            <typeparam name="T">type of values</typeparam>
+            <param name="values">values of which to get min</param>
+            <returns>minimum value</returns>
         </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Min(NightlyCode.Database.Entities.Operations.Fields.IDBField[])">
+        <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Average``1(``0[])">
             <summary>
-            minimum value of a field or multiple values
+            get the average of a series of values
             </summary>
-            <param name="fields">fields of which to select minimum value</param>
-            <returns>aggregate field</returns>
+            <typeparam name="T">type of values</typeparam>
+            <param name="values">values of which to get average</param>
+            <returns>average value</returns>
         </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Min``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
+        <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Sum``1(``0)">
             <summary>
-            minimum value of a field or multiple values
+            get the sum of a column
             </summary>
-            <param name="fields">fields of which to select minimum value</param>
-            <returns>aggregate field</returns>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Average(NightlyCode.Database.Entities.Operations.Fields.IDBField[])">
-            <summary>
-            average value of a field or multiple values
-            </summary>
-            <param name="fields">fields of which to select average value</param>
-            <returns>aggregate field</returns>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Average``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
-            <summary>
-            average value of a field or multiple values
-            </summary>
-            <param name="fields">fields of which to select average value</param>
-            <returns>aggregate field</returns>
+            <typeparam name="T">type of values</typeparam>
+            <param name="value">column in expression of which to get sum</param>
+            <returns>average value</returns>
         </member>
         <member name="T:NightlyCode.Database.Entities.Operations.Fields.DBFunctionType">
             <summary>
@@ -3388,13 +3375,13 @@
             <param name="preparator">operation to append function to</param>
             <param name="descriptorgetter">function used to get <see cref="T:NightlyCode.Database.Entities.Descriptors.EntityDescriptor"/>s for types</param>
         </member>
-        <member name="M:NightlyCode.Database.Info.DBInfo.BeginTransaction(System.Data.IDbConnection)">
+        <member name="M:NightlyCode.Database.Info.DBInfo.BeginTransaction(System.Data.IDbConnection,System.Object)">
             <summary>
             begins a new transaction
             </summary>
             <returns></returns>
         </member>
-        <member name="M:NightlyCode.Database.Info.DBInfo.EndTransaction">
+        <member name="M:NightlyCode.Database.Info.DBInfo.EndTransaction(System.Object)">
             <summary>
             ends a transaction
             </summary>
@@ -3539,13 +3526,13 @@
             <param name="preparator">operation to append function to</param>
             <param name="descriptorgetter">function used to get <see cref="T:NightlyCode.Database.Entities.Descriptors.EntityDescriptor"/>s for types</param>
         </member>
-        <member name="M:NightlyCode.Database.Info.IDBInfo.BeginTransaction(System.Data.IDbConnection)">
+        <member name="M:NightlyCode.Database.Info.IDBInfo.BeginTransaction(System.Data.IDbConnection,System.Object)">
             <summary>
             begins a new transaction
             </summary>
-            <returns></returns>
+            <returns>transaction object to assign to command</returns>
         </member>
-        <member name="M:NightlyCode.Database.Info.IDBInfo.EndTransaction">
+        <member name="M:NightlyCode.Database.Info.IDBInfo.EndTransaction(System.Object)">
             <summary>
             ends a transaction
             </summary>
@@ -3555,13 +3542,13 @@
             information for mysql db
             </summary>
         </member>
-        <member name="M:NightlyCode.Database.Info.MySQLInfo.BeginTransaction(System.Data.IDbConnection)">
+        <member name="M:NightlyCode.Database.Info.MySQLInfo.BeginTransaction(System.Data.IDbConnection,System.Object)">
             <summary>
             begins a new transaction
             </summary>
             <returns></returns>
         </member>
-        <member name="M:NightlyCode.Database.Info.MySQLInfo.EndTransaction">
+        <member name="M:NightlyCode.Database.Info.MySQLInfo.EndTransaction(System.Object)">
             <summary>
             ends a transaction
             </summary>
@@ -3661,13 +3648,13 @@
             <param name="column"></param>
             <returns></returns>
         </member>
-        <member name="M:NightlyCode.Database.Info.PostgreInfo.BeginTransaction(System.Data.IDbConnection)">
+        <member name="M:NightlyCode.Database.Info.PostgreInfo.BeginTransaction(System.Data.IDbConnection,System.Object)">
             <summary>
             begins a new transaction
             </summary>
             <returns></returns>
         </member>
-        <member name="M:NightlyCode.Database.Info.PostgreInfo.EndTransaction">
+        <member name="M:NightlyCode.Database.Info.PostgreInfo.EndTransaction(System.Object)">
             <summary>
             ends a transaction
             </summary>
@@ -3815,13 +3802,13 @@
             Removes the column and recreates it. So you will lose all your data in that column.
             </remarks>
         </member>
-        <member name="M:NightlyCode.Database.Info.SQLiteInfo.BeginTransaction(System.Data.IDbConnection)">
+        <member name="M:NightlyCode.Database.Info.SQLiteInfo.BeginTransaction(System.Data.IDbConnection,System.Object)">
             <summary>
             begins a new transaction
             </summary>
             <returns></returns>
         </member>
-        <member name="M:NightlyCode.Database.Info.SQLiteInfo.EndTransaction">
+        <member name="M:NightlyCode.Database.Info.SQLiteInfo.EndTransaction(System.Object)">
             <summary>
             ends a transaction
             </summary>

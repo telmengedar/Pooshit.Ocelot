@@ -154,12 +154,12 @@ namespace NightlyCode.Database.Info
         /// <summary>
         /// begins a new transaction
         /// </summary>
-        /// <returns></returns>
-        IDbTransaction BeginTransaction(IDbConnection connection);
+        /// <returns>transaction object to assign to command</returns>
+        IDbTransaction BeginTransaction(IDbConnection connection, object connectionlock);
 
         /// <summary>
         /// ends a transaction
         /// </summary>
-        void EndTransaction();
+        void EndTransaction(object connectionlock);
     }
 }

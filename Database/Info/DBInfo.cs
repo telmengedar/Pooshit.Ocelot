@@ -208,11 +208,11 @@ namespace NightlyCode.Database.Info {
         /// begins a new transaction
         /// </summary>
         /// <returns></returns>
-        public abstract IDbTransaction BeginTransaction(IDbConnection connection);
+        public abstract IDbTransaction BeginTransaction(IDbConnection connection, object connectionlock);
 
         /// <summary>
         /// ends a transaction
         /// </summary>
-        public abstract void EndTransaction();
+        public abstract void EndTransaction(object connectionlock);
     }
 }

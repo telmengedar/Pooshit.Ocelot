@@ -21,7 +21,6 @@ namespace NightlyCode.Database.Info
     /// information for sqlite
     /// </summary>
     public class SQLiteInfo : DBInfo {
-        object transactionlock = new object();
 
         /// <summary>
         /// creates a new <see cref="SQLiteInfo"/>
@@ -428,20 +427,20 @@ namespace NightlyCode.Database.Info
         /// </remarks>
         public override void AlterColumn(IDBClient client, string table, EntityColumnDescriptor column) {
             RemoveColumn(client, table, column.Name);
-            AddColumn(client, table, column, null);
+            AddColumn(client, table, column);
         }
 
         /// <summary>
         /// begins a new transaction
         /// </summary>
         /// <returns></returns>
-        public override IDbTransaction BeginTransaction(IDbConnection connection) {
+        public override IDbTransaction BeginTransaction(IDbConnection connection, object connectionlock) {
             try {
-                Monitor.Enter(transactionlock);
+                Monitor.Enter(connectionlock);
                 return connection.BeginTransaction();
             }
             catch (Exception) {
-                Monitor.Exit(transactionlock);
+                Monitor.Exit(connectionlock);
                 throw;
             }
         }
@@ -449,8 +448,8 @@ namespace NightlyCode.Database.Info
         /// <summary>
         /// ends a transaction
         /// </summary>
-        public override void EndTransaction() {
-            Monitor.Exit(transactionlock);
+        public override void EndTransaction(object connectionlock) {
+            Monitor.Exit(connectionlock);
         }
 
         /// <summary>

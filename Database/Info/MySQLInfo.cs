@@ -109,14 +109,14 @@ namespace NightlyCode.Database.Info
         /// begins a new transaction
         /// </summary>
         /// <returns></returns>
-        public override IDbTransaction BeginTransaction(IDbConnection connection) {
+        public override IDbTransaction BeginTransaction(IDbConnection connection, object connectionlock) {
             return connection.BeginTransaction();
         }
 
         /// <summary>
         /// ends a transaction
         /// </summary>
-        public override void EndTransaction() {
+        public override void EndTransaction(object connectionlock) {
         }
 
         public override SchemaDescriptor GetSchema(IDBClient client, string name)

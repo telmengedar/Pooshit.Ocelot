@@ -9,12 +9,14 @@ namespace NightlyCode.Database.Clients {
     /// </summary>
     public class Transaction : IDisposable {
         readonly IDBInfo dbinfo;
+        readonly object connectionlock;
         bool commited;
         
 
-        internal Transaction(IDBInfo dbinfo, IDbConnection connection) {
+        internal Transaction(IDBInfo dbinfo, IDbConnection connection, object connectionlock) {
             this.dbinfo = dbinfo;
-            DbTransaction = dbinfo.BeginTransaction(connection);
+            this.connectionlock = connectionlock;
+            DbTransaction = dbinfo.BeginTransaction(connection, connectionlock);
         }
 
         /// <summary>
@@ -48,7 +50,7 @@ namespace NightlyCode.Database.Clients {
                 if (!commited)
                     DbTransaction.Rollback();
                 DbTransaction.Dispose();
-                dbinfo.EndTransaction();
+                dbinfo.EndTransaction(connectionlock);
             }
         }
 
