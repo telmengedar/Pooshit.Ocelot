@@ -63,6 +63,9 @@ namespace NightlyCode.Database.Info
             case DBFunctionType.LastInsertID:
                 preparator.AppendText("last_insert_rowid()");
                 break;
+            case DBFunctionType.All:
+                preparator.AppendText("*");
+                break;
             default:
                 throw new NotSupportedException($"Unsupported function {function.Type}");
             }

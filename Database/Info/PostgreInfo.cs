@@ -48,6 +48,9 @@ namespace NightlyCode.Database.Info {
                 CriteriaVisitor.GetCriteriaText(function.Parameter, descriptorgetter, this, preparator);
                 preparator.AppendText(")");
                 break;
+            case DBFunctionType.All:
+                preparator.AppendText("*");
+                break;
             default:
                 throw new NotSupportedException($"Unsupported function {function.Type}");
             }

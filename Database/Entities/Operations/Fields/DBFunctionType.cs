@@ -28,6 +28,11 @@ namespace NightlyCode.Database.Entities.Operations.Fields {
         /// <summary>
         /// id of last inserted row
         /// </summary>
-        LastInsertID
+        LastInsertID,
+
+        /// <summary>
+        /// all fields of type
+        /// </summary>
+        All
     }
 }

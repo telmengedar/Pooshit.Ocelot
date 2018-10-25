@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace NightlyCode.Database.Entities.Operations.Fields {
@@ -25,24 +23,15 @@ namespace NightlyCode.Database.Entities.Operations.Fields {
         /// </summary>
         public Expression Parameter { get; }
 
-        static IDBField ToField<T>(Expression<Func<T, object>> expression) {
-            return EntityField.Create(expression);
-        }
-
-        static IEnumerable<IDBField> ToFields<T>(IEnumerable<Expression<Func<T, object>>> expressions)
-        {
-            return expressions.Select(ToField);
-        }
-
-        static IDBField[] ToFieldArray<T>(IEnumerable<Expression<Func<T, object>>> expressions)
-        {
-            return ToFields(expressions).ToArray();
-        }
-
         /// <summary>
         /// random value
         /// </summary>
         public static DBFunction Random => new DBFunction(DBFunctionType.Random);
+
+        /// <summary>
+        /// random value
+        /// </summary>
+        public static DBFunction All => new DBFunction(DBFunctionType.All);
 
         /// <summary>
         /// count the rows of the result
@@ -72,17 +61,12 @@ namespace NightlyCode.Database.Entities.Operations.Fields {
         /// <summary>
         /// sums up a field in db returning a floating point result
         /// </summary>
-        public static Aggregate Total(params IDBField[] field)
+        /// <typeparam name="T">type of values</typeparam>
+        /// <param name="values">values of which to get total</param>
+        /// <returns>total value (sum in float)</returns>
+        public static T Total<T>(params T[] values)
         {
-            return new Aggregate("total", field);
-        }
-
-        /// <summary>
-        /// sums up a field in db returning a floating point result
-        /// </summary>
-        public static Aggregate Total<T>(params Expression<Func<T, object>>[] fields)
-        {
-            return new Aggregate("total", ToFieldArray(fields));
+            throw new NotImplementedException("Method has no implementation since it is only used for typed expressions");
         }
 
         /// <summary>

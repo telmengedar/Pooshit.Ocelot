@@ -69,7 +69,7 @@ namespace NightlyCode.Database.Tests.Entities {
             foreach (TestEntityWithoutAnySpecifications entity in TestEntities)
                 operation.Execute(entity.Column1, entity.BooleanValue, entity.IntegerValue, entity.Something);
 
-            Assert.AreEqual(TestEntities.Count(), entitymanager.Load<TestEntityWithoutAnySpecifications>(DBFunction.Count).ExecuteScalar<int>());
+            Assert.AreEqual(TestEntities.Count(), entitymanager.Load<TestEntityWithoutAnySpecifications>(m => DBFunction.Count).ExecuteScalar<int>());
         }
 
         [Test]

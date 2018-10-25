@@ -52,7 +52,7 @@ namespace NightlyCode.Database.Tests {
                 operation.Execute(i, 0.0f, 0.0);
 
             entitymanager.Delete<ValueModel>().Execute();
-            Assert.AreEqual(0, entitymanager.Load<ValueModel>(DBFunction.Count).ExecuteScalar<int>());
+            Assert.AreEqual(0, entitymanager.Load<ValueModel>(m => DBFunction.Count).ExecuteScalar<int>());
         }
 
         [Test]
@@ -90,7 +90,7 @@ namespace NightlyCode.Database.Tests {
                 transaction.Rollback();
             }
 
-            Assert.AreEqual(5, entitymanager.Load<ValueModel>(DBFunction.Count).ExecuteScalar<int>());
+            Assert.AreEqual(5, entitymanager.Load<ValueModel>(m => DBFunction.Count).ExecuteScalar<int>());
         }
     }
 }

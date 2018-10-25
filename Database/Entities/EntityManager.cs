@@ -190,18 +190,10 @@ namespace NightlyCode.Database.Entities {
         /// <summary>
         /// get a load operation to use to load values of an entity from the database
         /// </summary>
-        /// <typeparam name="T">type of entity</typeparam>
-        /// <param name="fields">fields to load from the db</param>
-        /// <returns></returns>
-        public LoadValuesOperation<T> Load<T>(params IDBField[] fields) {
-            return new LoadValuesOperation<T>(DBClient, fields, modelcache.Get);
-        }
-
-        /// <summary>
-        /// get a load operation to use to load values of an entity from the database
-        /// </summary>
         public LoadValuesOperation<T> Load<T>(params Expression<Func<T, object>>[] fields) {
-            return Load<T>(fields.Select(EntityField.Create).Cast<IDBField>().ToArray());
+            if (fields.Length == 0)
+                return new LoadValuesOperation<T>(DBClient, new IDBField[] {DBFunction.All}, modelcache.Get);
+            return new LoadValuesOperation<T>(DBClient, fields.Select(EntityField.Create).Cast<IDBField>().ToArray(), modelcache.Get);
         }
 
         /// <summary>

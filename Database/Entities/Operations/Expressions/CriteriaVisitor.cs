@@ -261,7 +261,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
         }
 
         protected override Expression VisitUnary(UnaryExpression node) {
-            if(node.NodeType == ExpressionType.Convert || node.NodeType == ExpressionType.ConvertChecked)
+            if (node.NodeType == ExpressionType.Convert || node.NodeType == ExpressionType.ConvertChecked || node.NodeType == ExpressionType.Quote)
                 return base.VisitUnary(node);
 
             AppendValueRemainder();
@@ -379,6 +379,9 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                         break;
                     case "Sum":
                         preparator.AppendText("sum(");
+                        break;
+                    case "Total":
+                        preparator.AppendText("total(");
                         break;
                 }
 

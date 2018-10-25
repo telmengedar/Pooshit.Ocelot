@@ -63,7 +63,7 @@ namespace NightlyCode.Database.Tests.Fields {
                 new ValueModel { Double = 3 },
                 new ValueModel { Double = 7 });
 
-            double result = entitymanager.Load<ValueModel>(DBFunction.Total(EntityField.Create<ValueModel>(m => m.Double))).ExecuteScalar<double>();
+            double result = entitymanager.Load<ValueModel>(v => DBFunction.Total(EntityField.Create<ValueModel>(m => m.Double))).ExecuteScalar<double>();
             Assert.AreEqual(26.3, result);
         }
 
@@ -82,7 +82,7 @@ namespace NightlyCode.Database.Tests.Fields {
                 new ValueModel { Double = 3 },
                 new ValueModel { Double = 7 });
 
-            double result = entitymanager.Load<ValueModel>(DBFunction.Total<ValueModel>(m => m.Double)).ExecuteScalar<double>();
+            double result = entitymanager.Load<ValueModel>(v => DBFunction.Total(v.Double)).ExecuteScalar<double>();
             Assert.AreEqual(26.3, result);
         }
 

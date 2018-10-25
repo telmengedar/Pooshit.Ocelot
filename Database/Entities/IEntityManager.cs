@@ -5,7 +5,6 @@ using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Entities;
-using NightlyCode.Database.Entities.Operations.Fields;
 
 namespace NightlyCode.Database.Entities {
 
@@ -82,14 +81,6 @@ namespace NightlyCode.Database.Entities {
         /// <typeparam name="T"></typeparam>
         /// <param name="entities"></param>
         void Save<T>(IEnumerable<T> entities);
-
-        /// <summary>
-        /// get a load operation to use to load values of an entity from the database
-        /// </summary>
-        /// <typeparam name="T">type of entity</typeparam>
-        /// <param name="fields">fields to load from the db</param>
-        /// <returns></returns>
-        LoadValuesOperation<T> Load<T>(params IDBField[] fields);
 
         /// <summary>
         /// get an operation used to delete data from database

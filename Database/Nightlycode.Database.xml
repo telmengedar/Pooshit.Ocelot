@@ -1088,14 +1088,6 @@
             <typeparam name="T"></typeparam>
             <param name="entities"></param>
         </member>
-        <member name="M:NightlyCode.Database.Entities.EntityManager.Load``1(NightlyCode.Database.Entities.Operations.Fields.IDBField[])">
-            <summary>
-            get a load operation to use to load values of an entity from the database
-            </summary>
-            <typeparam name="T">type of entity</typeparam>
-            <param name="fields">fields to load from the db</param>
-            <returns></returns>
-        </member>
         <member name="M:NightlyCode.Database.Entities.EntityManager.Load``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
             <summary>
             get a load operation to use to load values of an entity from the database
@@ -1186,14 +1178,6 @@
             </summary>
             <typeparam name="T"></typeparam>
             <param name="entities"></param>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.IEntityManager.Load``1(NightlyCode.Database.Entities.Operations.Fields.IDBField[])">
-            <summary>
-            get a load operation to use to load values of an entity from the database
-            </summary>
-            <typeparam name="T">type of entity</typeparam>
-            <param name="fields">fields to load from the db</param>
-            <returns></returns>
         </member>
         <member name="M:NightlyCode.Database.Entities.IEntityManager.Delete``1">
             <summary>
@@ -1559,6 +1543,11 @@
             random value
             </summary>
         </member>
+        <member name="P:NightlyCode.Database.Entities.Operations.Fields.DBFunction.All">
+            <summary>
+            random value
+            </summary>
+        </member>
         <member name="P:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Count">
             <summary>
             count the rows of the result
@@ -1582,15 +1571,13 @@
             <param name="fieldexpression">expression targeting the field to measure</param>
             <returns></returns>
         </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Total(NightlyCode.Database.Entities.Operations.Fields.IDBField[])">
+        <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Total``1(``0[])">
             <summary>
             sums up a field in db returning a floating point result
             </summary>
-        </member>
-        <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Total``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
-            <summary>
-            sums up a field in db returning a floating point result
-            </summary>
+            <typeparam name="T">type of values</typeparam>
+            <param name="values">values of which to get total</param>
+            <returns>total value (sum in float)</returns>
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBFunction.Max``1(``0[])">
             <summary>
@@ -1652,6 +1639,11 @@
         <member name="F:NightlyCode.Database.Entities.Operations.Fields.DBFunctionType.LastInsertID">
             <summary>
             id of last inserted row
+            </summary>
+        </member>
+        <member name="F:NightlyCode.Database.Entities.Operations.Fields.DBFunctionType.All">
+            <summary>
+            all fields of type
             </summary>
         </member>
         <member name="T:NightlyCode.Database.Entities.Operations.Fields.DBParameter">

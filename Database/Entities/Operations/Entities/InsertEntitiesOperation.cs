@@ -28,7 +28,7 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
             dbclient = entitymanager.DBClient;
             entitydescriptor = descriptor(typeof(T));
             interestingcolumns = entitydescriptor.Columns.Where(c => !c.AutoIncrement).ToArray();
-            loadreturnid = entitymanager.Load<object>(DBFunction.LastInsertID).Prepare();
+            loadreturnid = entitymanager.Load<object>(o => DBFunction.LastInsertID).Prepare();
             insertoperation = PrepareOperation();
         }
 
