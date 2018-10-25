@@ -1,12 +1,14 @@
-﻿namespace NightlyCode.Database.Clients.Tables
+﻿using NightlyCode.Database.Extern;
+
+namespace NightlyCode.Database.Clients.Tables
 {
     /// <summary>
     /// row of a database table
     /// </summary>
     public class DataRow
     {
-        DataTableColumns columninformation;
-        object[] data;
+        readonly DataTableColumns columninformation;
+        readonly object[] data;
 
         /// <summary>
         /// creates a new <see cref="DataRow"/>
@@ -32,5 +34,26 @@
         /// <param name="column">name of column which to return</param>
         /// <returns>value of specified column</returns>
         public object this[string column]=>this[columninformation[column]];
+
+        /// <summary>
+        /// get typed value from row
+        /// </summary>
+        /// <typeparam name="T">type of value to get</typeparam>
+        /// <param name="column">name of column of which to read value</param>
+        /// <returns>converted value</returns>
+        public T GetValue<T>(string column) {
+            return Converter.Convert<T>(this[column], true);
+        }
+
+        /// <summary>
+        /// get typed value from row
+        /// </summary>
+        /// <typeparam name="T">type of value to get</typeparam>
+        /// <param name="index">index of column of which to read value</param>
+        /// <returns>converted value</returns>
+        public T GetValue<T>(int index)
+        {
+            return Converter.Convert<T>(this[index], true);
+        }
     }
 }

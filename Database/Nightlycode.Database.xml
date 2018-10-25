@@ -333,6 +333,22 @@
             <param name="column">name of column which to return</param>
             <returns>value of specified column</returns>
         </member>
+        <member name="M:NightlyCode.Database.Clients.Tables.DataRow.GetValue``1(System.String)">
+            <summary>
+            get typed value from row
+            </summary>
+            <typeparam name="T">type of value to get</typeparam>
+            <param name="column">name of column of which to read value</param>
+            <returns>converted value</returns>
+        </member>
+        <member name="M:NightlyCode.Database.Clients.Tables.DataRow.GetValue``1(System.Int32)">
+            <summary>
+            get typed value from row
+            </summary>
+            <typeparam name="T">type of value to get</typeparam>
+            <param name="index">index of column of which to read value</param>
+            <returns>converted value</returns>
+        </member>
         <member name="M:NightlyCode.Database.Clients.Tables.DataTable.#ctor(NightlyCode.Database.Clients.Tables.DataTableColumns,NightlyCode.Database.Clients.Tables.DataRow[])">
             <summary>
             creates a new datatable
