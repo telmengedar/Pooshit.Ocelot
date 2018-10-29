@@ -301,5 +301,21 @@ namespace NightlyCode.Database.Tests {
                 .Where((o, co) => co.ConstructId == guid)
                 .Execute();
         }
+
+        [Test]
+        public void JoinContainsWhereOfBase() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+
+            entitymanager.UpdateSchema<Option>();
+            entitymanager.UpdateSchema<ConstructOption>();
+
+            PreparedLoadValuesOperation operation = entitymanager.Load<Option>()
+                .Where(o => o.Name == "Test")
+                .Join<ConstructOption>((o, co) => co.OptionId == o.Id)
+                .Prepare();
+
+            Assert.That(operation.ToString().Contains("WHERE"));
+        }
     }
 }

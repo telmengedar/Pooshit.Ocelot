@@ -21,7 +21,7 @@ namespace NightlyCode.Database.Entities.Operations {
         readonly List<JoinOperation> joinoperations = new List<JoinOperation>();
  
         /// <summary>
-        /// ctor
+        /// creates a new <see cref="LoadEntitiesOperation{T}"/>
         /// </summary>
         /// <param name="origin"></param>
         internal LoadEntitiesOperation(LoadEntitiesOperation<T> origin)
@@ -29,6 +29,9 @@ namespace NightlyCode.Database.Entities.Operations {
             orderbycriterias = origin.orderbycriterias;
             groupbycriterias = origin.groupbycriterias;
             joinoperations = origin.joinoperations;
+            LimitStatement = origin.LimitStatement;
+            Criterias = origin.Criterias;
+            Havings = origin.Havings;
         }
 
         /// <summary>

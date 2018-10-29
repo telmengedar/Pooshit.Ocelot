@@ -349,12 +349,17 @@
             <param name="index">index of column of which to read value</param>
             <returns>converted value</returns>
         </member>
+        <member name="T:NightlyCode.Database.Clients.Tables.DataTable">
+            <summary>
+            table containing data fields
+            </summary>
+        </member>
         <member name="M:NightlyCode.Database.Clients.Tables.DataTable.#ctor(NightlyCode.Database.Clients.Tables.DataTableColumns,NightlyCode.Database.Clients.Tables.DataRow[])">
             <summary>
             creates a new datatable
             </summary>
-            <param name="columns"></param>
-            <param name="rows"></param>
+            <param name="columns">column descriptions</param>
+            <param name="rows">rows in table</param>
         </member>
         <member name="P:NightlyCode.Database.Clients.Tables.DataTable.Columns">
             <summary>
@@ -365,6 +370,13 @@
             <summary>
             rows containing data
             </summary>
+        </member>
+        <member name="M:NightlyCode.Database.Clients.Tables.DataTable.FromReader(System.Data.IDataReader)">
+            <summary>
+            creates a <see cref="T:NightlyCode.Database.Clients.Tables.DataTable"/> from query result
+            </summary>
+            <param name="reader"></param>
+            <returns></returns>
         </member>
         <member name="T:NightlyCode.Database.Clients.Tables.DataTableColumns">
             <summary>
@@ -2034,7 +2046,7 @@
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.LoadEntitiesOperation`1.#ctor(NightlyCode.Database.Entities.Operations.LoadEntitiesOperation{`0})">
             <summary>
-            ctor
+            creates a new <see cref="T:NightlyCode.Database.Entities.Operations.LoadEntitiesOperation`1"/>
             </summary>
             <param name="origin"></param>
         </member>
@@ -2178,8 +2190,8 @@
             <summary>
             operation used to load values of an entity based on a join operation
             </summary>
-            <typeparam name="TLoad"></typeparam>
-            <typeparam name="TJoin"></typeparam>
+            <typeparam name="TLoad">type of initially loaded entity</typeparam>
+            <typeparam name="TJoin">type of joined entity</typeparam>
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.LoadValuesOperation`2.Where(System.Linq.Expressions.Expression{System.Func{`0,`1,System.Boolean}})">
             <summary>
@@ -2224,13 +2236,13 @@
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.LoadValuesOperation`1.#ctor(NightlyCode.Database.Entities.Operations.LoadValuesOperation{`0})">
             <summary>
-            ctor
+            creates a new <see cref="T:NightlyCode.Database.Entities.Operations.LoadValuesOperation`1"/>
             </summary>
-            <param name="origin"></param>
+            <param name="origin">operation of which to copy existing specifications</param>
         </member>
         <member name="M:NightlyCode.Database.Entities.Operations.LoadValuesOperation`1.#ctor(NightlyCode.Database.Clients.IDBClient,NightlyCode.Database.Entities.Operations.Fields.IDBField[],System.Func{System.Type,NightlyCode.Database.Entities.Descriptors.EntityDescriptor})">
             <summary>
-            ctor
+            creates a new <see cref="T:NightlyCode.Database.Entities.Operations.LoadValuesOperation`1"/>
             </summary>
             <param name="dbclient"> </param>
             <param name="fields">fields to load</param>

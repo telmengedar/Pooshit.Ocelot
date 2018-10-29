@@ -4,31 +4,32 @@ using System.Linq;
 
 namespace NightlyCode.Database.Clients.Tables
 {
+
+    /// <summary>
+    /// table containing data fields
+    /// </summary>
     public class DataTable
     {
-        DataTableColumns columns;
-        DataRow[] rows;
-
         /// <summary>
         /// creates a new datatable
         /// </summary>
-        /// <param name="columns"></param>
-        /// <param name="rows"></param>
+        /// <param name="columns">column descriptions</param>
+        /// <param name="rows">rows in table</param>
         public DataTable(DataTableColumns columns, DataRow[] rows)
         {
-            this.columns = columns;
-            this.rows = rows;
+            Columns = columns;
+            Rows = rows;
         }
 
         /// <summary>
         /// column information
         /// </summary>
-        public DataTableColumns Columns => columns;
+        public DataTableColumns Columns { get; }
 
         /// <summary>
         /// rows containing data
         /// </summary>
-        public DataRow[] Rows => rows;
+        public DataRow[] Rows { get; }
 
         static IEnumerable<object> ReadRow(IDataReader reader)
         {
@@ -42,6 +43,11 @@ namespace NightlyCode.Database.Clients.Tables
                 yield return new DataRow(ReadRow(reader).ToArray(), columns);
         }
 
+        /// <summary>
+        /// creates a <see cref="DataTable"/> from query result
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
         public static DataTable FromReader(IDataReader reader)
         {
             DataTableColumns columns = new DataTableColumns();

@@ -10,7 +10,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
     /// <summary>
     /// <see cref="PreparedArrayLoadValuesOperation"/> containing array parameters
     /// </summary>
-    public class PreparedArrayLoadValuesOperation : PreparedLoadValuesOperation {
+    class PreparedArrayLoadValuesOperation : PreparedLoadValuesOperation {
 
         /// <summary>
         /// creates a new <see cref="PreparedArrayLoadValuesOperation"/>

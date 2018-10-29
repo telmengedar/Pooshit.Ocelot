@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
@@ -12,8 +11,8 @@ namespace NightlyCode.Database.Entities.Operations {
     /// <summary>
     /// operation used to load values of an entity based on a join operation
     /// </summary>
-    /// <typeparam name="TLoad"></typeparam>
-    /// <typeparam name="TJoin"></typeparam>
+    /// <typeparam name="TLoad">type of initially loaded entity</typeparam>
+    /// <typeparam name="TJoin">type of joined entity</typeparam>
     public class LoadValuesOperation<TLoad, TJoin> : LoadValuesOperation<TLoad> {
 
         internal LoadValuesOperation(LoadValuesOperation<TLoad> origin)
@@ -85,18 +84,21 @@ namespace NightlyCode.Database.Entities.Operations {
         readonly List<JoinOperation> joinoperations = new List<JoinOperation>();
 
         /// <summary>
-        /// ctor
+        /// creates a new <see cref="LoadValuesOperation{T}"/>
         /// </summary>
-        /// <param name="origin"></param>
+        /// <param name="origin">operation of which to copy existing specifications</param>
         internal LoadValuesOperation(LoadValuesOperation<T> origin)
             : this(origin.dbclient, origin.columns, origin.descriptorgetter) {
             orderbycriterias = origin.orderbycriterias;
             groupbycriterias = origin.groupbycriterias;
             joinoperations = origin.joinoperations;
+            LimitStatement = origin.LimitStatement;
+            Criterias = origin.Criterias;
+            Havings = origin.Havings;
         }
 
         /// <summary>
-        /// ctor
+        /// creates a new <see cref="LoadValuesOperation{T}"/>
         /// </summary>
         /// <param name="dbclient"> </param>
         /// <param name="fields">fields to load</param>
@@ -115,7 +117,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <summary>
         /// operations to join
         /// </summary>
-        protected List<JoinOperation> JoinOperations => joinoperations;
+        protected internal List<JoinOperation> JoinOperations => joinoperations;
 
         /// <summary>
         /// criterias to use when loading

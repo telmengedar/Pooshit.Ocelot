@@ -7,7 +7,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
     /// <summary>
     /// <see cref="PreparedOperation"/> containing array parameters
     /// </summary>
-    public class PreparedArrayOperation : PreparedOperation {
+    class PreparedArrayOperation : PreparedOperation {
 
         /// <summary>
         /// creates a new <see cref="PreparedArrayOperation"/>

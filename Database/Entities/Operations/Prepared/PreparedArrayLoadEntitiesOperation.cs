@@ -10,7 +10,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
     /// a <see cref="PreparedLoadEntitiesOperation{T}"/> using array parameters
     /// </summary>
     /// <typeparam name="T">type of entities to load</typeparam>
-    public class PreparedArrayLoadEntitiesOperation<T> : PreparedLoadEntitiesOperation<T> {
+    class PreparedArrayLoadEntitiesOperation<T> : PreparedLoadEntitiesOperation<T> {
 
         /// <summary>
         /// creates a new <see cref="PreparedArrayLoadEntitiesOperation{T}"/>
