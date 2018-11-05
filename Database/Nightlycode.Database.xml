@@ -1686,6 +1686,16 @@
             <param name="index">index of parameter</param>
             <returns>field to use in expressions</returns>
         </member>
+        <member name="P:NightlyCode.Database.Entities.Operations.Fields.DBParameter.Value">
+            <summary>
+            field used for lambda operations
+            </summary>
+        </member>
+        <member name="P:NightlyCode.Database.Entities.Operations.Fields.DBParameter.Bool">
+            <summary>
+            field to use in expressions when referencing a <see cref="T:System.Boolean"/> parameter
+            </summary>
+        </member>
         <member name="P:NightlyCode.Database.Entities.Operations.Fields.DBParameter.Guid">
             <summary>
             field to use in expressions when referencing a <see cref="P:NightlyCode.Database.Entities.Operations.Fields.DBParameter.Guid"/> parameter
@@ -1919,6 +1929,11 @@
             </summary>
             <param name="lhs">left hand side field</param>
             <param name="rhs">right hand side field</param>
+        </member>
+        <member name="P:NightlyCode.Database.Entities.Operations.Fields.DBField.Bool">
+            <summary>
+            field to use in expressions when referencing a <see cref="T:System.Boolean"/> parameter
+            </summary>
         </member>
         <member name="P:NightlyCode.Database.Entities.Operations.Fields.DBField.Value">
             <summary>

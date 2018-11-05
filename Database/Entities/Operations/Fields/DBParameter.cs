@@ -21,6 +21,16 @@ namespace NightlyCode.Database.Entities.Operations.Fields {
         #region expression fields
 
         /// <summary>
+        /// field used for lambda operations
+        /// </summary>
+        public new static object Value => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+
+        /// <summary>
+        /// field to use in expressions when referencing a <see cref="bool"/> parameter
+        /// </summary>
+        public new static bool Bool => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+
+        /// <summary>
         /// field to use in expressions when referencing a <see cref="Guid"/> parameter
         /// </summary>
         public new static Guid Guid => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
