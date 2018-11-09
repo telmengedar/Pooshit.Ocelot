@@ -143,27 +143,24 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             if(expression == null)
                 return null;
 
-            if(expression is ConstantExpression)
-                return ((ConstantExpression)expression).Value;
-            if(expression is MemberExpression) {
-                MemberExpression memberexpression = (MemberExpression)expression;
+            if(expression is ConstantExpression constantExpression)
+                return constantExpression.Value;
+            if(expression is MemberExpression memberexpression) {
                 object host = GetHost(memberexpression.Expression);
-                if(memberexpression.Member is PropertyInfo)
-                    return ((PropertyInfo)memberexpression.Member).GetValue(host, null);
-                if(memberexpression.Member is FieldInfo)
-                    return ((FieldInfo)memberexpression.Member).GetValue(host);
+                if(memberexpression.Member is PropertyInfo info)
+                    return info.GetValue(host, null);
+                if(memberexpression.Member is FieldInfo fieldInfo)
+                    return fieldInfo.GetValue(host);
                 throw new NotImplementedException();
             }
             if(expression is LambdaExpression)
                 return expression;
-            if(expression is UnaryExpression)
-                return ((UnaryExpression)expression).Operand;
-            if(expression is MethodCallExpression) {
-                MethodCallExpression methodcall = (MethodCallExpression)expression;
+            if(expression is UnaryExpression unaryExpression)
+                return unaryExpression.Operand;
+            if(expression is MethodCallExpression methodcall) {
                 return methodcall.Method.Invoke(GetHost(methodcall.Object), methodcall.Arguments.Select(GetHost).ToArray());
             }
-            if(expression is NewArrayExpression) {
-                NewArrayExpression newarray = (NewArrayExpression)expression;
+            if(expression is NewArrayExpression newarray) {
                 Array array = Array.CreateInstance(newarray.Type.GetElementType(), newarray.Expressions.Count);
                 int index = 0;
                 foreach(Expression ex in newarray.Expressions)
@@ -175,26 +172,25 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
 
         object GetValue(Expression node) {
 
-            if(node is MemberExpression) {
-                MemberExpression membernode = (MemberExpression)node;
-                if(node.NodeType == ExpressionType.MemberAccess) {
+            if(node is MemberExpression membernode) {
+                if(membernode.NodeType == ExpressionType.MemberAccess) {
                     object host = GetHost(membernode.Expression);
-                    if(membernode.Member is PropertyInfo) {
-                        if(host == null && !((PropertyInfo)membernode.Member).GetGetMethod().IsStatic)
+                    if(membernode.Member is PropertyInfo info) {
+                        if(host == null && !info.GetGetMethod().IsStatic)
                             throw new NullReferenceException("Null reference encountered");
-                        return ((PropertyInfo)membernode.Member).GetValue(host, null);                        
+                        return info.GetValue(host, null);                        
                     }
 
                     return ((FieldInfo)membernode.Member).GetValue(host);
                 }
 
-                if(node.NodeType == ExpressionType.Constant) {
+                if(membernode.NodeType == ExpressionType.Constant) {
                     object item = ((ConstantExpression)membernode.Expression).Value;
                     return ((PropertyInfo)membernode.Member).GetValue(item, null);
                 }
             }
-            else if(node is ConstantExpression) {
-                return ((ConstantExpression)node).Value;
+            else if(node is ConstantExpression expression) {
+                return expression.Value;
             }
 
             throw new InvalidOperationException("nodetype not supported");
@@ -244,15 +240,15 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             if(node.Member is PropertyInfo) {
                 AppendMemberValue(node.Expression ?? node, node.Member);
             }
-            else if(node.Member is FieldInfo) {
-                if(node.Expression is ConstantExpression) {
-                    object item = ((ConstantExpression)node.Expression).Value;
-                    object value = ((FieldInfo)node.Member).GetValue(item);
+            else if(node.Member is FieldInfo info) {
+                if(node.Expression is ConstantExpression expression) {
+                    object item = expression.Value;
+                    object value = info.GetValue(item);
                     AppendConstantValue(value);
                 }
                 else {
                     object host = GetHost(node.Expression);
-                    AppendConstantValue(((FieldInfo)node.Member).GetValue(host));
+                    AppendConstantValue(info.GetValue(host));
                 }
                 //else throw new NotSupportedException($"{$"Unsupported expression type '{node.Expression.NodeType}' with member '"}{node.Member.GetType()}'");
             }
@@ -276,8 +272,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             remainder = ExpressionType.Default;
 
             if (node.NodeType == ExpressionType.ArrayIndex) {
-                Array array = GetValue(node.Left) as Array;
-                if(array==null)
+                if(!(GetValue(node.Left) is Array array))
                     throw new NullReferenceException("ArrayIndex without array");
                 AppendConstantValue(array.GetValue((int)GetValue(node.Right)));
                 return node;
