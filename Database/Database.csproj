@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Nightlycode.Database</AssemblyName>
+    <AssemblyName>NightlyCode.Database</AssemblyName>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Simple type-safe ORM for access to database using fluent statements</Description>
     <Company>NightlyCode</Company>
