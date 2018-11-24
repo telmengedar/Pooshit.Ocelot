@@ -1737,6 +1737,18 @@
             </summary>
             <typeparam name="T"></typeparam>
         </member>
+        <member name="M:NightlyCode.Database.Entities.Operations.Fields.DBParameter`1.Index(System.Int32)">
+            <summary>
+            creates a reference to a parameter
+            </summary>
+            <param name="index">index of parameter</param>
+            <returns>field to use in expressions</returns>
+        </member>
+        <member name="P:NightlyCode.Database.Entities.Operations.Fields.DBParameter`1.Data">
+            <summary>
+            field to use in expressions when referencing a <see cref="!:T"/> parameter
+            </summary>
+        </member>
         <member name="P:NightlyCode.Database.Entities.Operations.Fields.DBParameter`1.Value">
             <summary>
             field to use in expressions when referencing a <see cref="!:T"/> parameter

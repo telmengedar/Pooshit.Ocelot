@@ -238,6 +238,11 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
         protected override Expression VisitMember(MemberExpression node) {
             AppendValueRemainder();
             if(node.Member is PropertyInfo) {
+                Expression host = node.Expression ?? node;
+                if (host.NodeType == ExpressionType.Call) {
+                    VisitMethodCall((MethodCallExpression) host);
+                    return node;
+                }
                 AppendMemberValue(node.Expression ?? node, node.Member);
             }
             else if(node.Member is FieldInfo info) {
@@ -360,7 +365,20 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 return node;
             }
 
-            if(node.Method.DeclaringType == typeof(DBFunction)) {
+            if ((node.Method.DeclaringType?.IsGenericType??false) && node.Method.DeclaringType.GetGenericTypeDefinition() == typeof(DBParameter<>)) {
+                switch (node.Method.Name) {
+                    case "Index":
+                    int index = (int)GetHost(node.Arguments.First());
+                    preparator.AppendParameterIndex(index);
+                    break;
+                default:
+                    throw new NotImplementedException();
+                }
+
+                return node;
+            }
+
+            if (node.Method.DeclaringType == typeof(DBFunction)) {
                 
                 switch(node.Method.Name) {
                     case "Min":

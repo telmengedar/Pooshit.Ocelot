@@ -3,6 +3,7 @@ using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
 using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Tests.Data;
 using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;
@@ -43,6 +44,14 @@ namespace NightlyCode.Database.Tests.Fields {
             Assert.AreEqual(2, result.Length);
             for (int i = 0; i < 2; ++i)
                 Assert.AreEqual(i + 1, result[i].Integer);
+        }
+
+        [Test]
+        public void CustomParameterIndexValue() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+            entitymanager.UpdateSchema<ValueModel>();
+            PreparedLoadEntitiesOperation<ValueModel> operation = entitymanager.LoadEntities<ValueModel>().Where(v => v.Integer == DBParameter<int>.Index(1).Data).Prepare();
         }
 
         [Test]

@@ -76,6 +76,21 @@ namespace NightlyCode.Database.Entities.Operations.Fields {
         internal DBParameter() { }
 
         /// <summary>
+        /// creates a reference to a parameter
+        /// </summary>
+        /// <param name="index">index of parameter</param>
+        /// <returns>field to use in expressions</returns>
+        public new static DBParameter<T> Index(int index)
+        {
+            throw new NotImplementedException("Method has no implementation since it is only used for typed expressions");
+        }
+
+        /// <summary>
+        /// field to use in expressions when referencing a <see cref="T"/> parameter
+        /// </summary>
+        public T Data => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+
+        /// <summary>
         /// field to use in expressions when referencing a <see cref="T"/> parameter
         /// </summary>
         public new static T Value => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");

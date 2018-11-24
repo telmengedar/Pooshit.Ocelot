@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -13,9 +13,9 @@
     <PackageLicenseUrl>http://unlicense.org/</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/telmengedar/NightlyCode.DB</PackageProjectUrl>
     <RepositoryUrl>https://github.com/telmengedar/NightlyCode.DB.git</RepositoryUrl>
-    <AssemblyVersion>0.7.15.0</AssemblyVersion>
-    <FileVersion>0.7.15.0</FileVersion>
-    <Version>0.7.15</Version>
+    <AssemblyVersion>0.7.19.0</AssemblyVersion>
+    <FileVersion>0.7.19.0</FileVersion>
+    <Version>0.7.19</Version>
     <RootNamespace>NightlyCode.Database</RootNamespace>
   </PropertyGroup>
 
@@ -32,5 +32,9 @@
   <ItemGroup>
     <None Remove="Nightlycode.Database.xml" />
   </ItemGroup>
+
+  <Target Name="PostPackNugetDeploy" AfterTargets="Pack" Condition="'$(Configuration)' == 'Release'">
+    <Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="$(DevDir)\NuGet\" />
+  </Target>
 
 </Project>
