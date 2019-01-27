@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <AssemblyName>NightlyCode.Database</AssemblyName>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Simple type-safe ORM for access to database using fluent statements</Description>
@@ -13,9 +13,9 @@
     <PackageLicenseUrl>http://unlicense.org/</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/telmengedar/NightlyCode.DB</PackageProjectUrl>
     <RepositoryUrl>https://github.com/telmengedar/NightlyCode.DB.git</RepositoryUrl>
-    <AssemblyVersion>0.7.19.0</AssemblyVersion>
-    <FileVersion>0.7.19.0</FileVersion>
-    <Version>0.7.19</Version>
+    <AssemblyVersion>0.7.20.0</AssemblyVersion>
+    <FileVersion>0.7.20.0</FileVersion>
+    <Version>0.7.20</Version>
     <RootNamespace>NightlyCode.Database</RootNamespace>
   </PropertyGroup>
 
@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <Target Name="PostPackNugetDeploy" AfterTargets="Pack" Condition="'$(Configuration)' == 'Release'">
-    <Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="$(DevDir)\NuGet\" />
+    <Copy SourceFiles="$(OutputPath)$(PackageId).$(PackageVersion).nupkg" DestinationFolder="$(DevDir)\NuGet\" />
   </Target>
 
 </Project>

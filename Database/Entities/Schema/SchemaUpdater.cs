@@ -123,7 +123,7 @@ namespace NightlyCode.Database.Entities.Schema {
                 client.NonQuery(transaction, $"ALTER TABLE {olddescriptor.Name} RENAME TO {olddescriptor.Name}{appendix}");
 
                 SchemaColumnDescriptor[] remainingcolumns = olddescriptor.Columns.Where(c => newdescriptor.Columns.Any(c1 => c1.Name == c.Name)).ToArray();
-                EntityColumnDescriptor[] newcolumns = newdescriptor.Columns.Where(c => c.NotNull && c.DefaultValue == null && olddescriptor.Columns.All(o => o.Name != c.Name)).ToArray();
+                EntityColumnDescriptor[] newcolumns = newdescriptor.Columns.Where(c => c.NotNull && !c.AutoIncrement && c.DefaultValue == null && olddescriptor.Columns.All(o => o.Name != c.Name)).ToArray();
 #if UNITY
             string columnlist = string.Join(", ", remainingcolumns.Select(c => c.Name).ToArray());
 #else

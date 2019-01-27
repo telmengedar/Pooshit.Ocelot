@@ -1,0 +1,1 @@
+﻿CREATE TABLE video ('list' TEXT, 'videoid' TEXT, 'startseconds' FLOAT NOT NULL, 'endseconds' FLOAT NOT NULL, 'volume' INTEGER NOT NULL, 'id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)

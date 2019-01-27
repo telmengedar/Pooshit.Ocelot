@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using NightlyCode.Database.Entities.Schema;
 using NightlyCode.Database.Info;
 using NUnit.Framework;
@@ -26,6 +28,21 @@ namespace NightlyCode.Database.Tests.Sqlite {
         public void TestTableAnalyse([ValueSource(nameof(Definitions))]string sql) {
             TableDescriptor descriptor = new TableDescriptor("test");
             info.AnalyseTableSql(descriptor, sql);
+        }
+
+        [Test]
+        public void AnalyzeGeneratedPrimaryKey() {
+            string sql;
+            using (StreamReader reader = new StreamReader(GetType().Assembly.GetManifestResourceStream("NightlyCode.Database.Tests.Resources.GeneratedPrimaryKey.txt")))
+                sql = reader.ReadToEnd();
+
+            TableDescriptor descriptor = new TableDescriptor("video");
+            info.AnalyseTableSql(descriptor, sql);
+
+            SchemaColumnDescriptor column = descriptor.Columns.FirstOrDefault(c => c.Name == "id");
+            Assert.NotNull(descriptor);
+            Assert.IsTrue(column.PrimaryKey);
+            Assert.IsTrue(column.AutoIncrement);
         }
     }
 }
