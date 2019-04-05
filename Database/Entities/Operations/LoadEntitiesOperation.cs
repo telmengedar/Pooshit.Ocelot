@@ -88,10 +88,11 @@ namespace NightlyCode.Database.Entities.Operations {
 
             if(joinoperations.Count>0) {
                 foreach(JoinOperation operation in joinoperations) {
-                    preparator.AppendText("INNER JOIN")
-                        .AppendText(descriptorgetter(operation.JoinType).TableName)
-                        .AppendText("ON");
-                    CriteriaVisitor.GetCriteriaText(operation.Criterias, descriptorgetter, dbclient.DBInfo, preparator);
+                    preparator.AppendText("INNER JOIN").AppendText(descriptorgetter(operation.JoinType).TableName);
+                    if (!string.IsNullOrEmpty(operation.Alias))
+                        preparator.AppendText("AS").AppendText(operation.Alias);
+                    preparator.AppendText("ON");
+                    CriteriaVisitor.GetCriteriaText(operation.Criterias, descriptorgetter, dbclient.DBInfo, preparator, new Tuple<Type, string>(operation.JoinType, operation.Alias));
                 }
             }
 
@@ -223,11 +224,11 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <summary>
         /// joins another type to the operation
         /// </summary>
-        /// <typeparam name="TJoin"></typeparam>
-        /// <param name="criteria"></param>
+        /// <typeparam name="TJoin">entity to join</typeparam>
+        /// <param name="criteria">predicate for criteria</param>
         /// <returns></returns>
         public LoadEntitiesOperation<T, TJoin> Join<TJoin>(Expression<Func<T, TJoin, bool>> criteria) {
-            joinoperations.Add(new JoinOperation(typeof(TJoin), criteria));
+            joinoperations.Add(new JoinOperation(typeof(TJoin), criteria, $"j{joinoperations.Count}"));
             return new LoadEntitiesOperation<T, TJoin>(this);
         }
     }

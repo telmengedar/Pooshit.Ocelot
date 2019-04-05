@@ -64,6 +64,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\LoadTests.cs" />
     <Compile Include="Fields\AggregateTests.cs" />
     <Compile Include="Entities\ConstraintTests.cs" />
     <Compile Include="Entities\DescriptorAccessTests.cs" />
@@ -71,8 +72,10 @@
     <Compile Include="Entities\EntityManagerTest.cs" />
     <Compile Include="Fields\FieldTests.cs" />
     <Compile Include="LoadValuesOperationTests.cs" />
+    <Compile Include="Models\ActiveData.cs" />
     <Compile Include="Models\ConstructOption.cs" />
     <Compile Include="Models\GuidEntity.cs" />
+    <Compile Include="Models\ObjectIndex.cs" />
     <Compile Include="Models\Option.cs" />
     <EmbeddedResource Include="Resources\GeneratedPrimaryKey.txt" />
     <Compile Include="SchemaUpdateTests.cs" />

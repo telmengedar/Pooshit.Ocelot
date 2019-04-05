@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -14,28 +15,41 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
     /// <summary>
     /// visits an expression tree to convert it to sql
     /// </summary>
-    public class CriteriaVisitor : ExpressionVisitor
-    { 
+    public class CriteriaVisitor : ExpressionVisitor {
+        Dictionary<Type, string> aliases=new Dictionary<Type, string>();
         readonly Func<Type, EntityDescriptor> descriptorgetter;
         readonly OperationPreparator preparator;
         readonly IDBInfo dbinfo;
 
         ExpressionType remainder = ExpressionType.Default;
 
-        CriteriaVisitor(Func<Type, EntityDescriptor> descriptorgetter, OperationPreparator preparator, IDBInfo dbinfo) {
+        CriteriaVisitor(Func<Type, EntityDescriptor> descriptorgetter, OperationPreparator preparator, IDBInfo dbinfo, params Tuple<Type, string>[] aliases) {
             this.descriptorgetter = descriptorgetter;
             this.dbinfo = dbinfo;
             this.preparator = preparator;
+            foreach (Tuple<Type, string> alias in aliases)
+                this.aliases[alias.Item1] = alias.Item2;
         }
 
-        public static void GetCriteriaText(Expression expression, Func<Type, EntityDescriptor> descriptorgetter, IDBInfo dbinfo, OperationPreparator preparator) {
-            CriteriaVisitor visitor = new CriteriaVisitor(descriptorgetter, preparator, dbinfo);
+        /// <summary>
+        /// appends the criteria text of the predicate to the operation
+        /// </summary>
+        /// <param name="expression">expression containing predicate</param>
+        /// <param name="descriptorgetter">method used to get entity models</param>
+        /// <param name="dbinfo">db info</param>
+        /// <param name="preparator">operation to modify</param>
+        /// <param name="aliases">alias to use for properties</param>
+        public static void GetCriteriaText(Expression expression, Func<Type, EntityDescriptor> descriptorgetter, IDBInfo dbinfo, OperationPreparator preparator, params Tuple<Type, string>[] aliases) {
+            CriteriaVisitor visitor = new CriteriaVisitor(descriptorgetter, preparator, dbinfo, aliases);
             visitor.Visit(expression);
         }
 
-        string GetColumnName(PropertyInfo info) {
-            EntityDescriptor descriptor = descriptorgetter(info.ReflectedType);
+        string GetColumnName(Type hosttype, PropertyInfo info) {
+            EntityDescriptor descriptor = descriptorgetter(hosttype);
             EntityColumnDescriptor column = descriptor.GetColumnByProperty(info.Name);
+
+            if(aliases.TryGetValue(hosttype, out string alias))
+                return string.Format("{2}.{0}{1}{0}", dbinfo.ColumnIndicator, column.Name, alias);
             return string.Format("{0}{1}{0}", dbinfo.ColumnIndicator, column.Name);
         }
 
@@ -206,7 +220,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 AppendConstantValue(value);
             }
             else if(expression.NodeType == ExpressionType.Parameter) {
-                preparator.AppendText(GetColumnName((PropertyInfo)member));
+                preparator.AppendText(GetColumnName(expression.Type, (PropertyInfo)member));
             }
             else if(expression.NodeType == ExpressionType.MemberAccess) {
                 // references a parameter to be specified later when executing the operation
