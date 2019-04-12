@@ -26,10 +26,9 @@ namespace NightlyCode.Database.Clients.Tables
         /// </summary>
         /// <param name="column"></param>
         /// <returns></returns>
-        public int GetIndex(string column)
-        {
+        public int GetIndex(string column) {
             if (!indices.TryGetValue(column, out int index))
-                index = -1;
+                throw new KeyNotFoundException($"'{column}' not found in column information. Available columns:\n{string.Join("\n", indices.Keys)}");
             return index;
         }
 

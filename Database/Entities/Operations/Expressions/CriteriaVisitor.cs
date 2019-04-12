@@ -16,21 +16,32 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
     /// visits an expression tree to convert it to sql
     /// </summary>
     public class CriteriaVisitor : ExpressionVisitor {
-        Dictionary<Type, string> aliases=new Dictionary<Type, string>();
+        readonly Dictionary<string, string> aliases=new Dictionary<string, string>();
         readonly Func<Type, EntityDescriptor> descriptorgetter;
         readonly OperationPreparator preparator;
         readonly IDBInfo dbinfo;
 
         ExpressionType remainder = ExpressionType.Default;
 
-        CriteriaVisitor(Func<Type, EntityDescriptor> descriptorgetter, OperationPreparator preparator, IDBInfo dbinfo, params Tuple<Type, string>[] aliases) {
+        CriteriaVisitor(Func<Type, EntityDescriptor> descriptorgetter, OperationPreparator preparator, IDBInfo dbinfo, params Tuple<string, string>[] aliases) {
             this.descriptorgetter = descriptorgetter;
             this.dbinfo = dbinfo;
             this.preparator = preparator;
-            foreach (Tuple<Type, string> alias in aliases)
+            foreach (Tuple<string, string> alias in aliases)
                 this.aliases[alias.Item1] = alias.Item2;
         }
 
+        static IEnumerable<Tuple<string, string>> GetParameterAliases(LambdaExpression expression, params string[] aliases) {
+            if (expression == null || aliases.Length==0)
+                yield break;
+
+            int index = 0;
+            foreach (ParameterExpression parameter in expression.Parameters) {
+                yield return new Tuple<string, string>(parameter.Name, aliases[index++]);
+                if (index >= aliases.Length)
+                    yield break;
+            }
+        }
         /// <summary>
         /// appends the criteria text of the predicate to the operation
         /// </summary>
@@ -39,16 +50,17 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
         /// <param name="dbinfo">db info</param>
         /// <param name="preparator">operation to modify</param>
         /// <param name="aliases">alias to use for properties</param>
-        public static void GetCriteriaText(Expression expression, Func<Type, EntityDescriptor> descriptorgetter, IDBInfo dbinfo, OperationPreparator preparator, params Tuple<Type, string>[] aliases) {
-            CriteriaVisitor visitor = new CriteriaVisitor(descriptorgetter, preparator, dbinfo, aliases);
+        public static void GetCriteriaText(Expression expression, Func<Type, EntityDescriptor> descriptorgetter, IDBInfo dbinfo, OperationPreparator preparator, params string[] aliases) {
+
+            CriteriaVisitor visitor = new CriteriaVisitor(descriptorgetter, preparator, dbinfo, GetParameterAliases(expression as LambdaExpression, aliases).ToArray());
             visitor.Visit(expression);
         }
 
-        string GetColumnName(Type hosttype, PropertyInfo info) {
-            EntityDescriptor descriptor = descriptorgetter(hosttype);
+        string GetColumnName(ParameterExpression parameter, PropertyInfo info) {
+            EntityDescriptor descriptor = descriptorgetter(parameter.Type);
             EntityColumnDescriptor column = descriptor.GetColumnByProperty(info.Name);
 
-            if(aliases.TryGetValue(hosttype, out string alias))
+            if(aliases.TryGetValue(parameter.Name, out string alias))
                 return string.Format("{2}.{0}{1}{0}", dbinfo.ColumnIndicator, column.Name, alias);
             return string.Format("{0}{1}{0}", dbinfo.ColumnIndicator, column.Name);
         }
@@ -220,7 +232,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 AppendConstantValue(value);
             }
             else if(expression.NodeType == ExpressionType.Parameter) {
-                preparator.AppendText(GetColumnName(expression.Type, (PropertyInfo)member));
+                preparator.AppendText(GetColumnName((ParameterExpression)expression, (PropertyInfo)member));
             }
             else if(expression.NodeType == ExpressionType.MemberAccess) {
                 // references a parameter to be specified later when executing the operation

@@ -86,9 +86,9 @@ namespace NightlyCode.Database.Clients
         {
             lock (connectionlock)
             {
-                using (IDbCommand command = PrepareCommand(query, parameters))
-                {
-                    return CreateTable(command.ExecuteReader());
+                using (IDbCommand command = PrepareCommand(query, parameters)) {
+                    using (IDataReader reader = command.ExecuteReader())
+                        return CreateTable(reader);
                 }
             }
         }
@@ -225,7 +225,8 @@ namespace NightlyCode.Database.Clients
             using (IDbCommand command = PrepareCommand(query, parameters))
             {
                 command.Transaction = transaction.DbTransaction;
-                return CreateTable(command.ExecuteReader());
+                using (IDataReader reader = command.ExecuteReader())
+                    return CreateTable(reader);
             }
         }
 

@@ -49,6 +49,11 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
             return CreateObjects(data);
         }
 
+        /// <summary>
+        /// creates entities from table data
+        /// </summary>
+        /// <param name="dt">result table from which to create entities</param>
+        /// <returns>enumeration of created entities</returns>
         protected IEnumerable<T> CreateObjects(Clients.Tables.DataTable dt) {
             foreach(Clients.Tables.DataRow row in dt.Rows) {
                 T obj = (T)Activator.CreateInstance(typeof(T), true);

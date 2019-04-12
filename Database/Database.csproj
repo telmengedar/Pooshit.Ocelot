@@ -10,13 +10,14 @@
     <PackageTags>Database, ORM, SQlite, Postgre, MySQL, fluent</PackageTags>
     <Product>NightlyCode.Database</Product>
     <PackageId>NightlyCode.Database</PackageId>
-    <PackageLicenseUrl>http://unlicense.org/</PackageLicenseUrl>
+    <PackageLicenseUrl></PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/telmengedar/NightlyCode.DB</PackageProjectUrl>
     <RepositoryUrl>https://github.com/telmengedar/NightlyCode.DB.git</RepositoryUrl>
-    <AssemblyVersion>0.8.1.0</AssemblyVersion>
-    <FileVersion>0.8.1.0</FileVersion>
-    <Version>0.8.1-preview</Version>
+    <AssemblyVersion>0.8.8.0</AssemblyVersion>
+    <FileVersion>0.8.8.0</FileVersion>
+    <Version>0.8.8-preview</Version>
     <RootNamespace>NightlyCode.Database</RootNamespace>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -31,6 +32,10 @@
 
   <ItemGroup>
     <None Remove="Nightlycode.Database.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="LICENSE" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <Target Name="PostPackNugetDeploy" AfterTargets="Pack" Condition="'$(Configuration)' == 'Release'">

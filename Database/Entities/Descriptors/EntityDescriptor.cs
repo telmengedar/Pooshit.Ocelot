@@ -111,7 +111,9 @@ namespace NightlyCode.Database.Entities.Descriptors
         /// <param name="column"></param>
         /// <returns></returns>
         public EntityColumnDescriptor GetColumn(string column) {
-            return columndescriptors[column];
+            if (!columndescriptors.TryGetValue(column, out EntityColumnDescriptor descriptor))
+                throw new KeyNotFoundException($"Column '{column}' not found in entity descriptor. Known columns:\n{string.Join("\n", columndescriptors.Keys)}");
+            return descriptor;
         }
 
         /// <summary>

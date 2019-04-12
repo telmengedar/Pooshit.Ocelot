@@ -9,11 +9,10 @@ using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
 
 namespace NightlyCode.Database.Entities.Operations {
-
     /// <summary>
     /// operation used to load entities
     /// </summary>
-    public class LoadEntitiesOperation<T> {
+    public class LoadEntitiesOperation<T> : ILoadEntitiesOperation {
         readonly IDBClient dbclient;
         readonly Func<Type, EntityDescriptor> descriptorgetter;
         OrderByCriteria[] orderbycriterias;
@@ -67,38 +66,75 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <summary>
         /// loads entities using the operation
         /// </summary>
-        /// <returns></returns>
+        /// <returns>all loaded entities</returns>
         public IEnumerable<T> Execute() {
-            return Prepare().Execute();
+            return Prepare<T>().Execute();
+        }
+
+        /// <summary>
+        /// loads entities from joined data
+        /// </summary>
+        /// <returns>all loaded entities</returns>
+        public IEnumerable<TEntity> Execute<TEntity>()
+        {
+            return Prepare<TEntity>().Execute();
         }
 
         /// <summary>
         /// prepares the operation for execution
         /// </summary>
-        /// <returns></returns>
+        /// <returns>prepared operation which can get reused</returns>
         public PreparedLoadEntitiesOperation<T> Prepare() {
+            return Prepare<T>();
+        }
+
+        /// <summary>
+        /// prepares the operation for execution
+        /// </summary>
+        /// <returns>prepared operation which can get reused</returns>
+        public PreparedLoadEntitiesOperation<TEntity> Prepare<TEntity>() {
             OperationPreparator preparator = new OperationPreparator();
             preparator.AppendText("SELECT");
 
             string columnindicator = dbclient.DBInfo.ColumnIndicator;
 
+            EntityDescriptor modeldescriptor = descriptorgetter(typeof(TEntity));
+            if(typeof(TEntity)==typeof(T))
+                // most simple case, entity is created from base table
+                preparator.AppendText(string.Join(", ", modeldescriptor.Columns.Select(c => $"{columnindicator}{c.Name}{columnindicator}")));
+            else {
+                // entity is created from some joined table data
+                JoinOperation entityjoin = JoinOperations.FirstOrDefault(o => o.JoinType == typeof(TEntity));
+                if(entityjoin==null)
+                    throw new InvalidOperationException("Unable to determine where to select entity values from (not selecting from base table and no join matches entity type)");
+                preparator.AppendText(string.Join(", ", modeldescriptor.Columns.Select(c => $"{entityjoin.Alias}.{columnindicator}{c.Name}{columnindicator}")));
+            }
+
             EntityDescriptor descriptor = descriptorgetter(typeof(T));
-            preparator.AppendText(string.Join(", ", descriptor.Columns.Select(c => $"{columnindicator}{c.Name}{columnindicator}")));
             preparator.AppendText("FROM").AppendText(descriptor.TableName);
 
+            string tablealias = null;
             if(joinoperations.Count>0) {
+                preparator.AppendText("AS t");
+                tablealias = "t";
                 foreach(JoinOperation operation in joinoperations) {
                     preparator.AppendText("INNER JOIN").AppendText(descriptorgetter(operation.JoinType).TableName);
                     if (!string.IsNullOrEmpty(operation.Alias))
                         preparator.AppendText("AS").AppendText(operation.Alias);
                     preparator.AppendText("ON");
-                    CriteriaVisitor.GetCriteriaText(operation.Criterias, descriptorgetter, dbclient.DBInfo, preparator, new Tuple<Type, string>(operation.JoinType, operation.Alias));
+                    CriteriaVisitor.GetCriteriaText(operation.Criterias, descriptorgetter, dbclient.DBInfo, preparator, tablealias, operation.Alias);
+                    if (operation.AdditionalCriterias != null) {
+                        preparator.AppendText("AND");
+                        CriteriaVisitor.GetCriteriaText(operation.AdditionalCriterias, descriptorgetter, dbclient.DBInfo, preparator, operation.Alias);
+                    }
                 }
             }
 
             if(Criterias != null) {
                 preparator.AppendText("WHERE");
-                CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator);
+                if(tablealias!=null)
+                    CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator, tablealias);
+                else CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator);
             }
 
             bool flag = true;
@@ -131,14 +167,16 @@ namespace NightlyCode.Database.Entities.Operations {
 
             if (Havings != null) {
                 preparator.AppendText("HAVING");
-                CriteriaVisitor.GetCriteriaText(Havings, descriptorgetter, dbclient.DBInfo, preparator);
+                if(tablealias!=null)
+                    CriteriaVisitor.GetCriteriaText(Havings, descriptorgetter, dbclient.DBInfo, preparator, tablealias);
+                else CriteriaVisitor.GetCriteriaText(Havings, descriptorgetter, dbclient.DBInfo, preparator);
             }
 
             if (!ReferenceEquals(LimitStatement, null)) {
                 dbclient.DBInfo.Append(LimitStatement, preparator, descriptorgetter);
             }
 
-            return preparator.GetLoadEntitiesOperation<T>(dbclient, descriptor);
+            return preparator.GetLoadEntitiesOperation<TEntity>(dbclient, modeldescriptor);
         }
 
         /// <summary>
@@ -148,6 +186,17 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <returns></returns>
         public LoadEntitiesOperation<T> Where(Expression<Func<T, bool>> criterias) {
             Criterias = criterias;
+            return this;
+        }
+
+        /// <inheritdoc />
+        ILoadEntitiesOperation ILoadEntitiesOperation.Where(Expression criterias) {
+            return Where(criterias);
+        }
+
+        /// <inheritdoc />
+        ILoadEntitiesOperation ILoadEntitiesOperation.Join<TJoin>(Expression criterias, Expression additionalcriterias=null) {
+            joinoperations.Add(new JoinOperation(typeof(TJoin), criterias, additionalcriterias, $"j{joinoperations.Count}"));
             return this;
         }
 
@@ -226,9 +275,10 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <typeparam name="TJoin">entity to join</typeparam>
         /// <param name="criteria">predicate for criteria</param>
+        /// <param name="additionalcriterias">additional criterias for join</param>
         /// <returns></returns>
-        public LoadEntitiesOperation<T, TJoin> Join<TJoin>(Expression<Func<T, TJoin, bool>> criteria) {
-            joinoperations.Add(new JoinOperation(typeof(TJoin), criteria, $"j{joinoperations.Count}"));
+        public LoadEntitiesOperation<T, TJoin> Join<TJoin>(Expression<Func<T, TJoin, bool>> criteria, Expression<Func<TJoin, bool>> additionalcriterias=null) {
+            ((ILoadEntitiesOperation) this).Join<TJoin>(criteria, additionalcriterias);
             return new LoadEntitiesOperation<T, TJoin>(this);
         }
     }
