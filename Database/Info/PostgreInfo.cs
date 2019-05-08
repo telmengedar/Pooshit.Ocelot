@@ -199,11 +199,7 @@ namespace NightlyCode.Database.Info {
         /// </summary>
         public override string CreateSuffix => null;
 
-        /// <summary>
-        /// text used to create a column
-        /// </summary>
-        /// <param name="column"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column) {
             operation.AppendText($"\"{column.Name}\" ");
             if (column.AutoIncrement)
@@ -218,6 +214,39 @@ namespace NightlyCode.Database.Info {
                 if (DBConverterCollection.ContainsConverter(column.Property.PropertyType))
                     operation.AppendText(GetDBType(DBConverterCollection.GetDBType(column.Property.PropertyType)));
                 else operation.AppendText(GetDBType(column.Property.PropertyType));
+            }
+
+            if (column.PrimaryKey)
+                operation.AppendText("PRIMARY KEY");
+            if (column.IsUnique)
+                operation.AppendText("UNIQUE");
+            if (column.NotNull)
+                operation.AppendText("NOT NULL");
+
+            if (column.DefaultValue != null)
+            {
+                operation.AppendText("DEFAULT");
+                operation.AppendParameter(column.DefaultValue);
+            }
+
+        }
+
+        /// <inheritdoc />
+        public override void CreateColumn(OperationPreparator operation, SchemaColumnDescriptor column)
+        {
+            operation.AppendText($"\"{column.Name}\" ");
+            
+            if (column.AutoIncrement)
+            {
+                if (column.Type == "int4")
+                    operation.AppendText("serial4");
+                else if (column.Type == "int8")
+                    operation.AppendText("serial8");
+                else throw new InvalidOperationException("Autoincrement with postgre only allowed with integer types");
+            }
+            else
+            {
+                operation.AppendText(column.Type);
             }
 
             if (column.PrimaryKey)

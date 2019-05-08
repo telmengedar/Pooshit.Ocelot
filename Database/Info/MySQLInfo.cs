@@ -3,7 +3,6 @@ using System.Data;
 using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
-using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
 
@@ -90,6 +89,11 @@ namespace NightlyCode.Database.Info
         public override string CreateSuffix => "ENGINE=InnoDB";
 
         public override void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column) {
+            throw new NotImplementedException();
+        }
+
+        public override void CreateColumn(OperationPreparator operation, SchemaColumnDescriptor column)
+        {
             throw new NotImplementedException();
         }
 

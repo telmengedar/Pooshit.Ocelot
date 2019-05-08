@@ -9,11 +9,11 @@ using NUnit.Framework;
 
 namespace NightlyCode.Database.Tests.Entities {
 
-    [TestFixture]
+    [TestFixture, Parallelizable]
     public class DescriptorAccessTests {
 
 
-        [Test]
+        [Test, Parallelizable]
         public void SetAutoIncrementingPrimaryKey() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -33,7 +33,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.That(schema.Columns.First(c => c.Name == nameof(ValueModel.Integer).ToLower()).AutoIncrement);
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void SetColumnNullable()
         {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
@@ -52,7 +52,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.AreEqual(false, schema.Columns.First(c => c.Name == nameof(ValueModel.Integer).ToLower()).NotNull);
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void SetColumnNotNullable()
         {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
@@ -71,7 +71,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.That(schema.Columns.First(c => c.Name == nameof(ValueModel.String).ToLower()).NotNull);
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void SetColumnUnique()
         {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
@@ -90,7 +90,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.That(schema.Columns.First(c => c.Name == nameof(ValueModel.String).ToLower()).IsUnique);
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void SetMultiColumnUnique()
         {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
@@ -111,7 +111,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.That(schema.Uniques[0].Columns.Any(c=>c == nameof(ValueModel.Single).ToLower()));
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void SetMultipleMultiColumnUnique()
         {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
@@ -140,7 +140,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.That(schema.Uniques[1].Columns.Any(c => c == nameof(ValueModel.Integer).ToLower()));
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void SetColumnIndex()
         {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
@@ -167,7 +167,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.That(index.Columns.Any(c => c == nameof(ValueModel.Integer).ToLower()));
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void SetColumnDefault() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -184,7 +184,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.AreEqual("7", schema.Columns.Single(c => c.Name == nameof(ValueModel.Integer).ToLower()).DefaultValue);
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void SetColumnName() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -200,7 +200,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.That(schema.Columns.Any(c => c.Name == "winteger_green"));
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void SetTableName()
         {
             IDBClient dbclient = TestData.CreateDatabaseAccess();

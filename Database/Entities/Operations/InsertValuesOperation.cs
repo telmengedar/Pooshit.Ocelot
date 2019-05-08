@@ -66,8 +66,8 @@ namespace NightlyCode.Database.Entities.Operations {
             PreparedOperation operation = Prepare();
 
             if(transaction == null)
-                return Prepare().Execute();
-            return Prepare().Execute(transaction);
+                return operation.Execute();
+            return operation.Execute(transaction);
         }
 
         public PreparedOperation Prepare() {

@@ -151,13 +151,11 @@ namespace NightlyCode.Database.Info {
         /// </summary>
         public abstract string CreateSuffix { get; }
 
-        /// <summary>
-        /// text used to create a column
-        /// </summary>
-        /// <param name="operation"></param>
-        /// <param name="column"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public abstract void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column);
+
+        /// <inheritdoc />
+        public abstract void CreateColumn(OperationPreparator operation, SchemaColumnDescriptor column);
 
         /// <summary>
         /// get schema for a table in database

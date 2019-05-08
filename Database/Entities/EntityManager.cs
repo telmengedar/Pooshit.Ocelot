@@ -7,6 +7,7 @@ using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Entities;
 using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Entities.Operations.Tables;
 using NightlyCode.Database.Entities.Schema;
 using NightlyCode.Database.Extern;
 
@@ -50,6 +51,16 @@ namespace NightlyCode.Database.Entities {
         public void Create(params Type[] types) {
             foreach(Type type in types)
                 CreateSingle(type);
+        }
+
+        /// <inheritdoc />
+        public CreateTableOperation CreateTable(string tablename) {
+            return new CreateTableOperation(DBClient, tablename);
+        }
+
+        /// <inheritdoc />
+        public InsertDataOperation InsertData(string table) {
+            return new InsertDataOperation(DBClient, table);
         }
 
         /// <summary>
@@ -118,6 +129,11 @@ namespace NightlyCode.Database.Entities {
         /// <returns></returns>
         public UpdateValuesOperation<T> Update<T>() {
             return new UpdateValuesOperation<T>(DBClient, modelcache.Get);
+        }
+
+        /// <inheritdoc />
+        public LoadDataOperation LoadData(string tablename) {
+            return new LoadDataOperation(DBClient, tablename);
         }
 
         /// <summary>
@@ -202,6 +218,16 @@ namespace NightlyCode.Database.Entities {
         /// <typeparam name="T">type of entity of which to access model</typeparam>
         public EntityDescriptorAccess<T> Model<T>() {
             return new EntityDescriptorAccess<T>(modelcache.Get<T>());
+        }
+
+        /// <inheritdoc />
+        public bool Exists<T>() {
+            return Exists(modelcache.Get<T>().TableName);
+        }
+
+        /// <inheritdoc />
+        public bool Exists(string table) {
+            return DBClient.DBInfo.CheckIfTableExists(DBClient, table);
         }
 
         static object GetDefault(Type type) {

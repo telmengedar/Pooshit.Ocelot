@@ -223,7 +223,7 @@ namespace NightlyCode.Database.Info
         /// <param name="column"></param>
         /// <returns></returns>
         public override string MaskColumn(string column) {
-            return $"'{column}'";
+            return $"[{column}]";
         }
 
         /// <summary>
@@ -231,12 +231,7 @@ namespace NightlyCode.Database.Info
         /// </summary>
         public override string CreateSuffix => null;
 
-        /// <summary>
-        /// text used to create a column
-        /// </summary>
-        /// <param name="operation"></param>
-        /// <param name="column"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column) {
             CreateColumn(operation, 
                 column.Name,
@@ -247,6 +242,20 @@ namespace NightlyCode.Database.Info
                 column.NotNull,
                 column.DefaultValue
                 );
+        }
+
+        /// <inheritdoc />
+        public override void CreateColumn(OperationPreparator operation, SchemaColumnDescriptor column)
+        {
+            CreateColumn(operation,
+                column.Name,
+                column.Type,
+                column.PrimaryKey,
+                column.AutoIncrement,
+                column.IsUnique,
+                column.NotNull,
+                column.DefaultValue
+            );
         }
 
         void CreateColumn(OperationPreparator operation, string name, string type, bool primarykey, bool autoincrement, bool unique, bool notnull, object defaultvalue) {
@@ -474,7 +483,7 @@ namespace NightlyCode.Database.Info
 
         IEnumerable<UniqueDescriptor> AnalyseUniques(IEnumerable<string> definitions) {
             foreach(string definition in definitions) {
-                string[] columns = definition.Trim().Split(',').Select(s => s.Trim(' ', '\'')).ToArray();
+                string[] columns = definition.Trim().Split(',').Select(s => s.Trim(' ', '\'', '[', ']')).ToArray();
 
                 yield return new UniqueDescriptor(columns);
             }
@@ -487,7 +496,7 @@ namespace NightlyCode.Database.Info
         }
 
         SchemaColumnDescriptor GetColumnDescriptor(string sql) {
-            Match match = Regex.Match(sql, @"^'?(?<name>[^ ']+)'?\s+(?<type>[^ ]+)(?<pk> PRIMARY KEY)?(?<ai> AUTOINCREMENT)?(?<uq> UNIQUE)?(?<nn> NOT NULL)?( DEFAULT '?(?<default>.+)'?)?$");
+            Match match = Regex.Match(sql, @"^['\[]?(?<name>[^ '\]]+)['\]]?\s+(?<type>[^ ]+)(?<pk> PRIMARY KEY)?(?<ai> AUTOINCREMENT)?(?<uq> UNIQUE)?(?<nn> NOT NULL)?( DEFAULT '?(?<default>.+)'?)?$");
             if(!match.Success)
                 throw new InvalidOperationException("Error analysing column description sql");
 

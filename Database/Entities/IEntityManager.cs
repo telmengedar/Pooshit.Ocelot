@@ -5,6 +5,7 @@ using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Entities;
+using NightlyCode.Database.Entities.Operations.Tables;
 
 namespace NightlyCode.Database.Entities {
 
@@ -35,6 +36,12 @@ namespace NightlyCode.Database.Entities {
         /// </summary>
         /// <param name="types"></param>
         void Create(params Type[] types);
+
+        /// <summary>
+        /// get an operation used to create tables
+        /// </summary>
+        /// <returns>operation to execute</returns>
+        CreateTableOperation CreateTable(string tablename);
 
         /// <summary>
         /// inserts entities to the db
@@ -95,11 +102,25 @@ namespace NightlyCode.Database.Entities {
         LoadValuesOperation<T> Load<T>(params Expression<Func<T, object>>[] fields);
 
         /// <summary>
+        /// loads data from a table
+        /// </summary>
+        /// <param name="tablename">name of table to load data from</param>
+        /// <returns>operation to use</returns>
+        LoadDataOperation LoadData(string tablename);
+
+        /// <summary>
         /// gets an operation which allows to insert entities to database
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         InsertValuesOperation<T> Insert<T>();
+
+        /// <summary>
+        /// inserts data into a table
+        /// </summary>
+        /// <param name="table">table to insert data into</param>
+        /// <returns>operation used to insert data</returns>
+        InsertDataOperation InsertData(string table);
 
         /// <summary>
         /// updates the schema of the specified type
@@ -115,5 +136,19 @@ namespace NightlyCode.Database.Entities {
         /// </summary>
         /// <typeparam name="T">type of entity of which to access model</typeparam>
         EntityDescriptorAccess<T> Model<T>();
+
+        /// <summary>
+        /// determines whether an entity exists in the database
+        /// </summary>
+        /// <typeparam name="T">type of entity to check</typeparam>
+        /// <returns>true if table for entity exists, false otherwise</returns>
+        bool Exists<T>();
+
+        /// <summary>
+        /// determines whether a table exists in the database
+        /// </summary>
+        /// <param name="table">name of table to check for</param>
+        /// <returns>true if table exists, false otherwise</returns>
+        bool Exists(string table);
     }
 }

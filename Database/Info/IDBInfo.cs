@@ -3,7 +3,6 @@ using System.Data;
 using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
-using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
@@ -107,8 +106,14 @@ namespace NightlyCode.Database.Info
         /// </summary>
         /// <param name="operation"></param>
         /// <param name="column"></param>
-        /// <returns></returns>
         void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column);
+
+        /// <summary>
+        /// text used to create a column
+        /// </summary>
+        /// <param name="operation">operation where to add column creation text</param>
+        /// <param name="column">column description</param>
+        void CreateColumn(OperationPreparator operation, SchemaColumnDescriptor column);
 
         /// <summary>
         /// get schema for a table in database
