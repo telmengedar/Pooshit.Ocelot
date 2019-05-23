@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Clients.Tables;
 using NightlyCode.Database.Entities.Operations.Prepared;
@@ -13,6 +14,7 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
         readonly IDBClient client;
         readonly string tablename;
         string[] columns;
+        readonly List<LoadCriteria> criterias=new List<LoadCriteria>();
 
         /// <summary>
         /// creates a new <see cref="LoadDataOperation"/>
@@ -31,6 +33,19 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
         /// <returns>this operation for fluent behavior</returns>
         public LoadDataOperation Columns(params string[] columnnames) {
             columns = columnnames;
+            return this;
+        }
+
+        /// <summary>
+        /// where criteria for load operation
+        /// </summary>
+        /// <param name="column">column for criteria</param>
+        /// <param name="op">operator used to compare column to</param>
+        /// <param name="value">value to compare against</param>
+        /// <param name="type">type how criteria is linked</param>
+        /// <returns>this operation for fluent behavior</returns>
+        public LoadDataOperation Where(string column, string op, string value, CriteriaOperator type = CriteriaOperator.AND) {
+            criterias.Add(new LoadCriteria(column, op, value, type));
             return this;
         }
 
@@ -108,6 +123,19 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
             }
 
             preparator.AppendText("FROM").AppendText(tablename);
+
+            if (criterias.Any()) {
+                preparator.AppendText("WHERE");
+                flag = true;
+                foreach (LoadCriteria criteria in criterias) {
+                    if (flag) flag = false;
+                    else preparator.AppendText(criteria.Type.ToString());
+
+                    preparator.AppendText(client.DBInfo.MaskColumn(criteria.Column));
+                    preparator.AppendText(criteria.Operator);
+                    preparator.AppendParameter(criteria.Value);
+                }
+            }
 
             return preparator.GetLoadValuesOperation(client);
         }

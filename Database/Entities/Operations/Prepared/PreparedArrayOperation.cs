@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 
 namespace NightlyCode.Database.Entities.Operations.Prepared {
@@ -32,13 +33,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="parameters">parameters for operation</param>
         /// <returns>number of affected rows if applicable</returns>
         public override int Execute(params object[] parameters) {
-            PreparedOperationData operation = PreparedOperationData.Create(DBClient,
-                CommandText,
-                ConstantParameters,
-                ConstantArrayParameters,
-                parameters.Where(p => !(p is Array)).ToArray(),
-                parameters.OfType<Array>().ToArray());
-            return DBClient.NonQuery(operation.Command, operation.Parameters);
+            return Execute(null, parameters);
         }
 
         /// <summary>
@@ -56,5 +51,33 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
                 parameters.OfType<Array>().ToArray());
             return DBClient.NonQuery(transaction, operation.Command, operation.Parameters);
         }
+
+        /// <summary>
+        /// executes the operation using custom parameters
+        /// </summary>
+        /// <param name="parameters">parameters for operation</param>
+        /// <returns>number of affected rows if applicable</returns>
+        public override Task<int> ExecuteAsync(params object[] parameters)
+        {
+            return ExecuteAsync(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation using custom parameters
+        /// </summary>
+        /// <param name="transaction">transaction used to execute operation</param>
+        /// <param name="parameters">parameters for operation</param>
+        /// <returns>number of affected rows if applicable</returns>
+        public override Task<int> ExecuteAsync(Transaction transaction, params object[] parameters)
+        {
+            PreparedOperationData operation = PreparedOperationData.Create(DBClient,
+                CommandText,
+                ConstantParameters,
+                ConstantArrayParameters,
+                parameters.Where(p => !(p is Array)).ToArray(),
+                parameters.OfType<Array>().ToArray());
+            return DBClient.NonQueryAsync(transaction, operation.Command, operation.Parameters);
+        }
+
     }
 }

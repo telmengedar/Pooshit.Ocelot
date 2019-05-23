@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using Converter = NightlyCode.Database.Extern.Converter;
@@ -31,10 +32,8 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// executes the statement
         /// </summary>
         /// <returns>entities created from result set</returns>
-        public new virtual IEnumerable<T> Execute(params object[] parameters)
-        {
-            Clients.Tables.DataTable data = DBClient.Query(CommandText, ConstantParameters.Concat(parameters));
-            return CreateObjects(data);
+        public new virtual IEnumerable<T> Execute(params object[] parameters) {
+            return Execute(null, parameters);
         }
 
         /// <summary>
@@ -46,6 +45,27 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         public new virtual IEnumerable<T> Execute(Transaction transaction, params object[] parameters)
         {
             Clients.Tables.DataTable data = DBClient.Query(transaction, CommandText, ConstantParameters.Concat(parameters));
+            return CreateObjects(data);
+        }
+
+        /// <summary>
+        /// executes the statement
+        /// </summary>
+        /// <returns>entities created from result set</returns>
+        public new virtual Task<IEnumerable<T>> ExecuteAsync(params object[] parameters)
+        {
+            return ExecuteAsync(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the statement
+        /// </summary>
+        /// <param name="transaction">transaction to use for execution</param>
+        /// <param name="parameters">parameters to use for execution</param>
+        /// <returns>entities created from result set</returns>
+        public new virtual async Task<IEnumerable<T>> ExecuteAsync(Transaction transaction, params object[] parameters)
+        {
+            Clients.Tables.DataTable data = await DBClient.QueryAsync(transaction, CommandText, ConstantParameters.Concat(parameters));
             return CreateObjects(data);
         }
 

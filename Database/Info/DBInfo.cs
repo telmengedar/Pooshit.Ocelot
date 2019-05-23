@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
@@ -123,7 +124,7 @@ namespace NightlyCode.Database.Info {
         /// <param name="db"></param>
         /// <param name="table"></param>
         /// <returns></returns>
-        public abstract bool CheckIfTableExists(IDBClient db, string table);
+        public abstract bool CheckIfTableExists(IDBClient db, string table, Transaction transaction = null);
 
         /// <summary>
         /// get db type of an application type
@@ -202,15 +203,21 @@ namespace NightlyCode.Database.Info {
             logic(field, preparator, descriptorgetter);
         }
 
-        /// <summary>
-        /// begins a new transaction
-        /// </summary>
-        /// <returns></returns>
-        public abstract IDbTransaction BeginTransaction(IDbConnection connection, object connectionlock);
+        /// <inheritdoc />
+        public DbTransaction BeginTransaction(DbConnection connection, SemaphoreSlim semaphore) {
+            semaphore?.Wait();
+            try {
+                return connection.BeginTransaction();
+            }
+            catch (Exception) {
+                semaphore?.Release();
+                throw;
+            }
+        }
 
-        /// <summary>
-        /// ends a transaction
-        /// </summary>
-        public abstract void EndTransaction(object connectionlock);
+        /// <inheritdoc />
+        public void EndTransaction(SemaphoreSlim semaphore) {
+            semaphore?.Release();
+        }
     }
 }

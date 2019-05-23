@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Fields;
@@ -58,18 +59,57 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <summary>
         /// executes the insert operation
         /// </summary>
+        /// <param name="parameters">parameters to use when executing operation</param>
         /// <returns>number of rows affected</returns>
-        public long Execute(Transaction transaction=null) {
+        public long Execute(params object[] parameters) {
+            return Execute(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the insert operation
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="parameters">parameters to use when executing operation</param>
+        /// <returns>number of rows affected</returns>
+        public long Execute(Transaction transaction, params object[] parameters) {
             if (insertcolumns?.Length != insertvalues?.Length)
                 throw new InvalidOperationException("unable to execute insert operation. Number of value parameters does not match number of columns.");
 
             PreparedOperation operation = Prepare();
 
-            if(transaction == null)
-                return operation.Execute();
-            return operation.Execute(transaction);
+            return operation.Execute(transaction, parameters);
         }
 
+        /// <summary>
+        /// executes the insert operation
+        /// </summary>
+        /// <param name="parameters">parameters to use when executing operation</param>
+        /// <returns>number of rows affected</returns>
+        public Task<int> ExecuteAsync(params object[] parameters)
+        {
+            return ExecuteAsync(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the insert operation
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="parameters">parameters to use when executing operation</param>
+        /// <returns>number of rows affected</returns>
+        public Task<int> ExecuteAsync(Transaction transaction, params object[] parameters)
+        {
+            if (insertcolumns?.Length != insertvalues?.Length)
+                throw new InvalidOperationException("unable to execute insert operation. Number of value parameters does not match number of columns.");
+
+            PreparedOperation operation = Prepare();
+
+            return operation.ExecuteAsync(transaction, parameters);
+        }
+
+        /// <summary>
+        /// prepares operation for execution
+        /// </summary>
+        /// <returns>operation for execution</returns>
         public PreparedOperation Prepare() {
             OperationPreparator preparator = new OperationPreparator();
             preparator.AppendText("INSERT INTO");

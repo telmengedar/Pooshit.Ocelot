@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Expressions;
@@ -33,16 +34,17 @@ namespace NightlyCode.Database.Entities.Operations {
         /// loads entities using the operation
         /// </summary>
         /// <returns>number of rows deleted</returns>
-        public int Execute() {
-            return Prepare().Execute();
+        public int Execute(Transaction transaction=null) {
+            return Prepare().Execute(transaction);
         }
 
         /// <summary>
         /// loads entities using the operation
         /// </summary>
         /// <returns>number of rows deleted</returns>
-        public int Execute(Transaction transaction) {
-            return Prepare().Execute(transaction);
+        public Task<int> ExecuteAsync(Transaction transaction = null)
+        {
+            return Prepare().ExecuteAsync(transaction);
         }
 
         /// <summary>

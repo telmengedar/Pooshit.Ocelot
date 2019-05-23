@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
-using System.Threading;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
 using NightlyCode.Database.Entities.Descriptors;
@@ -147,9 +145,9 @@ namespace NightlyCode.Database.Info
         /// <param name="db"></param>
         /// <param name="table"></param>
         /// <returns></returns>
-        public override bool CheckIfTableExists(IDBClient db, string table)
+        public override bool CheckIfTableExists(IDBClient db, string table, Transaction transaction = null)
         {
-            return db.Query("SELECT name FROM sqlite_master WHERE (type='table' OR type='view') AND name like @1", table).Rows.Length > 0;
+            return db.Query(transaction, "SELECT name FROM sqlite_master WHERE (type='table' OR type='view') AND name like @1", table).Rows.Length > 0;
         }
 
         /// <summary>
@@ -440,28 +438,6 @@ namespace NightlyCode.Database.Info
         public override void AlterColumn(IDBClient client, string table, EntityColumnDescriptor column) {
             RemoveColumn(client, table, column.Name);
             AddColumn(client, table, column);
-        }
-
-        /// <summary>
-        /// begins a new transaction
-        /// </summary>
-        /// <returns></returns>
-        public override IDbTransaction BeginTransaction(IDbConnection connection, object connectionlock) {
-            try {
-                Monitor.Enter(connectionlock);
-                return connection.BeginTransaction();
-            }
-            catch (Exception) {
-                Monitor.Exit(connectionlock);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// ends a transaction
-        /// </summary>
-        public override void EndTransaction(object connectionlock) {
-            Monitor.Exit(connectionlock);
         }
 
         /// <summary>

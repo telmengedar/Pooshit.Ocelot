@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Data;
+using System.Data.Common;
+using System.Threading;
 using NightlyCode.Database.Info;
 
 namespace NightlyCode.Database.Clients {
@@ -9,20 +11,20 @@ namespace NightlyCode.Database.Clients {
     /// </summary>
     public class Transaction : IDisposable {
         readonly IDBInfo dbinfo;
-        readonly object connectionlock;
+        readonly SemaphoreSlim semaphore;
         bool commited;
         
 
-        internal Transaction(IDBInfo dbinfo, IDbConnection connection, object connectionlock) {
+        internal Transaction(IDBInfo dbinfo, DbConnection connection, SemaphoreSlim semaphore) {
             this.dbinfo = dbinfo;
-            this.connectionlock = connectionlock;
-            DbTransaction = dbinfo.BeginTransaction(connection, connectionlock);
+            this.semaphore = semaphore;
+            DbTransaction = dbinfo.BeginTransaction(connection, semaphore);
         }
 
         /// <summary>
         /// transaction object
         /// </summary>
-        public IDbTransaction DbTransaction { get; internal set; }
+        public DbTransaction DbTransaction { get; internal set; }
 
         /// <summary>
         /// commits the transaction
@@ -50,7 +52,7 @@ namespace NightlyCode.Database.Clients {
                 if (!commited)
                     DbTransaction.Rollback();
                 DbTransaction.Dispose();
-                dbinfo.EndTransaction(connectionlock);
+                dbinfo.EndTransaction(semaphore);
             }
         }
 

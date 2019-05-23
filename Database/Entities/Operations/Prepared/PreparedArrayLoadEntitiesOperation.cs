@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 
@@ -35,14 +36,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <returns>entities created from result set</returns>
         public override IEnumerable<T> Execute(params object[] parameters) {
-            PreparedOperationData operation = PreparedOperationData.Create(DBClient,
-                CommandText,
-                ConstantParameters,
-                ConstantArrayParameters,
-                parameters.Where(p => !(p is Array)).ToArray(),
-                parameters.OfType<Array>().ToArray());
-            Clients.Tables.DataTable data = DBClient.Query(operation.Command, operation.Parameters);
-            return CreateObjects(data);
+            return Execute(null, parameters);
         }
 
         /// <summary>
@@ -61,5 +55,33 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
             Clients.Tables.DataTable data = DBClient.Query(transaction, operation.Command, operation.Parameters);
             return CreateObjects(data);
         }
+
+        /// <summary>
+        /// executes the statement
+        /// </summary>
+        /// <returns>entities created from result set</returns>
+        public override Task<IEnumerable<T>> ExecuteAsync(params object[] parameters)
+        {
+            return ExecuteAsync(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the statement
+        /// </summary>
+        /// <param name="transaction">transaction to use for execution</param>
+        /// <param name="parameters">parameters to use for execution</param>
+        /// <returns>entities created from result set</returns>
+        public override async Task<IEnumerable<T>> ExecuteAsync(Transaction transaction, params object[] parameters)
+        {
+            PreparedOperationData operation = PreparedOperationData.Create(DBClient,
+                CommandText,
+                ConstantParameters,
+                ConstantArrayParameters,
+                parameters.Where(p => !(p is Array)).ToArray(),
+                parameters.OfType<Array>().ToArray());
+            Clients.Tables.DataTable data = await DBClient.QueryAsync(transaction, operation.Command, operation.Parameters);
+            return CreateObjects(data);
+        }
+
     }
 }

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
+using NightlyCode.Database.Clients;
 
 namespace NightlyCode.Database.Entities.Operations {
 
@@ -12,7 +14,13 @@ namespace NightlyCode.Database.Entities.Operations {
         /// loads entities from joined data
         /// </summary>
         /// <returns>all loaded entities</returns>
-        IEnumerable<TEntity> Execute<TEntity>();
+        IEnumerable<TEntity> Execute<TEntity>(Transaction transaction=null);
+
+        /// <summary>
+        /// loads entities from joined data
+        /// </summary>
+        /// <returns>all loaded entities</returns>
+        Task<IEnumerable<TEntity>> ExecuteAsync<TEntity>(Transaction transaction = null);
 
         /// <summary>
         /// specifies criterias for the operation

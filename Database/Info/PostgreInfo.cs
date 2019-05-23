@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data;
 using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
@@ -114,8 +113,8 @@ namespace NightlyCode.Database.Info {
         /// <param name="db"></param>
         /// <param name="table"></param>
         /// <returns></returns>
-        public override bool CheckIfTableExists(IDBClient db, string table) {
-            return Converter.Convert<long>(db.Scalar("SELECT count(*) FROM pg_class WHERE relname = @1", table)) > 0;
+        public override bool CheckIfTableExists(IDBClient db, string table, Transaction transaction = null) {
+            return Converter.Convert<long>(db.Scalar(transaction, "SELECT count(*) FROM pg_class WHERE relname = @1", table)) > 0;
         }
 
         /// <summary>
@@ -274,20 +273,6 @@ namespace NightlyCode.Database.Info {
 
         public override void AlterColumn(IDBClient client, string table, EntityColumnDescriptor column) {
             throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// begins a new transaction
-        /// </summary>
-        /// <returns></returns>
-        public override IDbTransaction BeginTransaction(IDbConnection connection, object connectionlock) {
-            return connection.BeginTransaction();
-        }
-
-        /// <summary>
-        /// ends a transaction
-        /// </summary>
-        public override void EndTransaction(object connectionlock) {
         }
 
         public override SchemaDescriptor GetSchema(IDBClient client, string name)

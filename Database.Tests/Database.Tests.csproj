@@ -73,6 +73,7 @@
     <Compile Include="Entities\EntityManagerTest.cs" />
     <Compile Include="Fields\FieldTests.cs" />
     <Compile Include="InsertDataOperationTests.cs" />
+    <Compile Include="LoadDataOperationTests.cs" />
     <Compile Include="LoadValuesOperationTests.cs" />
     <Compile Include="Models\ActiveData.cs" />
     <Compile Include="Models\ConstructOption.cs" />

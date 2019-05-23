@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Data;
+using System.Data.Common;
 using System.Linq.Expressions;
+using System.Threading;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Fields;
@@ -73,7 +74,7 @@ namespace NightlyCode.Database.Info
         /// <param name="db"></param>
         /// <param name="table"></param>
         /// <returns></returns>
-        bool CheckIfTableExists(IDBClient db, string table);
+        bool CheckIfTableExists(IDBClient db, string table, Transaction transaction=null);
 
         /// <summary>
         /// get db type of an application type
@@ -160,11 +161,11 @@ namespace NightlyCode.Database.Info
         /// begins a new transaction
         /// </summary>
         /// <returns>transaction object to assign to command</returns>
-        IDbTransaction BeginTransaction(IDbConnection connection, object connectionlock);
+        DbTransaction BeginTransaction(DbConnection connection, SemaphoreSlim semaphore);
 
         /// <summary>
         /// ends a transaction
         /// </summary>
-        void EndTransaction(object connectionlock);
+        void EndTransaction(SemaphoreSlim semaphore);
     }
 }

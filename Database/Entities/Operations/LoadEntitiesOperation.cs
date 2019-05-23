@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Expressions;
@@ -67,17 +68,35 @@ namespace NightlyCode.Database.Entities.Operations {
         /// loads entities using the operation
         /// </summary>
         /// <returns>all loaded entities</returns>
-        public IEnumerable<T> Execute() {
-            return Prepare<T>().Execute();
+        public IEnumerable<T> Execute(Transaction transaction = null) {
+            return Prepare<T>().Execute(transaction);
+        }
+
+        /// <summary>
+        /// loads entities using the operation
+        /// </summary>
+        /// <returns>all loaded entities</returns>
+        public Task<IEnumerable<T>> ExecuteAsync(Transaction transaction = null)
+        {
+            return Prepare<T>().ExecuteAsync(transaction);
         }
 
         /// <summary>
         /// loads entities from joined data
         /// </summary>
         /// <returns>all loaded entities</returns>
-        public IEnumerable<TEntity> Execute<TEntity>()
+        public IEnumerable<TEntity> Execute<TEntity>(Transaction transaction = null)
         {
-            return Prepare<TEntity>().Execute();
+            return Prepare<TEntity>().Execute(transaction);
+        }
+
+        /// <summary>
+        /// loads entities from joined data
+        /// </summary>
+        /// <returns>all loaded entities</returns>
+        public Task<IEnumerable<TEntity>> ExecuteAsync<TEntity>(Transaction transaction = null)
+        {
+            return Prepare<TEntity>().ExecuteAsync(transaction);
         }
 
         /// <summary>

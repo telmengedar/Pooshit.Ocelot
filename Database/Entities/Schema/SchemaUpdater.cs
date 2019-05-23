@@ -117,7 +117,7 @@ namespace NightlyCode.Database.Entities.Schema {
 
             using(Transaction transaction = client.Transaction()) {
                 // check if an old backup table exists for whatever reason
-                if(client.DBInfo.CheckIfTableExists(client, "{olddescriptor.Name}{appendix}"))
+                if(client.DBInfo.CheckIfTableExists(client, "{olddescriptor.Name}{appendix}", transaction))
                     client.NonQuery(transaction, $"DROP TABLE {olddescriptor.Name}{appendix}");
 
                 client.NonQuery(transaction, $"ALTER TABLE {olddescriptor.Name} RENAME TO {olddescriptor.Name}{appendix}");

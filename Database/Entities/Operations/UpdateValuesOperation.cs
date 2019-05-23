@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Expressions;
@@ -51,15 +52,30 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         protected Expression Criterias { get; set; }
 
-        public int Execute(Transaction transaction)
+        /// <summary>
+        /// executes the operation
+        /// </summary>
+        /// <param name="transaction">transaction to use (optional)</param>
+        /// <returns>number of affected rows</returns>
+        public int Execute(Transaction transaction=null)
         {
             return Prepare().Execute(transaction);
         }
 
-        public int Execute() {
-            return Prepare().Execute();
+        /// <summary>
+        /// executes the operation
+        /// </summary>
+        /// <param name="transaction">transaction to use (optional)</param>
+        /// <returns>number of affected rows</returns>
+        public Task<int> ExecuteAsync(Transaction transaction = null)
+        {
+            return Prepare().ExecuteAsync(transaction);
         }
 
+        /// <summary>
+        /// prepares the operation for execution
+        /// </summary>
+        /// <returns>prepared operation</returns>
         public PreparedOperation Prepare() {
             OperationPreparator preparator = new OperationPreparator();
             preparator.AppendText("UPDATE");

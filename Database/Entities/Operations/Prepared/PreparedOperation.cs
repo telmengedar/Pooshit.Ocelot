@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 
 namespace NightlyCode.Database.Entities.Operations.Prepared {
@@ -44,7 +45,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="parameters">parameters for operation</param>
         /// <returns>number of affected rows if applicable</returns>
         public virtual int Execute(params object[] parameters) {
-            return DBClient.NonQuery(CommandText, ConstantParameters.Concat(parameters));
+            return Execute(null, parameters);
         }
 
         /// <summary>
@@ -55,6 +56,27 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <returns>number of affected rows if applicable</returns>
         public virtual int Execute(Transaction transaction, params object[] parameters) {
             return DBClient.NonQuery(transaction, CommandText, ConstantParameters.Concat(parameters));
+        }
+
+        /// <summary>
+        /// executes the operation using custom parameters
+        /// </summary>
+        /// <param name="parameters">parameters for operation</param>
+        /// <returns>number of affected rows if applicable</returns>
+        public virtual Task<int> ExecuteAsync(params object[] parameters)
+        {
+            return ExecuteAsync(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation using custom parameters
+        /// </summary>
+        /// <param name="transaction">transaction used to execute operation</param>
+        /// <param name="parameters">parameters for operation</param>
+        /// <returns>number of affected rows if applicable</returns>
+        public virtual Task<int> ExecuteAsync(Transaction transaction, params object[] parameters)
+        {
+            return DBClient.NonQueryAsync(transaction, CommandText, ConstantParameters.Concat(parameters));
         }
 
         /// <inheritdoc/>

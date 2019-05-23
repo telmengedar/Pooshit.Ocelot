@@ -2,7 +2,6 @@
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
 using NightlyCode.Database.Entities.Operations.Prepared;
-using NightlyCode.Database.Entities.Operations.Tables;
 using NightlyCode.Database.Tests.Data;
 using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;

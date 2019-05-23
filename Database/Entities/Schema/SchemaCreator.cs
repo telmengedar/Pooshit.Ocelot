@@ -6,7 +6,6 @@ using System.Text;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Attributes;
 using NightlyCode.Database.Entities.Descriptors;
-using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Prepared;
 
 namespace NightlyCode.Database.Entities.Schema {
@@ -61,7 +60,7 @@ namespace NightlyCode.Database.Entities.Schema {
                 preparator.GetOperation(client).Execute(transaction);
             else preparator.GetOperation(client).Execute();
 
-            CreateIndices(client, descriptor.TableName, descriptor.Indices);
+            CreateIndices(client, descriptor.TableName, descriptor.Indices, transaction);
         }
 
         /// <summary>

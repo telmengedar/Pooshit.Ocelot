@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data;
 using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
@@ -38,9 +37,9 @@ namespace NightlyCode.Database.Info
             throw new NotImplementedException();
         }
 
-        public override bool CheckIfTableExists(IDBClient db, string table)
+        public override bool CheckIfTableExists(IDBClient db, string table, Transaction transaction = null)
         {
-            return db.Query("SHOW TABLES like ?1", table).Rows.Length > 0;
+            return db.Query(transaction, "SHOW TABLES like ?1", table).Rows.Length > 0;
         }
         public override string GetDBType(Type type) {
             if (type.IsEnum) return "INT";
@@ -107,20 +106,6 @@ namespace NightlyCode.Database.Info
 
         public override void AlterColumn(IDBClient client, string table, EntityColumnDescriptor column) {
             throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// begins a new transaction
-        /// </summary>
-        /// <returns></returns>
-        public override IDbTransaction BeginTransaction(IDbConnection connection, object connectionlock) {
-            return connection.BeginTransaction();
-        }
-
-        /// <summary>
-        /// ends a transaction
-        /// </summary>
-        public override void EndTransaction(object connectionlock) {
         }
 
         public override SchemaDescriptor GetSchema(IDBClient client, string name)

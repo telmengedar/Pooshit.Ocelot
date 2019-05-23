@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Clients.Tables;
 using Converter = NightlyCode.Database.Extern.Converter;
@@ -27,7 +28,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="parameters">parameters for execution</param>
         /// <returns>data table containing results</returns>
         public new virtual DataTable Execute(params object[] parameters) {
-            return DBClient.Query(CommandText, ConstantParameters.Concat(parameters));
+            return Execute(null, parameters);
         }
 
         /// <summary>
@@ -45,7 +46,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <returns>first value of the result set or default of TScalar</returns>
         public virtual TScalar ExecuteScalar<TScalar>(params object[] parameters) {
-            return Converter.Convert<TScalar>(DBClient.Scalar(CommandText, ConstantParameters.Concat(parameters)), true);
+            return ExecuteScalar<TScalar>(null, parameters);
         }
 
         /// <summary>
@@ -62,8 +63,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <typeparam name="TScalar">type of scalar to return</typeparam>
         /// <returns>values of first column of result set converted to TScalar</returns>
         public virtual IEnumerable<TScalar> ExecuteSet<TScalar>(params object[] parameters) {
-            foreach(object value in DBClient.Set(CommandText, ConstantParameters.Concat(parameters)))
-                yield return Converter.Convert<TScalar>(value, true);
+            return ExecuteSet<TScalar>(null, parameters);
         }
 
         /// <summary>
@@ -84,8 +84,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="parameters">custom parameters for query execution</param>
         /// <returns>enumeration of result types</returns>
         public virtual IEnumerable<TType> ExecuteType<TType>(Func<DataRow, TType> assignments, params object[] parameters) {
-            DataTable table = Execute(parameters);
-            return table.Rows.Select(assignments);
+            return ExecuteType(null, assignments, parameters);
         }
 
         /// <summary>
@@ -100,5 +99,90 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
             DataTable table = Execute(transaction, parameters);
             return table.Rows.Select(assignments);
         }
+
+        /// <summary>
+        /// executes the statement
+        /// </summary>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>data table containing results</returns>
+        public new virtual Task<DataTable> ExecuteAsync(params object[] parameters)
+        {
+            return ExecuteAsync(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the statement
+        /// </summary>
+        /// <param name="transaction">transaction used to execute operation</param>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>data table containing results</returns>
+        public new virtual Task<DataTable> ExecuteAsync(Transaction transaction, params object[] parameters)
+        {
+            return DBClient.QueryAsync(transaction, CommandText, ConstantParameters.Concat(parameters));
+        }
+
+        /// <summary>
+        /// executes the statement returning a scalar
+        /// </summary>
+        /// <returns>first value of the result set or default of TScalar</returns>
+        public virtual Task<TScalar> ExecuteScalarAsync<TScalar>(params object[] parameters)
+        {
+            return ExecuteScalarAsync<TScalar>(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the statement returning a scalar
+        /// </summary>
+        /// <returns>first value of the result set or default of TScalar</returns>
+        public virtual async Task<TScalar> ExecuteScalarAsync<TScalar>(Transaction transaction, params object[] parameters)
+        {
+            return Converter.Convert<TScalar>(await DBClient.ScalarAsync(transaction, CommandText, ConstantParameters.Concat(parameters)), true);
+        }
+
+        /// <summary>
+        /// executes the statement returning a set of scalars
+        /// </summary>
+        /// <typeparam name="TScalar">type of scalar to return</typeparam>
+        /// <returns>values of first column of result set converted to TScalar</returns>
+        public virtual Task<IEnumerable<TScalar>> ExecuteSetAsync<TScalar>(params object[] parameters)
+        {
+            return ExecuteSetAsync<TScalar>(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the statement returning a set of scalars
+        /// </summary>
+        /// <typeparam name="TScalar">type of scalar to return</typeparam>
+        /// <returns>values of first column of result set converted to TScalar</returns>
+        public virtual async Task<IEnumerable<TScalar>> ExecuteSetAsync<TScalar>(Transaction transaction, params object[] parameters) {
+            return (await DBClient.SetAsync(transaction, CommandText, ConstantParameters.Concat(parameters))).Select(v => Converter.Convert<TScalar>(v, true));
+        }
+
+        /// <summary>
+        /// executes a query and stores the result in a custom result type
+        /// </summary>
+        /// <typeparam name="TType">type of result</typeparam>
+        /// <param name="assignments">action used to assign values</param>
+        /// <param name="parameters">custom parameters for query execution</param>
+        /// <returns>enumeration of result types</returns>
+        public virtual Task<IEnumerable<TType>> ExecuteTypeAsync<TType>(Func<DataRow, TType> assignments, params object[] parameters)
+        {
+            return ExecuteTypeAsync(null, assignments, parameters);
+        }
+
+        /// <summary>
+        /// executes a query and stores the result in a custom result type
+        /// </summary>
+        /// <typeparam name="TType">type of result</typeparam>
+        /// <param name="assignments">action used to assign values</param>
+        /// <param name="transaction">transaction to use for execution</param>
+        /// <param name="parameters">custom parameters for query execution</param>
+        /// <returns>enumeration of result types</returns>
+        public virtual async Task<IEnumerable<TType>> ExecuteTypeAsync<TType>(Transaction transaction, Func<DataRow, TType> assignments, params object[] parameters)
+        {
+            DataTable table = await ExecuteAsync(transaction, parameters);
+            return table.Rows.Select(assignments);
+        }
+
     }
 }
