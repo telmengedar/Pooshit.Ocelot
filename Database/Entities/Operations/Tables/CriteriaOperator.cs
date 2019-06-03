@@ -8,11 +8,11 @@
         /// <summary>
         /// and
         /// </summary>
-        AND,
+        AND=0,
 
         /// <summary>
         /// or
         /// </summary>
-        OR
+        OR=1
     }
 }

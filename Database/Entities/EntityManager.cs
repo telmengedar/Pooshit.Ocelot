@@ -63,6 +63,11 @@ namespace NightlyCode.Database.Entities {
             return new InsertDataOperation(DBClient, table);
         }
 
+        /// <inheritdoc />
+        public UpdateDataOperation UpdateData(string table) {
+            return new UpdateDataOperation(DBClient, table);
+        }
+
         /// <summary>
         /// updates the schema of the specified type
         /// </summary>

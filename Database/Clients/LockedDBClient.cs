@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
-using NightlyCode.Database.Clients.Tables;
 using NightlyCode.Database.Info;
+using DataTable = NightlyCode.Database.Clients.Tables.DataTable;
 
 namespace NightlyCode.Database.Clients {
 
@@ -350,6 +351,8 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public Transaction Transaction() {
+            if (Connection.State != ConnectionState.Open)
+                Connection.Open();
             return new Transaction(DBInfo, Connection, connectionlock);
         }
     }

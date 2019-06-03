@@ -123,6 +123,13 @@ namespace NightlyCode.Database.Entities {
         InsertDataOperation InsertData(string table);
 
         /// <summary>
+        /// updates data of a table
+        /// </summary>
+        /// <param name="table">table to update data of</param>
+        /// <returns>operation to be used to update data</returns>
+        UpdateDataOperation UpdateData(string table);
+
+        /// <summary>
         /// updates the schema of the specified type
         /// </summary>
         /// <remarks>

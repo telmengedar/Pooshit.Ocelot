@@ -65,7 +65,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CreateTableOperationTests.cs" />
+    <Compile Include="Entities\Keywords.cs" />
     <Compile Include="Entities\LoadTests.cs" />
+    <Compile Include="Entities\Workflow.cs" />
     <Compile Include="Fields\AggregateTests.cs" />
     <Compile Include="Entities\ConstraintTests.cs" />
     <Compile Include="Entities\DescriptorAccessTests.cs" />
@@ -83,6 +85,8 @@
     <EmbeddedResource Include="Resources\GeneratedPrimaryKey.txt" />
     <Compile Include="SchemaUpdateTests.cs" />
     <Compile Include="Fields\ParameterTests.cs" />
+    <Compile Include="UpdateDataOperationTests.cs" />
+    <Compile Include="UpdateOperationTests.cs" />
     <Compile Include="ValueMethodTests.cs" />
     <Compile Include="Models\AddEntity.cs" />
     <Compile Include="Models\AlteredEntity.cs" />

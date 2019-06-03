@@ -67,6 +67,7 @@ namespace NightlyCode.Database.Clients
         /// </summary>
         /// <returns>Transaction object to use</returns>
         public Transaction Transaction() {
+            OpenConnection();
             return new Transaction(dbinfo, connection, null);
         }
 

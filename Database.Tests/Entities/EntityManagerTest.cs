@@ -14,7 +14,7 @@ using NUnit.Framework.Constraints;
 
 namespace NightlyCode.Database.Tests.Entities {
 
-    [TestFixture]
+    [TestFixture, Parallelizable]
     public class EntityManagerTest {
         
         IEnumerable<TestEntityWithoutAnySpecifications> TestEntities {
@@ -40,7 +40,7 @@ namespace NightlyCode.Database.Tests.Entities {
             }
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void TestEntityCreation() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -48,7 +48,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.That(dbclient.DBInfo.CheckIfTableExists(dbclient, "testentitywithoutanyspecifications"));
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void InsertEntities() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -56,7 +56,7 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(TestEntities.ToArray());
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void InsertStatement() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -72,7 +72,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.AreEqual(TestEntities.Count(), entitymanager.Load<TestEntityWithoutAnySpecifications>(m => DBFunction.Count).ExecuteScalar<int>());
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void TestContains() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -84,7 +84,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.AreEqual(2, result.Length);
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void TestInsertWithReturn() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -107,7 +107,7 @@ namespace NightlyCode.Database.Tests.Entities {
             }
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void TestUpdate() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -122,7 +122,7 @@ namespace NightlyCode.Database.Tests.Entities {
                 Assert.AreEqual(entities[i], loaded[i]);
         }
         
-        [Test]
+        [Test, Parallelizable]
         public void TestSave() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -138,7 +138,7 @@ namespace NightlyCode.Database.Tests.Entities {
                 Assert.AreEqual(entities[i], loaded[i]);            
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void InsertMultipleTimesFailsUniqueCheck() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -147,7 +147,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.Throws(new AnyException(), () => entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(TestEntities));
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void LoadAllEntities() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -169,7 +169,7 @@ namespace NightlyCode.Database.Tests.Entities {
             }
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void LoadEntitiesWithCriterias() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -182,7 +182,7 @@ namespace NightlyCode.Database.Tests.Entities {
                 Assert.Less(entity.Something, 8.0, "entity does not match criteria");
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void OrderBy() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -193,7 +193,7 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().OrderBy(new OrderByCriteria(DBFunction.Random)).Execute();
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void Limit() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -205,7 +205,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.AreEqual(1, loaded.Length, "only 1 entity should be loaded");
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void Offset()
         {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
@@ -218,7 +218,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.AreEqual(source.Length - 1, loaded.Length, "only 1 entity should be loaded");
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void LimitAndOffset()
         {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
@@ -231,7 +231,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.AreEqual(1, loaded.Length, "only 1 entity should be loaded");
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void ComplexWhere() {
             int boo = 3;
             IDBClient dbclient = TestData.CreateDatabaseAccess();
@@ -256,7 +256,7 @@ namespace NightlyCode.Database.Tests.Entities {
             operation.Execute(3);
         }*/
 
-        [Test]
+        [Test, Parallelizable]
         public void UnaryOperations() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -274,7 +274,7 @@ namespace NightlyCode.Database.Tests.Entities {
             }
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void BitwiseOperator() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -289,7 +289,7 @@ namespace NightlyCode.Database.Tests.Entities {
             }
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void Aggregates() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -304,7 +304,7 @@ namespace NightlyCode.Database.Tests.Entities {
             preparedstatement.Execute();
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void Join() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -317,7 +317,7 @@ namespace NightlyCode.Database.Tests.Entities {
             preparedstatement.Execute();            
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void DBFieldComparision() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -325,7 +325,7 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.Update<TestEntityWithoutAnySpecifications>().Set(t => t.Column1 == "bla").Where(t => DBFunction.RowID.Int32 == 7).Execute();
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void LikeOperator() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -333,7 +333,7 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.Update<TestEntityWithoutAnySpecifications>().Set(t => t.Column1 == "123").Where(t => t.Column1.Like("%something%")).Execute();
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void Replace() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -341,7 +341,7 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.Update<TestEntityWithoutAnySpecifications>().Set(t => t.Column1 == "123").Where(t => DBOperators.Replace(t.Column1, "1", "2") == "123").Execute();
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void ToLower() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -349,12 +349,20 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Where(t => t.Column1.ToLower() == "123".ToLower()).Execute();
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void ToUpper() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
             entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Where(t => t.Column1.ToLower() == "123".ToUpper()).Execute();
+        }
+
+        [Test, Parallelizable]
+        public void UseTransaction() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            IEntityManager entitymanager = new EntityManager(dbclient);
+            using (Transaction transaction = entitymanager.Transaction())
+                transaction.Rollback();
         }
     }
 

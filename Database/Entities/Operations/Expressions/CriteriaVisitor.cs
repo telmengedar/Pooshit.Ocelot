@@ -62,7 +62,8 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
 
             if(aliases.TryGetValue(parameter.Name, out string alias))
                 return string.Format("{2}.{0}{1}{0}", dbinfo.ColumnIndicator, column.Name, alias);
-            return string.Format("{0}{1}{0}", dbinfo.ColumnIndicator, column.Name);
+            return dbinfo.MaskColumn(column.Name);
+            //return string.Format("{0}{1}{0}", dbinfo.ColumnIndicator, column.Name);
         }
 
         string GetOperant(ExpressionType type) {
@@ -153,6 +154,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 if (value is IDBField field)
                     dbinfo.Append(field, preparator, descriptorgetter);
                 else {
+                    //preparator.AppendText(Converter.Convert<string>(value));
                     preparator.AppendParameter(Converter.Convert(value, dbinfo.GetDBRepresentation(value.GetType())));
                 }
             }
