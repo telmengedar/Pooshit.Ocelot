@@ -317,6 +317,13 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             return node;
         }
 
+        protected override Expression VisitBlock(BlockExpression node) {
+            preparator.AppendText("(");
+            Expression result = base.VisitBlock(node);
+            preparator.AppendText(")");
+            return result;
+        }
+
         protected override Expression VisitMethodCall(MethodCallExpression node) {
             AppendValueRemainder();
 
