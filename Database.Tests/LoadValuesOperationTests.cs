@@ -231,6 +231,28 @@ namespace NightlyCode.Database.Tests {
         }
 
         [Test, Parallelizable]
+        public void Distinct()
+        {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+
+            entitymanager.UpdateSchema<ValueModel>();
+
+            entitymanager.InsertEntities<ValueModel>().Execute(
+                new ValueModel(1),
+                new ValueModel(2),
+                new ValueModel(5),
+                new ValueModel(5),
+                new ValueModel(9),
+                new ValueModel(9),
+                new ValueModel(9)
+            );
+
+            int[] result = entitymanager.Load<ValueModel>(m => m.Integer).Distinct().ExecuteSet<int>().ToArray();
+            Assert.That(result.SequenceEqual(new[] {1, 2, 5, 9}));
+        }
+
+        [Test, Parallelizable]
         public async Task ExecuteScalarAsync()
         {
             IDBClient dbclient = TestData.CreateDatabaseAccess();

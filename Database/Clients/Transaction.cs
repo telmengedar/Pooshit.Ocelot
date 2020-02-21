@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data;
 using System.Data.Common;
 using System.Threading;
 using NightlyCode.Database.Info;
@@ -11,14 +10,16 @@ namespace NightlyCode.Database.Clients {
     /// </summary>
     public class Transaction : IDisposable {
         readonly IDBInfo dbinfo;
+        readonly IConnection connection;
         readonly SemaphoreSlim semaphore;
         bool commited;
-        
 
-        internal Transaction(IDBInfo dbinfo, DbConnection connection, SemaphoreSlim semaphore) {
+
+        internal Transaction(IDBInfo dbinfo, IConnection connection, SemaphoreSlim semaphore) {
             this.dbinfo = dbinfo;
+            this.connection = connection;
             this.semaphore = semaphore;
-            DbTransaction = dbinfo.BeginTransaction(connection, semaphore);
+            DbTransaction = dbinfo.BeginTransaction(connection.Connection, semaphore);
         }
 
         /// <summary>
@@ -37,8 +38,7 @@ namespace NightlyCode.Database.Clients {
         /// <summary>
         /// rolls back all changes made in transaction
         /// </summary>
-        public void Rollback()
-        {
+        public void Rollback() {
             DbTransaction.Rollback();
             commited = true;
         }
@@ -48,11 +48,12 @@ namespace NightlyCode.Database.Clients {
         /// </summary>
         public void Dispose() {
             GC.SuppressFinalize(this);
-            if (DbTransaction != null) {
-                if (!commited)
+            if(DbTransaction != null) {
+                if(!commited)
                     DbTransaction.Rollback();
                 DbTransaction.Dispose();
                 dbinfo.EndTransaction(semaphore);
+                connection.Dispose();
             }
         }
 

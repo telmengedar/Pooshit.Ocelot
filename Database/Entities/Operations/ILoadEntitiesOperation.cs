@@ -14,13 +14,25 @@ namespace NightlyCode.Database.Entities.Operations {
         /// loads entities from joined data
         /// </summary>
         /// <returns>all loaded entities</returns>
-        IEnumerable<TEntity> Execute<TEntity>(Transaction transaction=null);
+        IEnumerable<TEntity> Execute<TEntity>(params object[] parameters);
 
         /// <summary>
         /// loads entities from joined data
         /// </summary>
         /// <returns>all loaded entities</returns>
-        Task<IEnumerable<TEntity>> ExecuteAsync<TEntity>(Transaction transaction = null);
+        Task<IEnumerable<TEntity>> ExecuteAsync<TEntity>(params object[] parameters);
+
+        /// <summary>
+        /// loads entities from joined data
+        /// </summary>
+        /// <returns>all loaded entities</returns>
+        IEnumerable<TEntity> Execute<TEntity>(Transaction transaction, params object[] parameters);
+
+        /// <summary>
+        /// loads entities from joined data
+        /// </summary>
+        /// <returns>all loaded entities</returns>
+        Task<IEnumerable<TEntity>> ExecuteAsync<TEntity>(Transaction transaction, params object[] parameters);
 
         /// <summary>
         /// specifies criterias for the operation

@@ -1,16 +1,13 @@
 ﻿using System.Collections.Generic;
-using System.Data.Common;
 using System.Threading.Tasks;
 using NightlyCode.Database.Info;
 
-namespace NightlyCode.Database.Clients
-{
+namespace NightlyCode.Database.Clients {
 
     /// <summary>
     /// interface for clients which provide access to a database
     /// </summary>
-    public interface IDBClient
-    {
+    public interface IDBClient {
         /// <summary>
         /// info about db connection
         /// </summary>
@@ -19,7 +16,7 @@ namespace NightlyCode.Database.Clients
         /// <summary>
         /// underlying connection
         /// </summary>
-        DbConnection Connection { get; }
+        IConnectionProvider Connection { get; }
 
         /// <summary>
         /// executes a non query

@@ -83,6 +83,7 @@ namespace NightlyCode.Database.Entities.Operations {
         OrderByCriteria[] orderbycriterias;
         IDBField[] groupbycriterias;
         readonly List<JoinOperation> joinoperations = new List<JoinOperation>();
+        bool distinct;
 
         /// <summary>
         /// creates a new <see cref="LoadValuesOperation{T}"/>
@@ -221,6 +222,9 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <returns></returns>
         public PreparedLoadValuesOperation Prepare() {
             OperationPreparator preparator = new OperationPreparator().AppendText("SELECT");
+            if (distinct)
+                preparator.AppendText("DISTINCT");
+
             EntityDescriptor descriptor = typeof(T) == typeof(object) ? null : descriptorgetter(typeof(T));
 
             bool flag = true;
@@ -284,6 +288,15 @@ namespace NightlyCode.Database.Entities.Operations {
             }
 
             return preparator.GetLoadValuesOperation(dbclient);
+        }
+
+        /// <summary>
+        /// specifies to only load rows with distinct values
+        /// </summary>
+        /// <returns></returns>
+        public LoadValuesOperation<T> Distinct() {
+            distinct = true;
+            return this;
         }
 
         /// <summary>

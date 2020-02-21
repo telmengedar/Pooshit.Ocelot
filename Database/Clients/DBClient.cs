@@ -6,55 +6,37 @@ using System.Linq;
 using System.Threading.Tasks;
 using NightlyCode.Database.Info;
 
-namespace NightlyCode.Database.Clients
-{
+namespace NightlyCode.Database.Clients {
 
     /// <summary>
     /// client to execute database commands
     /// </summary>
     public class DBClient : IDBClient {
-        readonly DbConnection connection;
-        readonly IDBInfo dbinfo;
 
         /// <summary>
         /// creates a new <see cref="DBClient"/>
         /// </summary>
-        /// <param name="connection">connection to database</param>
+        /// <param name="connectionprovider">provides connection to database</param>
         /// <param name="dbinfo">information for database statements</param>
-        internal DBClient(DbConnection connection, IDBInfo dbinfo)
-        {
-            this.connection = connection;
-            this.dbinfo = dbinfo;
+        internal DBClient(IConnectionProvider connectionprovider, IDBInfo dbinfo) {
+            Connection = connectionprovider;
+            DBInfo = dbinfo;
         }
 
         /// <inheritdoc />
-        public IDBInfo DBInfo => dbinfo;
+        public IDBInfo DBInfo { get; }
 
         /// <inheritdoc />
-        public DbConnection Connection => connection;
+        public IConnectionProvider Connection { get; }
 
-        void OpenConnection() {
-            if (connection.State == ConnectionState.Open)
-                return;
-            connection.Open();
-        }
-
-        Task OpenConnectionAsync() {
-            if (connection.State == ConnectionState.Open)
-                return Task.FromResult(0);
-            return connection.OpenAsync();
-        }
-
-        DbCommand PrepareCommand(string commandtext, IEnumerable<object> parameters)
-        {
-            DbCommand command = connection.CreateCommand();
+        DbCommand PrepareCommand(IConnection connection, string commandtext, IEnumerable<object> parameters) {
+            DbCommand command = connection.Connection.CreateCommand();
             command.CommandText = commandtext;
             command.CommandTimeout = 0;
 
-            foreach (object value in parameters)
-            {
+            foreach(object value in parameters) {
                 DbParameter parameter = command.CreateParameter();
-                parameter.ParameterName = dbinfo.Parameter + (command.Parameters.Count + 1);
+                parameter.ParameterName = DBInfo.Parameter + (command.Parameters.Count + 1);
                 parameter.Value = value ?? DBNull.Value;
                 command.Parameters.Add(parameter);
             }
@@ -67,8 +49,7 @@ namespace NightlyCode.Database.Clients
         /// </summary>
         /// <returns>Transaction object to use</returns>
         public Transaction Transaction() {
-            OpenConnection();
-            return new Transaction(dbinfo, connection, null);
+            return new Transaction(DBInfo, Connection.Connect(), null);
         }
 
         Tables.DataTable CreateTable(IDataReader reader) {
@@ -81,8 +62,7 @@ namespace NightlyCode.Database.Clients
         }
 
         /// <inheritdoc />
-        public Task<Tables.DataTable> QueryAsync(string query, params object[] parameters)
-        {
+        public Task<Tables.DataTable> QueryAsync(string query, params object[] parameters) {
             return QueryAsync(query, (IEnumerable<object>)parameters);
         }
 
@@ -102,8 +82,7 @@ namespace NightlyCode.Database.Clients
         }
 
         /// <inheritdoc />
-        public Task<int> NonQueryAsync(string commandstring, params object[] parameters)
-        {
+        public Task<int> NonQueryAsync(string commandstring, params object[] parameters) {
             return NonQueryAsync(commandstring, (IEnumerable<object>)parameters);
         }
 
@@ -123,8 +102,7 @@ namespace NightlyCode.Database.Clients
         }
 
         /// <inheritdoc />
-        public Task<object> ScalarAsync(string query, params object[] parameters)
-        {
+        public Task<object> ScalarAsync(string query, params object[] parameters) {
             return ScalarAsync(query, (IEnumerable<object>)parameters);
         }
 
@@ -144,8 +122,7 @@ namespace NightlyCode.Database.Clients
         }
 
         /// <inheritdoc />
-        public Task<IEnumerable<object>> SetAsync(string query, params object[] parameters)
-        {
+        public Task<IEnumerable<object>> SetAsync(string query, params object[] parameters) {
             return SetAsync(query, (IEnumerable<object>)parameters);
         }
 
@@ -165,16 +142,15 @@ namespace NightlyCode.Database.Clients
         }
 
         /// <inheritdoc />
-        public Task<int> NonQueryAsync(Transaction transaction, string commandstring, params object[] parameters)
-        {
+        public Task<int> NonQueryAsync(Transaction transaction, string commandstring, params object[] parameters) {
             return NonQueryAsync(transaction, commandstring, (IEnumerable<object>)parameters);
         }
 
         /// <inheritdoc />
         public int NonQuery(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
-            OpenConnection();
-            using (DbCommand command = PrepareCommand(commandstring, parameters)) {
-                if(transaction!=null)
+            using(IConnection connection = Connection.Connect())
+            using(DbCommand command = PrepareCommand(connection, commandstring, parameters)) {
+                if(transaction != null)
                     command.Transaction = transaction.DbTransaction;
                 return command.ExecuteNonQuery();
             }
@@ -182,9 +158,9 @@ namespace NightlyCode.Database.Clients
 
         /// <inheritdoc />
         public async Task<int> NonQueryAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
-            await OpenConnectionAsync();
-            using (DbCommand command = PrepareCommand(commandstring, parameters)) {
-                if (transaction != null)
+            using(IConnection connection = await Connection.ConnectAsync())
+            using(DbCommand command = PrepareCommand(connection, commandstring, parameters)) {
+                if(transaction != null)
                     command.Transaction = transaction.DbTransaction;
                 return await command.ExecuteNonQueryAsync();
             }
@@ -196,29 +172,28 @@ namespace NightlyCode.Database.Clients
         }
 
         /// <inheritdoc />
-        public Task<Tables.DataTable> QueryAsync(Transaction transaction, string query, params object[] parameters)
-        {
+        public Task<Tables.DataTable> QueryAsync(Transaction transaction, string query, params object[] parameters) {
             return QueryAsync(transaction, query, (IEnumerable<object>)parameters);
         }
 
         /// <inheritdoc />
         public Tables.DataTable Query(Transaction transaction, string query, IEnumerable<object> parameters) {
-            OpenConnection();
-            using (IDbCommand command = PrepareCommand(query, parameters)) {
-                if (transaction != null)
+            using(IConnection connection = Connection.Connect())
+            using(IDbCommand command = PrepareCommand(connection, query, parameters)) {
+                if(transaction != null)
                     command.Transaction = transaction.DbTransaction;
-                using (IDataReader reader = command.ExecuteReader())
+                using(IDataReader reader = command.ExecuteReader())
                     return CreateTable(reader);
             }
         }
 
         /// <inheritdoc />
         public async Task<Tables.DataTable> QueryAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
-            await OpenConnectionAsync();
-            using (DbCommand command = PrepareCommand(query, parameters)) {
-                if (transaction != null)
+            using(IConnection connection = await Connection.ConnectAsync())
+            using(DbCommand command = PrepareCommand(connection, query, parameters)) {
+                if(transaction != null)
                     command.Transaction = transaction.DbTransaction;
-                using (IDataReader reader = await command.ExecuteReaderAsync())
+                using(IDataReader reader = await command.ExecuteReaderAsync())
                     return CreateTable(reader);
             }
         }
@@ -229,16 +204,15 @@ namespace NightlyCode.Database.Clients
         }
 
         /// <inheritdoc />
-        public Task<object> ScalarAsync(Transaction transaction, string query, params object[] parameters)
-        {
+        public Task<object> ScalarAsync(Transaction transaction, string query, params object[] parameters) {
             return ScalarAsync(transaction, query, (IEnumerable<object>)parameters);
         }
 
         /// <inheritdoc />
         public object Scalar(Transaction transaction, string query, IEnumerable<object> parameters) {
-            OpenConnection();
-            using (IDbCommand command = PrepareCommand(query, parameters)) {
-                if (transaction != null)
+            using(IConnection connection = Connection.Connect())
+            using(IDbCommand command = PrepareCommand(connection, query, parameters)) {
+                if(transaction != null)
                     command.Transaction = transaction.DbTransaction;
                 return command.ExecuteScalar();
             }
@@ -246,9 +220,9 @@ namespace NightlyCode.Database.Clients
 
         /// <inheritdoc />
         public async Task<object> ScalarAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
-            await OpenConnectionAsync();
-            using (DbCommand command = PrepareCommand(query, parameters)) {
-                if (transaction != null)
+            using(IConnection connection = await Connection.ConnectAsync())
+            using(DbCommand command = PrepareCommand(connection, query, parameters)) {
+                if(transaction != null)
                     command.Transaction = transaction.DbTransaction;
                 return await command.ExecuteScalarAsync();
             }
@@ -260,19 +234,18 @@ namespace NightlyCode.Database.Clients
         }
 
         /// <inheritdoc />
-        public Task<IEnumerable<object>> SetAsync(Transaction transaction, string query, params object[] parameters)
-        {
+        public Task<IEnumerable<object>> SetAsync(Transaction transaction, string query, params object[] parameters) {
             return SetAsync(transaction, query, (IEnumerable<object>)parameters);
         }
 
         /// <inheritdoc />
         public IEnumerable<object> Set(Transaction transaction, string query, IEnumerable<object> parameters) {
-            OpenConnection();
-            using (IDbCommand command = PrepareCommand(query, parameters)) {
-                if (transaction != null)
+            using(IConnection connection = Connection.Connect())
+            using(IDbCommand command = PrepareCommand(connection, query, parameters)) {
+                if(transaction != null)
                     command.Transaction = transaction.DbTransaction;
-                using (IDataReader reader = command.ExecuteReader()) {
-                    while (reader.Read())
+                using(IDataReader reader = command.ExecuteReader()) {
+                    while(reader.Read())
                         yield return reader.GetValue(0);
                     reader.Close();
                 }
@@ -281,9 +254,9 @@ namespace NightlyCode.Database.Clients
 
         /// <inheritdoc />
         public async Task<IEnumerable<object>> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
-            await OpenConnectionAsync();
-            using (DbCommand command = PrepareCommand(query, parameters)) {
-                if (transaction != null)
+            using(IConnection connection = await Connection.ConnectAsync())
+            using(DbCommand command = PrepareCommand(connection, query, parameters)) {
+                if(transaction != null)
                     command.Transaction = transaction.DbTransaction;
 
                 // needs to be converted to array to allow accessing the reader while command is still opened
@@ -291,11 +264,9 @@ namespace NightlyCode.Database.Clients
             }
         }
 
-        IEnumerable<object> ReadSet(IDataReader reader)
-        {
-            using (reader)
-            {
-                while (reader.Read())
+        IEnumerable<object> ReadSet(IDataReader reader) {
+            using(reader) {
+                while(reader.Read())
                     yield return reader.GetValue(0);
                 reader.Close();
             }

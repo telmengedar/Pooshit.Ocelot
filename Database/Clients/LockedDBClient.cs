@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using NightlyCode.Database.Info;
@@ -27,7 +25,7 @@ namespace NightlyCode.Database.Clients {
         public IDBInfo DBInfo => baseclient.DBInfo;
 
         /// <inheritdoc />
-        public DbConnection Connection => baseclient.Connection;
+        public IConnectionProvider Connection => baseclient.Connection;
 
         /// <inheritdoc />
         public int NonQuery(string commandstring, params object[] parameters) {
@@ -41,7 +39,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public int NonQuery(Transaction transaction, string commandstring, params object[] parameters) {
-            if (transaction == null) {
+            if(transaction == null) {
                 connectionlock.Wait();
                 try {
                     return baseclient.NonQuery(null, commandstring, parameters);
@@ -56,7 +54,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public int NonQuery(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
-            if (transaction == null) {
+            if(transaction == null) {
                 connectionlock.Wait();
                 try {
                     return baseclient.NonQuery(null, commandstring, parameters);
@@ -81,7 +79,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public DataTable Query(Transaction transaction, string query, params object[] parameters) {
-            if (transaction == null) {
+            if(transaction == null) {
                 connectionlock.Wait();
                 try {
                     return baseclient.Query(null, query, parameters);
@@ -96,7 +94,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public DataTable Query(Transaction transaction, string query, IEnumerable<object> parameters) {
-            if (transaction == null) {
+            if(transaction == null) {
                 connectionlock.Wait();
                 try {
                     return baseclient.Query(null, query, parameters);
@@ -121,7 +119,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public object Scalar(Transaction transaction, string query, params object[] parameters) {
-            if (transaction == null) {
+            if(transaction == null) {
                 connectionlock.Wait();
                 try {
                     return baseclient.Scalar(null, query, parameters);
@@ -136,7 +134,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public object Scalar(Transaction transaction, string query, IEnumerable<object> parameters) {
-            if (transaction == null) {
+            if(transaction == null) {
                 connectionlock.Wait();
                 try {
                     return baseclient.Scalar(null, query, parameters);
@@ -161,7 +159,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public IEnumerable<object> Set(Transaction transaction, string query, params object[] parameters) {
-            if (transaction == null) {
+            if(transaction == null) {
                 connectionlock.Wait();
                 try {
                     return baseclient.Set(null, query, parameters);
@@ -176,7 +174,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public IEnumerable<object> Set(Transaction transaction, string query, IEnumerable<object> parameters) {
-            if (transaction == null) {
+            if(transaction == null) {
                 connectionlock.Wait();
                 try {
                     return baseclient.Set(null, query, parameters);
@@ -201,7 +199,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public async Task<int> NonQueryAsync(Transaction transaction, string commandstring, params object[] parameters) {
-            if (transaction == null) {
+            if(transaction == null) {
                 connectionlock.Wait();
                 try {
                     return await baseclient.NonQueryAsync(null, commandstring, parameters);
@@ -216,7 +214,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public async Task<int> NonQueryAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
-            if (transaction == null) {
+            if(transaction == null) {
                 connectionlock.Wait();
                 try {
                     return await baseclient.NonQueryAsync(null, commandstring, parameters);
@@ -241,7 +239,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public async Task<DataTable> QueryAsync(Transaction transaction, string query, params object[] parameters) {
-            if (transaction == null) {
+            if(transaction == null) {
                 connectionlock.Wait();
                 try {
                     return await baseclient.QueryAsync(null, query, parameters);
@@ -256,7 +254,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public async Task<DataTable> QueryAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
-            if (transaction == null) {
+            if(transaction == null) {
                 connectionlock.Wait();
                 try {
                     return await baseclient.QueryAsync(null, query, parameters);
@@ -281,7 +279,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public async Task<object> ScalarAsync(Transaction transaction, string query, params object[] parameters) {
-            if (transaction == null) {
+            if(transaction == null) {
                 connectionlock.Wait();
                 try {
                     return await baseclient.ScalarAsync(null, query, parameters);
@@ -296,7 +294,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public async Task<object> ScalarAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
-            if (transaction == null) {
+            if(transaction == null) {
                 connectionlock.Wait();
                 try {
                     return await baseclient.ScalarAsync(null, query, parameters);
@@ -321,7 +319,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public async Task<IEnumerable<object>> SetAsync(Transaction transaction, string query, params object[] parameters) {
-            if (transaction == null) {
+            if(transaction == null) {
                 connectionlock.Wait();
                 try {
                     return await baseclient.SetAsync(null, query, parameters);
@@ -336,7 +334,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public async Task<IEnumerable<object>> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
-            if (transaction == null) {
+            if(transaction == null) {
                 connectionlock.Wait();
                 try {
                     return await baseclient.SetAsync(null, query, parameters);
@@ -351,9 +349,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public Transaction Transaction() {
-            if (Connection.State != ConnectionState.Open)
-                Connection.Open();
-            return new Transaction(DBInfo, Connection, connectionlock);
+            return new Transaction(DBInfo, Connection.Connect(), connectionlock);
         }
     }
 }

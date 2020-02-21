@@ -19,7 +19,7 @@ namespace NightlyCode.Database.Entities.Operations {
         OrderByCriteria[] orderbycriterias;
         IDBField[] groupbycriterias;
         readonly List<JoinOperation> joinoperations = new List<JoinOperation>();
- 
+
         /// <summary>
         /// creates a new <see cref="LoadEntitiesOperation{T}"/>
         /// </summary>
@@ -68,35 +68,64 @@ namespace NightlyCode.Database.Entities.Operations {
         /// loads entities using the operation
         /// </summary>
         /// <returns>all loaded entities</returns>
-        public IEnumerable<T> Execute(Transaction transaction = null) {
-            return Prepare<T>().Execute(transaction);
+        public IEnumerable<T> Execute(Transaction transaction, params object[] parameters) {
+            return Prepare<T>().Execute(transaction, parameters);
         }
 
         /// <summary>
         /// loads entities using the operation
         /// </summary>
         /// <returns>all loaded entities</returns>
-        public Task<IEnumerable<T>> ExecuteAsync(Transaction transaction = null)
-        {
-            return Prepare<T>().ExecuteAsync(transaction);
+        public Task<IEnumerable<T>> ExecuteAsync(Transaction transaction, params object[] parameters) {
+            return Prepare<T>().ExecuteAsync(transaction, parameters);
+        }
+
+        /// <summary>
+        /// loads entities using the operation
+        /// </summary>
+        /// <returns>all loaded entities</returns>
+        public IEnumerable<T> Execute(params object[] parameters) {
+            return Prepare<T>().Execute(parameters);
+        }
+
+        /// <summary>
+        /// loads entities using the operation
+        /// </summary>
+        /// <returns>all loaded entities</returns>
+        public Task<IEnumerable<T>> ExecuteAsync(params object[] parameters) {
+            return Prepare<T>().ExecuteAsync(parameters);
         }
 
         /// <summary>
         /// loads entities from joined data
         /// </summary>
         /// <returns>all loaded entities</returns>
-        public IEnumerable<TEntity> Execute<TEntity>(Transaction transaction = null)
-        {
-            return Prepare<TEntity>().Execute(transaction);
+        public IEnumerable<TEntity> Execute<TEntity>(params object[] parameters) {
+            return Prepare<TEntity>().Execute(parameters);
         }
 
         /// <summary>
         /// loads entities from joined data
         /// </summary>
         /// <returns>all loaded entities</returns>
-        public Task<IEnumerable<TEntity>> ExecuteAsync<TEntity>(Transaction transaction = null)
-        {
-            return Prepare<TEntity>().ExecuteAsync(transaction);
+        public Task<IEnumerable<TEntity>> ExecuteAsync<TEntity>(params object[] parameters) {
+            return Prepare<TEntity>().ExecuteAsync(parameters);
+        }
+
+        /// <summary>
+        /// loads entities from joined data
+        /// </summary>
+        /// <returns>all loaded entities</returns>
+        public IEnumerable<TEntity> Execute<TEntity>(Transaction transaction, params object[] parameters) {
+            return Prepare<TEntity>().Execute(parameters);
+        }
+
+        /// <summary>
+        /// loads entities from joined data
+        /// </summary>
+        /// <returns>all loaded entities</returns>
+        public Task<IEnumerable<TEntity>> ExecuteAsync<TEntity>(Transaction transaction, params object[] parameters) {
+            return Prepare<TEntity>().ExecuteAsync(parameters);
         }
 
         /// <summary>
@@ -118,13 +147,13 @@ namespace NightlyCode.Database.Entities.Operations {
             string columnindicator = dbclient.DBInfo.ColumnIndicator;
 
             EntityDescriptor modeldescriptor = descriptorgetter(typeof(TEntity));
-            if(typeof(TEntity)==typeof(T))
+            if(typeof(TEntity) == typeof(T))
                 // most simple case, entity is created from base table
                 preparator.AppendText(string.Join(", ", modeldescriptor.Columns.Select(c => $"{columnindicator}{c.Name}{columnindicator}")));
             else {
                 // entity is created from some joined table data
                 JoinOperation entityjoin = JoinOperations.FirstOrDefault(o => o.JoinType == typeof(TEntity));
-                if(entityjoin==null)
+                if(entityjoin == null)
                     throw new InvalidOperationException("Unable to determine where to select entity values from (not selecting from base table and no join matches entity type)");
                 preparator.AppendText(string.Join(", ", modeldescriptor.Columns.Select(c => $"{entityjoin.Alias}.{columnindicator}{c.Name}{columnindicator}")));
             }
@@ -133,16 +162,16 @@ namespace NightlyCode.Database.Entities.Operations {
             preparator.AppendText("FROM").AppendText(descriptor.TableName);
 
             string tablealias = null;
-            if(joinoperations.Count>0) {
+            if(joinoperations.Count > 0) {
                 preparator.AppendText("AS t");
                 tablealias = "t";
                 foreach(JoinOperation operation in joinoperations) {
                     preparator.AppendText("INNER JOIN").AppendText(descriptorgetter(operation.JoinType).TableName);
-                    if (!string.IsNullOrEmpty(operation.Alias))
+                    if(!string.IsNullOrEmpty(operation.Alias))
                         preparator.AppendText("AS").AppendText(operation.Alias);
                     preparator.AppendText("ON");
                     CriteriaVisitor.GetCriteriaText(operation.Criterias, descriptorgetter, dbclient.DBInfo, preparator, tablealias, operation.Alias);
-                    if (operation.AdditionalCriterias != null) {
+                    if(operation.AdditionalCriterias != null) {
                         preparator.AppendText("AND");
                         CriteriaVisitor.GetCriteriaText(operation.AdditionalCriterias, descriptorgetter, dbclient.DBInfo, preparator, operation.Alias);
                     }
@@ -151,9 +180,10 @@ namespace NightlyCode.Database.Entities.Operations {
 
             if(Criterias != null) {
                 preparator.AppendText("WHERE");
-                if(tablealias!=null)
+                if(tablealias != null)
                     CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator, tablealias);
-                else CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator);
+                else
+                    CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator);
             }
 
             bool flag = true;
@@ -161,37 +191,40 @@ namespace NightlyCode.Database.Entities.Operations {
                 preparator.AppendText("GROUP BY");
 
                 foreach(IDBField criteria in groupbycriterias) {
-                    if(flag) flag = false;
-                    else preparator.AppendText(",");
+                    if(flag)
+                        flag = false;
+                    else
+                        preparator.AppendText(",");
                     dbclient.DBInfo.Append(criteria, preparator, descriptorgetter);
                 }
-                
+
             }
 
             flag = true;
-            if (orderbycriterias != null)
-            {
+            if(orderbycriterias != null) {
                 preparator.AppendText("ORDER BY");
 
-                foreach (OrderByCriteria criteria in orderbycriterias)
-                {
-                    if (flag) flag = false;
-                    else preparator.AppendText(",");
+                foreach(OrderByCriteria criteria in orderbycriterias) {
+                    if(flag)
+                        flag = false;
+                    else
+                        preparator.AppendText(",");
                     dbclient.DBInfo.Append(criteria.Field, preparator, descriptorgetter);
 
-                    if (!criteria.Ascending)
+                    if(!criteria.Ascending)
                         preparator.AppendText("DESC");
                 }
             }
 
-            if (Havings != null) {
+            if(Havings != null) {
                 preparator.AppendText("HAVING");
-                if(tablealias!=null)
+                if(tablealias != null)
                     CriteriaVisitor.GetCriteriaText(Havings, descriptorgetter, dbclient.DBInfo, preparator, tablealias);
-                else CriteriaVisitor.GetCriteriaText(Havings, descriptorgetter, dbclient.DBInfo, preparator);
+                else
+                    CriteriaVisitor.GetCriteriaText(Havings, descriptorgetter, dbclient.DBInfo, preparator);
             }
 
-            if (!ReferenceEquals(LimitStatement, null)) {
+            if(!ReferenceEquals(LimitStatement, null)) {
                 dbclient.DBInfo.Append(LimitStatement, preparator, descriptorgetter);
             }
 
@@ -214,7 +247,7 @@ namespace NightlyCode.Database.Entities.Operations {
         }
 
         /// <inheritdoc />
-        ILoadEntitiesOperation ILoadEntitiesOperation.Join<TJoin>(Expression criterias, Expression additionalcriterias=null) {
+        ILoadEntitiesOperation ILoadEntitiesOperation.Join<TJoin>(Expression criterias, Expression additionalcriterias = null) {
             joinoperations.Add(new JoinOperation(typeof(TJoin), criterias, additionalcriterias, $"j{joinoperations.Count}"));
             return this;
         }
@@ -224,8 +257,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="criterias"></param>
         /// <returns></returns>
-        public LoadEntitiesOperation<T> Where(Expression criterias)
-        {
+        public LoadEntitiesOperation<T> Where(Expression criterias) {
             Criterias = criterias;
             return this;
         }
@@ -259,7 +291,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="fields"></param>
         /// <returns></returns>
         public LoadEntitiesOperation<T> GroupBy(params IDBField[] fields) {
-            if(fields.Length==0)
+            if(fields.Length == 0)
                 throw new InvalidOperationException("at least one group criteria has to be specified");
 
             groupbycriterias = fields;
@@ -271,7 +303,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="limit">number of rows to return</param>
         public LoadEntitiesOperation<T> Limit(long limit) {
-            if (ReferenceEquals(LimitStatement, null))
+            if(ReferenceEquals(LimitStatement, null))
                 LimitStatement = new LimitField();
             LimitStatement.Limit = limit;
             return this;
@@ -281,9 +313,8 @@ namespace NightlyCode.Database.Entities.Operations {
         /// specifies an offset from which on to return result rows
         /// </summary>
         /// <param name="offset">number of rows to skip</param>
-        public LoadEntitiesOperation<T> Offset(long offset)
-        {
-            if (ReferenceEquals(LimitStatement, null))
+        public LoadEntitiesOperation<T> Offset(long offset) {
+            if(ReferenceEquals(LimitStatement, null))
                 LimitStatement = new LimitField();
             LimitStatement.Offset = offset;
             return this;
@@ -296,8 +327,8 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="criteria">predicate for criteria</param>
         /// <param name="additionalcriterias">additional criterias for join</param>
         /// <returns></returns>
-        public LoadEntitiesOperation<T, TJoin> Join<TJoin>(Expression<Func<T, TJoin, bool>> criteria, Expression<Func<TJoin, bool>> additionalcriterias=null) {
-            ((ILoadEntitiesOperation) this).Join<TJoin>(criteria, additionalcriterias);
+        public LoadEntitiesOperation<T, TJoin> Join<TJoin>(Expression<Func<T, TJoin, bool>> criteria, Expression<Func<TJoin, bool>> additionalcriterias = null) {
+            ((ILoadEntitiesOperation)this).Join<TJoin>(criteria, additionalcriterias);
             return new LoadEntitiesOperation<T, TJoin>(this);
         }
     }
