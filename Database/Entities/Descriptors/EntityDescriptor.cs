@@ -4,8 +4,7 @@ using System.Linq;
 using System.Reflection;
 using NightlyCode.Database.Entities.Attributes;
 
-namespace NightlyCode.Database.Entities.Descriptors
-{
+namespace NightlyCode.Database.Entities.Descriptors {
 
     /// <summary>
     /// descriptor of an entity
@@ -28,8 +27,7 @@ namespace NightlyCode.Database.Entities.Descriptors
         /// adds a column to the descriptor
         /// </summary>
         /// <param name="column"></param>
-        internal void AddColumn(EntityColumnDescriptor column)
-        {
+        internal void AddColumn(EntityColumnDescriptor column) {
             columndescriptors[column.Name] = column;
             properties[column.Property.Name] = column;
             if(column.PrimaryKey)
@@ -39,7 +37,7 @@ namespace NightlyCode.Database.Entities.Descriptors
         internal void RemoveColumn(EntityColumnDescriptor column) {
             columndescriptors.Remove(column.Name);
             properties.Remove(column.Property.Name);
-            if (column.PrimaryKey)
+            if(column.PrimaryKey)
                 PrimaryKeyColumn = null;
         }
 
@@ -66,8 +64,7 @@ namespace NightlyCode.Database.Entities.Descriptors
         /// adds an unique descriptor for the entity
         /// </summary>
         /// <param name="unique"></param>
-        internal void AddUnique(UniqueDescriptor unique)
-        {
+        internal void AddUnique(UniqueDescriptor unique) {
             uniques.Add(unique);
         }
 
@@ -75,8 +72,7 @@ namespace NightlyCode.Database.Entities.Descriptors
         /// removes a unique descriptor from entity model
         /// </summary>
         /// <param name="columns">columns which make up the unique</param>
-        internal void RemoveUnique(string[] columns)
-        {
+        internal void RemoveUnique(string[] columns) {
             uniques.RemoveAll(u => u.Columns.SequenceEqual(columns));
         }
 
@@ -111,7 +107,7 @@ namespace NightlyCode.Database.Entities.Descriptors
         /// <param name="column"></param>
         /// <returns></returns>
         public EntityColumnDescriptor GetColumn(string column) {
-            if (!columndescriptors.TryGetValue(column, out EntityColumnDescriptor descriptor))
+            if(!columndescriptors.TryGetValue(column, out EntityColumnDescriptor descriptor))
                 throw new KeyNotFoundException($"Column '{column}' not found in entity descriptor. Known columns:\n{string.Join("\n", columndescriptors.Keys)}");
             return descriptor;
         }
@@ -119,24 +115,32 @@ namespace NightlyCode.Database.Entities.Descriptors
         /// <summary>
         /// get the full column descriptor for the property
         /// </summary>
-        /// <param name="property"></param>
-        /// <returns></returns>
+        /// <param name="property">name of property of which to return column model</param>
+        /// <returns>column model linked to property</returns>
         public EntityColumnDescriptor GetColumnByProperty(string property) {
             return properties[property];
+        }
+
+        /// <summary>
+        /// get the full column descriptor for the property
+        /// </summary>
+        /// <param name="property">name of property of which to return column model</param>
+        /// <returns>true if property was found, false otherwise</returns>
+        public bool TryGetColumnByProperty(string property, out EntityColumnDescriptor columnmodel) {
+            return properties.TryGetValue(property, out columnmodel);
         }
 
         internal static EntityColumnDescriptor CreateColumnDescriptor(PropertyInfo property) {
             ColumnAttribute column = ColumnAttribute.Get(property);
             string columnname = column == null ? property.Name.ToLower() : column.Column;
 
-            EntityColumnDescriptor columndescriptor = new EntityColumnDescriptor(columnname, property)
-            {
+            EntityColumnDescriptor columndescriptor = new EntityColumnDescriptor(columnname, property) {
                 PrimaryKey = PrimaryKeyAttribute.IsPrimaryKey(property),
                 AutoIncrement = AutoIncrementAttribute.IsAutoIncrement(property),
                 NotNull = NotNullAttribute.HasNotNull(property) || (property.PropertyType.IsValueType && !(property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))),
             };
 
-            if (!columndescriptor.PrimaryKey)
+            if(!columndescriptor.PrimaryKey)
                 columndescriptor.DefaultValue = DefaultValueAttribute.GetDefaultValue(property);
 
             return columndescriptor;
@@ -147,8 +151,7 @@ namespace NightlyCode.Database.Entities.Descriptors
         /// </summary>
         /// <param name="type">type for which to create entity descriptor</param>
         /// <returns>entitydescriptor for specified type</returns>
-        internal static EntityDescriptor Create(Type type)
-        {
+        public static EntityDescriptor Create(Type type) {
             TableAttribute tableattribute = TableAttribute.Get(type);
             string tablename = tableattribute == null ? type.Name.ToLower() : tableattribute.Table;
 
@@ -158,35 +161,29 @@ namespace NightlyCode.Database.Entities.Descriptors
             Dictionary<string, List<string>> unique = new Dictionary<string, List<string>>();
 
             PropertyInfo[] propertyinfos = type.GetProperties();
-            foreach (PropertyInfo propertyinfo in propertyinfos)
-            {
-                if (IgnoreAttribute.HasIgnore(propertyinfo))
+            foreach(PropertyInfo propertyinfo in propertyinfos) {
+                if(IgnoreAttribute.HasIgnore(propertyinfo))
                     continue;
 
                 EntityColumnDescriptor columndescriptor = CreateColumnDescriptor(propertyinfo);
 
-                if (propertyinfo.GetCustomAttributes(typeof(IndexAttribute), true) is IndexAttribute[] ia)
-                {
-                    foreach (IndexAttribute indexattr in ia)
-                    {
+                if(propertyinfo.GetCustomAttributes(typeof(IndexAttribute), true) is IndexAttribute[] ia) {
+                    foreach(IndexAttribute indexattr in ia) {
                         string indexname = indexattr.Name ?? columndescriptor.Name;
-                        if (!indices.TryGetValue(indexname, out List<string> columns))
+                        if(!indices.TryGetValue(indexname, out List<string> columns))
                             indices[indexname] = columns = new List<string>();
                         columns.Add(columndescriptor.Name);
                     }
                 }
 
-                if (propertyinfo.GetCustomAttributes(typeof(UniqueAttribute), true) is UniqueAttribute[] ua)
-                {
-                    foreach (UniqueAttribute uniqueattr in ua)
-                    {
-                        if (uniqueattr.Name == null)
-                        {
+                if(propertyinfo.GetCustomAttributes(typeof(UniqueAttribute), true) is UniqueAttribute[] ua) {
+                    foreach(UniqueAttribute uniqueattr in ua) {
+                        if(uniqueattr.Name == null) {
                             columndescriptor.IsUnique = true;
                             continue;
                         }
 
-                        if (!unique.TryGetValue(uniqueattr.Name, out List<string> columns))
+                        if(!unique.TryGetValue(uniqueattr.Name, out List<string> columns))
                             unique[uniqueattr.Name] = columns = new List<string>();
                         columns.Add(columndescriptor.Name);
                     }
@@ -195,10 +192,9 @@ namespace NightlyCode.Database.Entities.Descriptors
                 descriptor.AddColumn(columndescriptor);
             }
 
-            foreach (KeyValuePair<string, List<string>> kvp in indices)
+            foreach(KeyValuePair<string, List<string>> kvp in indices)
                 descriptor.AddIndex(new IndexDescriptor(kvp.Key, kvp.Value));
-            foreach (KeyValuePair<string, List<string>> kvp in unique)
-            {
+            foreach(KeyValuePair<string, List<string>> kvp in unique) {
                 descriptor.AddUnique(new UniqueDescriptor(kvp.Value));
             }
 

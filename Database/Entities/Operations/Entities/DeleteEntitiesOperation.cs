@@ -21,7 +21,7 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         /// <param name="descriptor">access to entity descriptor</param>
         public DeleteEntitiesOperation(IDBClient dbclient, Func<Type, EntityDescriptor> descriptor) {
             entitydescriptor = descriptor(typeof(T));
-            if (entitydescriptor.PrimaryKeyColumn == null)
+            if(entitydescriptor.PrimaryKeyColumn == null)
                 throw new InvalidOperationException("Entity to remove needs a primary key");
 
 
@@ -37,7 +37,7 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         /// </summary>
         /// <param name="entities">entities on which to operate</param>
         /// <returns>number of affected rows</returns>
-        public int Execute(params T[] entities) {
+        public long Execute(params T[] entities) {
             return preparedoperation.Execute(entities.Select(e => entitydescriptor.PrimaryKeyColumn.GetValue(e)).ToArray());
         }
 
@@ -47,7 +47,7 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         /// <param name="transaction">transaction to use</param>
         /// <param name="entities">entities on which to operate</param>
         /// <returns>number of affected rows</returns>
-        public int Execute(Transaction transaction, params T[] entities) {
+        public long Execute(Transaction transaction, params T[] entities) {
             return preparedoperation.Execute(transaction, entities.Select(e => entitydescriptor.PrimaryKeyColumn.GetValue(e)).ToArray());
         }
 
@@ -56,7 +56,7 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         /// </summary>
         /// <param name="entities">entities on which to operate</param>
         /// <returns>number of affected rows</returns>
-        public int Execute(IEnumerable<T> entities) {
+        public long Execute(IEnumerable<T> entities) {
             return preparedoperation.Execute(entities.Select(e => entitydescriptor.PrimaryKeyColumn.GetValue(e)).ToArray());
         }
 
@@ -66,7 +66,7 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         /// <param name="transaction">transaction to use</param>
         /// <param name="entities">entities on which to operate</param>
         /// <returns>number of affected rows</returns>
-        public int Execute(Transaction transaction, IEnumerable<T> entities) {
+        public long Execute(Transaction transaction, IEnumerable<T> entities) {
             return preparedoperation.Execute(transaction, entities.Select(e => entitydescriptor.PrimaryKeyColumn.GetValue(e)).ToArray());
         }
     }

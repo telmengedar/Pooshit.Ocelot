@@ -49,10 +49,10 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
         /// </summary>
         /// <param name="transaction">transaction to use (optional)</param>
         /// <returns>number of rows inserted (should be 1 in all non error cases)</returns>
-        public int Execute(Transaction transaction = null) {
-            PreparedOperation operation=Prepare();
+        public long Execute(Transaction transaction = null) {
+            PreparedOperation operation = Prepare();
 
-            if (transaction == null)
+            if(transaction == null)
                 return operation.Execute();
             return operation.Execute(transaction);
         }
@@ -67,14 +67,13 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
             preparator.AppendText(tablename);
 
             bool first = true;
-            if (columns.Length > 0)
-            {
+            if(columns.Length > 0) {
                 preparator.AppendText("(");
-                foreach (string field in columns)
-                {
-                    if (!first)
+                foreach(string field in columns) {
+                    if(!first)
                         preparator.AppendText(",");
-                    else first = false;
+                    else
+                        first = false;
                     preparator.AppendText(dbclient.DBInfo.MaskColumn(field));
                 }
                 preparator.AppendText(")");
@@ -82,27 +81,25 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
 
             first = true;
             preparator.AppendText("VALUES(");
-            if (values?.Length > 0)
-            {
-                foreach (object value in values)
-                {
-                    if (!first)
+            if(values?.Length > 0) {
+                foreach(object value in values) {
+                    if(!first)
                         preparator.AppendText(",");
-                    else first = false;
+                    else
+                        first = false;
 
                     object dbvalue = value;
-                    if (dbvalue is Enum)
+                    if(dbvalue is Enum)
                         dbvalue = Converter.Convert(dbvalue, Enum.GetUnderlyingType(dbvalue.GetType()));
                     preparator.AppendParameter(dbvalue);
                 }
             }
-            else
-            {
-                foreach (string column in columns)
-                {
-                    if (!first)
+            else {
+                foreach(string column in columns) {
+                    if(!first)
                         preparator.AppendText(",");
-                    else first = false;
+                    else
+                        first = false;
                     preparator.AppendParameter();
                 }
             }

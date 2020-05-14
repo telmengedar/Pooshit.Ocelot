@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
@@ -15,7 +16,7 @@ namespace NightlyCode.Database.Entities.Operations {
     public class UpdateValuesOperation<T> {
         readonly IDBClient dbclient;
         readonly Func<Type, EntityDescriptor> descriptorgetter;
-        Expression[] updatesetters;
+        readonly List<Expression> updatesetters = new List<Expression>();
 
         /// <summary>
         /// ctor
@@ -33,7 +34,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="setters"></param>
         /// <returns></returns>
         public UpdateValuesOperation<T> Set(params Expression<Func<T, bool>>[] setters) {
-            updatesetters = setters;
+            updatesetters.AddRange(setters);
             return this;
         }
 
@@ -57,8 +58,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="transaction">transaction to use (optional)</param>
         /// <returns>number of affected rows</returns>
-        public int Execute(Transaction transaction=null)
-        {
+        public long Execute(Transaction transaction = null) {
             return Prepare().Execute(transaction);
         }
 
@@ -67,8 +67,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="transaction">transaction to use (optional)</param>
         /// <returns>number of affected rows</returns>
-        public Task<int> ExecuteAsync(Transaction transaction = null)
-        {
+        public Task<long> ExecuteAsync(Transaction transaction = null) {
             return Prepare().ExecuteAsync(transaction);
         }
 
@@ -88,11 +87,12 @@ namespace NightlyCode.Database.Entities.Operations {
             if(updatesetters == null)
                 throw new InvalidOperationException("No update operations specified");
 
-            bool first=true;
+            bool first = true;
             foreach(Expression setter in updatesetters) {
                 if(!first)
                     preparator.AppendText(",");
-                else first = false;
+                else
+                    first = false;
 
                 CriteriaVisitor.GetCriteriaText(setter, descriptorgetter, dbclient.DBInfo, preparator);
             }

@@ -23,7 +23,7 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         /// <param name="descriptor">access to entity description</param>
         public UpdateEntitiesOperation(IDBClient dbclient, Func<Type, EntityDescriptor> descriptor) {
             entitydescription = descriptor(typeof(T));
-            if (entitydescription.PrimaryKeyColumn == null)
+            if(entitydescription.PrimaryKeyColumn == null)
                 throw new InvalidOperationException("Entity to update needs a primary key");
 
             this.dbclient = dbclient;
@@ -36,7 +36,7 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
             preparator.AppendText($"UPDATE {entitydescription.TableName} SET ");
             preparator.AppendText($"{dbclient.DBInfo.ColumnIndicator}{interestingcolumns.First().Name}{dbclient.DBInfo.ColumnIndicator}=");
             preparator.AppendParameter();
-            foreach (EntityColumnDescriptor column in interestingcolumns.Skip(1)) {
+            foreach(EntityColumnDescriptor column in interestingcolumns.Skip(1)) {
                 preparator.AppendText($",{dbclient.DBInfo.ColumnIndicator}{column.Name}{dbclient.DBInfo.ColumnIndicator}=");
                 preparator.AppendParameter();
             }
@@ -51,8 +51,8 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         /// </summary>
         /// <param name="entities">entities on which to operate</param>
         /// <returns>number of affected rows</returns>
-        public int Execute(params T[] entities) {
-            foreach (T entity in entities)
+        public long Execute(params T[] entities) {
+            foreach(T entity in entities)
                 preparedoperation.Execute(interestingcolumns.Select(c => c.GetValue(entity)).Concat(new[] { entitydescription.PrimaryKeyColumn.GetValue(entity) }).ToArray());
             return entities.Length;
         }
@@ -63,9 +63,9 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         /// <param name="transaction">transaction to use</param>
         /// <param name="entities">entities on which to operate</param>
         /// <returns>number of affected rows</returns>
-        public int Execute(Transaction transaction, params T[] entities) {
-            foreach (T entity in entities)
-                preparedoperation.Execute(transaction, interestingcolumns.Select(c => c.GetValue(entity)).Concat(new[] {entitydescription.PrimaryKeyColumn.GetValue(entity)}).ToArray());
+        public long Execute(Transaction transaction, params T[] entities) {
+            foreach(T entity in entities)
+                preparedoperation.Execute(transaction, interestingcolumns.Select(c => c.GetValue(entity)).Concat(new[] { entitydescription.PrimaryKeyColumn.GetValue(entity) }).ToArray());
             return entities.Length;
         }
 
@@ -74,10 +74,10 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         /// </summary>
         /// <param name="entities">entities on which to operate</param>
         /// <returns>number of affected rows</returns>
-        public int Execute(IEnumerable<T> entities) {
+        public long Execute(IEnumerable<T> entities) {
             int count = 0;
-            foreach (T entity in entities) {
-                preparedoperation.Execute(interestingcolumns.Select(c => c.GetValue(entity)).Concat(new[] {entitydescription.PrimaryKeyColumn.GetValue(entity)}).ToArray());
+            foreach(T entity in entities) {
+                preparedoperation.Execute(interestingcolumns.Select(c => c.GetValue(entity)).Concat(new[] { entitydescription.PrimaryKeyColumn.GetValue(entity) }).ToArray());
                 ++count;
             }
 
@@ -90,10 +90,9 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         /// <param name="transaction">transaction to use</param>
         /// <param name="entities">entities on which to operate</param>
         /// <returns>number of affected rows</returns>
-        public int Execute(Transaction transaction, IEnumerable<T> entities) {
+        public long Execute(Transaction transaction, IEnumerable<T> entities) {
             int count = 0;
-            foreach (T entity in entities)
-            {
+            foreach(T entity in entities) {
                 preparedoperation.Execute(transaction, interestingcolumns.Select(c => c.GetValue(entity)).Concat(new[] { entitydescription.PrimaryKeyColumn.GetValue(entity) }).ToArray());
                 ++count;
             }

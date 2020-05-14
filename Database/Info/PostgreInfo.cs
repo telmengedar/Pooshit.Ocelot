@@ -1,12 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
+using System.Text.RegularExpressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
 using NightlyCode.Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Expressions;
 using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
+using NightlyCode.Database.Info.Postgre;
 using Converter = NightlyCode.Database.Extern.Converter;
 
 namespace NightlyCode.Database.Info {
@@ -21,6 +27,15 @@ namespace NightlyCode.Database.Info {
         /// </summary>
         public PostgreInfo() {
             AddFieldLogic<DBFunction>(AppendFunction);
+            AddFieldLogic<LimitField>(AppendLimit);
+        }
+
+        void AppendLimit(LimitField limit, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
+
+            if(limit.Limit.HasValue)
+                preparator.AppendText("LIMIT").AppendText(limit.Limit.Value.ToString());
+            if(limit.Offset.HasValue)
+                preparator.AppendText("OFFSET").AppendText(limit.Offset.Value.ToString());
         }
 
         /// <summary>
@@ -29,10 +44,8 @@ namespace NightlyCode.Database.Info {
         /// <param name="function">function to be executed</param>
         /// <param name="preparator">operation to append function to</param>
         /// <param name="descriptorgetter">function used to get <see cref="EntityDescriptor"/>s for types</param>
-        public void AppendFunction(DBFunction function, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter)
-        {
-            switch (function.Type)
-            {
+        public void AppendFunction(DBFunction function, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
+            switch(function.Type) {
             case DBFunctionType.Random:
                 preparator.AppendText("RANDOM()");
                 break;
@@ -66,11 +79,6 @@ namespace NightlyCode.Database.Info {
         public override string JoinHint => "";
 
         /// <summary>
-        /// parameter used to create autoincrement columns
-        /// </summary>
-        public override string AutoIncrement { get; }
-
-        /// <summary>
         /// character used to specify columns explicitely
         /// </summary>
         public override string ColumnIndicator => "\"";
@@ -99,6 +107,11 @@ namespace NightlyCode.Database.Info {
             preparator.AppendText(")");
         }
 
+        /// <inheritdoc />
+        public override void DropView(IDBClient client, ViewDescriptor view) {
+            client.NonQuery($"DROP VIEW {view.Name} CASCADE");
+        }
+
         public override void ToUpper(ExpressionVisitor visitor, OperationPreparator preparator, Expression value) {
             throw new NotImplementedException();
         }
@@ -110,11 +123,37 @@ namespace NightlyCode.Database.Info {
         /// <summary>
         /// command used to check whether a table exists
         /// </summary>
-        /// <param name="db"></param>
-        /// <param name="table"></param>
+        /// <param name="db">dbclient to use to check for table existence</param>
+        /// <param name="table">table name to check for</param>
+        /// <param name="transaction">transaction to use</param>
         /// <returns></returns>
         public override bool CheckIfTableExists(IDBClient db, string table, Transaction transaction = null) {
             return Converter.Convert<long>(db.Scalar(transaction, "SELECT count(*) FROM pg_class WHERE relname = @1", table)) > 0;
+        }
+
+        /// <inheritdoc />
+        public override bool IsTypeEqual(string lhs, string rhs) {
+            switch(lhs) {
+            case "int8":
+            case "serial8":
+            case "bigint":
+                return rhs == "int8" || rhs == "serial8" || rhs == "bigint";
+            case "int4":
+            case "serial4":
+            case "int":
+            case "integer":
+                return rhs == "int4" || rhs == "serial4" || rhs == "int" || rhs == "integer";
+            case "timestamp":
+            case "timestamp without time zone":
+            case "timestamp with time zone":
+                return rhs.StartsWith("timestamp");
+            case "time":
+            case "time with time zone":
+            case "time without time zone":
+                return rhs == "time" || rhs == "time with time zone" || rhs == "time without time zone";
+            }
+
+            return base.IsTypeEqual(lhs, rhs);
         }
 
         /// <summary>
@@ -123,47 +162,47 @@ namespace NightlyCode.Database.Info {
         /// <param name="type"></param>
         /// <returns></returns>
         public override string GetDBType(Type type) {
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            if(type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
                 type = Nullable.GetUnderlyingType(type);
 
-            if (type.IsEnum) return "integer";
+            if(type.IsEnum)
+                return "integer";
 
-            switch (type.Name.ToLower())
-            {
-                case "datetime":
-                    return "timestamp";
-                case "string":
-                case "version":
-                    return "character varying";
-                case "int":
-                case "uint32":
-                case "int32":
-                    return "int4";
-                case "long":
-                case "uint64":
-                case "int64":
-                    return "int8";
-                case "byte":
-                case "short":
-                case "uint16":
-                case "int16":
-                    return "int2";
-                case "single":
-                case "float":
-                    return "float4";
-                case "double":
-                    return "float8";
-                case "bool":
-                case "boolean":
-                    return "boolean";
-                case "byte[]":
-                    return "bytea";
-                case "timespan":
-                    return "int4";
-                case "decimal":
-                    return "decimal";
-                default:
-                    throw new InvalidOperationException("unsupported type");
+            switch(type.Name.ToLower()) {
+            case "datetime":
+                return "timestamp";
+            case "string":
+            case "version":
+                return "character varying";
+            case "int":
+            case "uint32":
+            case "int32":
+                return "int4";
+            case "long":
+            case "uint64":
+            case "int64":
+                return "int8";
+            case "byte":
+            case "short":
+            case "uint16":
+            case "int16":
+                return "int2";
+            case "single":
+            case "float":
+                return "float4";
+            case "double":
+                return "float8";
+            case "bool":
+            case "boolean":
+                return "boolean";
+            case "byte[]":
+                return "bytea";
+            case "timespan":
+                return "int4";
+            case "decimal":
+                return "decimal";
+            default:
+                throw new InvalidOperationException("unsupported type");
             }
 
 
@@ -179,7 +218,7 @@ namespace NightlyCode.Database.Info {
                 return typeof(int);
             if(type == typeof(TimeSpan))
                 return typeof(int);
-            if (type == typeof(Version))
+            if(type == typeof(Version))
                 return typeof(string);
             return type;
         }
@@ -200,84 +239,151 @@ namespace NightlyCode.Database.Info {
 
         /// <inheritdoc />
         public override void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column) {
-            operation.AppendText($"\"{column.Name}\" ");
-            if (column.AutoIncrement)
-            {
-                if (column.Property.PropertyType == typeof(int))
-                    operation.AppendText("serial4");
-                else if (column.Property.PropertyType == typeof(long))
-                    operation.AppendText("serial8");
-                else throw new InvalidOperationException("Autoincrement with postgre only allowed with integer types");
-            }
-            else {
-                if (DBConverterCollection.ContainsConverter(column.Property.PropertyType))
-                    operation.AppendText(GetDBType(DBConverterCollection.GetDBType(column.Property.PropertyType)));
-                else operation.AppendText(GetDBType(column.Property.PropertyType));
-            }
-
-            if (column.PrimaryKey)
-                operation.AppendText("PRIMARY KEY");
-            if (column.IsUnique)
-                operation.AppendText("UNIQUE");
-            if (column.NotNull)
-                operation.AppendText("NOT NULL");
-
-            if (column.DefaultValue != null)
-            {
-                operation.AppendText("DEFAULT");
-                operation.AppendParameter(column.DefaultValue);
-            }
-
+            operation.AppendText($"\"{column.Name}\"");
+            ColumnType(operation, column);
+            operation.AppendText(ColumnAttributes(column));
         }
 
         /// <inheritdoc />
-        public override void CreateColumn(OperationPreparator operation, SchemaColumnDescriptor column)
-        {
+        public override void CreateColumn(OperationPreparator operation, SchemaColumnDescriptor column) {
             operation.AppendText($"\"{column.Name}\" ");
-            
-            if (column.AutoIncrement)
-            {
-                if (column.Type == "int4")
+
+            ColumnType(operation, column);
+            operation.AppendText(ColumnAttributes(column));
+        }
+
+        void ColumnType(OperationPreparator operation, SchemaColumnDescriptor column) {
+            if(column.AutoIncrement) {
+                if(column.Type == "int4")
                     operation.AppendText("serial4");
-                else if (column.Type == "int8")
+                else if(column.Type == "int8")
                     operation.AppendText("serial8");
-                else throw new InvalidOperationException("Autoincrement with postgre only allowed with integer types");
+                else
+                    throw new InvalidOperationException("Autoincrement with postgre only allowed with integer types");
             }
-            else
-            {
+            else {
                 operation.AppendText(column.Type);
             }
+        }
 
-            if (column.PrimaryKey)
-                operation.AppendText("PRIMARY KEY");
-            if (column.IsUnique)
-                operation.AppendText("UNIQUE");
-            if (column.NotNull)
-                operation.AppendText("NOT NULL");
+        void ColumnType(OperationPreparator operation, EntityColumnDescriptor column) {
+            if(column.AutoIncrement) {
+                if(column.Property.PropertyType == typeof(int) || column.Property.PropertyType == typeof(uint))
+                    operation.AppendText("serial4");
+                else if(column.Property.PropertyType == typeof(long) || column.Property.PropertyType == typeof(ulong))
+                    operation.AppendText("serial8");
+                else
+                    throw new InvalidOperationException("Autoincrement with postgre only allowed with integer types");
+            }
+            else {
+                if(DBConverterCollection.ContainsConverter(column.Property.PropertyType))
+                    operation.AppendText(GetDBType(DBConverterCollection.GetDBType(column.Property.PropertyType)));
+                else
+                    operation.AppendText(GetDBType(column.Property.PropertyType));
+            }
+        }
 
-            if (column.DefaultValue != null)
-            {
-                operation.AppendText("DEFAULT");
-                operation.AppendParameter(column.DefaultValue);
+        string ColumnAttributes(ColumnDescriptor column) {
+            StringBuilder builder = new StringBuilder();
+            if(column.PrimaryKey)
+                builder.Append(" PRIMARY KEY");
+            if(column.IsUnique)
+                builder.Append(" UNIQUE");
+            if(column.NotNull)
+                builder.Append(" NOT NULL");
+
+            if(column.DefaultValue != null) {
+                builder.Append(" DEFAULT ");
+                builder.Append('\'').Append(column.DefaultValue).Append('\'');
             }
 
+            return builder.ToString();
         }
 
-        public override void AddColumn(IDBClient client, string table, EntityColumnDescriptor column, Transaction transaction) {
-            throw new NotImplementedException();
+        /// <inheritdoc />
+        public override void AddColumn(OperationPreparator preparator, EntityColumnDescriptor column) {
+            preparator.AppendText("ADD COLUMN");
+            CreateColumn(preparator, column);
         }
 
-        public override void RemoveColumn(IDBClient client, string table, string column) {
-            throw new NotImplementedException();
+        /// <inheritdoc />
+        public override void DropColumn(OperationPreparator preparator, string column) {
+            preparator.AppendText("DROP COLUMN").AppendText($"\"{column}\"").AppendText("CASCADE");
         }
 
-        public override void AlterColumn(IDBClient client, string table, EntityColumnDescriptor column) {
-            throw new NotImplementedException();
+        /// <inheritdoc />
+        public override void AlterColumn(OperationPreparator preparator, EntityColumnDescriptor column) {
+            preparator.AppendText("ALTER COLUMN");
+            preparator.AppendText($"\"{column.Name}\"");
+            preparator.AppendText("TYPE");
+            ColumnType(preparator, column);
         }
 
-        public override SchemaDescriptor GetSchema(IDBClient client, string name)
-        {
-            throw new NotImplementedException();
+        /// <inheritdoc />
+        public override void ReturnID(OperationPreparator preparator, ColumnDescriptor idcolumn) {
+            preparator.AppendText($"RETURNING {MaskColumn(idcolumn.Name)}");
+        }
+
+        /// <inheritdoc />
+        public override bool MustRecreateTable(string[] obsolete, EntityColumnDescriptor[] altered, EntityColumnDescriptor[] missing, TableDescriptor tableschema, EntityDescriptor entityschema) {
+            return false;
+        }
+
+        /// <inheritdoc />
+        public override SchemaDescriptor GetSchema(IDBClient client, string name) {
+            PgView view = new LoadEntitiesOperation<PgView>(client, EntityDescriptor.Create).Where(p => p.Name == name).Execute().FirstOrDefault();
+            if(view != null)
+                return new ViewDescriptor(name) {
+                    SQL = view.Definition
+                };
+
+            Dictionary<string, SchemaColumnDescriptor> columns = new Dictionary<string, SchemaColumnDescriptor>();
+            foreach(PgColumn column in new LoadEntitiesOperation<PgColumn>(client, EntityDescriptor.Create).Where(c => c.Table == name).Execute()) {
+                columns[column.Column] = new SchemaColumnDescriptor(column.Column) {
+                    Type = column.DataType,
+                    NotNull = column.IsNullable == "NO",
+                    AutoIncrement = column.Default?.StartsWith("nextval") ?? false
+                };
+            }
+
+            List<UniqueDescriptor> uniques = new List<UniqueDescriptor>();
+            List<IndexDescriptor> indices = new List<IndexDescriptor>();
+            foreach(PgIndex index in new LoadEntitiesOperation<PgIndex>(client, EntityDescriptor.Create).Where(i => i.Table == name).Execute()) {
+                Match match = Regex.Match(index.Definition, "^CREATE (?<unique>UNIQUE )?INDEX (?<name>[^ ]+) ON (?<table>[^ ]+)( USING [a-zA-Z]+)? \\((?<columns>.+)\\)");
+                if(!match.Success)
+                    continue;
+
+                string[] columnnames = match.Groups["columns"].Value.Split(',').Select(c => c.Trim()).ToArray();
+                if(Regex.IsMatch(index.Name, "_pkey[0-9]*$")) {
+                    foreach(string column in columnnames) {
+                        if(columns.TryGetValue(column, out SchemaColumnDescriptor desc))
+                            desc.PrimaryKey = true;
+                    }
+                }
+                else if(match.Groups["unique"].Success) {
+                    if(columnnames.Length == 1) {
+                        if(columns.TryGetValue(columnnames[0], out SchemaColumnDescriptor desc))
+                            desc.IsUnique = true;
+                    }
+                    else
+                        uniques.Add(new UniqueDescriptor(columnnames));
+                }
+                else {
+                    match = Regex.Match(index.Name, $"^idx_{name}_(?<indexname>.+)$");
+                    if(match.Success)
+                        indices.Add(new IndexDescriptor(match.Groups["indexname"].Value, columnnames));
+                    else
+                        indices.Add(new IndexDescriptor(index.Name, columnnames));
+                }
+            }
+
+            TableDescriptor descriptor = new TableDescriptor(name) {
+                Columns = columns.Values.ToArray(),
+                Uniques = uniques.ToArray(),
+                Indices = indices.ToArray()
+            };
+
+            return descriptor;
         }
     }
 }

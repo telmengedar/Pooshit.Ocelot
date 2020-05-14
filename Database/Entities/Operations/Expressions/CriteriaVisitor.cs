@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Entities.Operations.Fields.Sql;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Info;
 using Converter = NightlyCode.Database.Extern.Converter;
@@ -16,29 +17,37 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
     /// visits an expression tree to convert it to sql
     /// </summary>
     public class CriteriaVisitor : ExpressionVisitor {
-        readonly Dictionary<string, string> aliases=new Dictionary<string, string>();
+        readonly Dictionary<string, string> aliases = new Dictionary<string, string>();
         readonly Func<Type, EntityDescriptor> descriptorgetter;
         readonly OperationPreparator preparator;
         readonly IDBInfo dbinfo;
 
         ExpressionType remainder = ExpressionType.Default;
 
-        CriteriaVisitor(Func<Type, EntityDescriptor> descriptorgetter, OperationPreparator preparator, IDBInfo dbinfo, params Tuple<string, string>[] aliases) {
+        /// <summary>
+        /// creates a new <see cref="CriteriaVisitor"/>
+        /// </summary>
+        /// <param name="descriptorgetter">func used to get entity models of types</param>
+        /// <param name="preparator">preparator to fill with sql</param>
+        /// <param name="dbinfo">database specific implementation info</param>
+        /// <param name="aliases">known table aliases</param>
+        public CriteriaVisitor(Func<Type, EntityDescriptor> descriptorgetter, OperationPreparator preparator, IDBInfo dbinfo, params Tuple<string, string>[] aliases) {
             this.descriptorgetter = descriptorgetter;
             this.dbinfo = dbinfo;
             this.preparator = preparator;
-            foreach (Tuple<string, string> alias in aliases)
+            foreach(Tuple<string, string> alias in aliases)
                 this.aliases[alias.Item1] = alias.Item2;
         }
 
         static IEnumerable<Tuple<string, string>> GetParameterAliases(LambdaExpression expression, params string[] aliases) {
-            if (expression == null || aliases.Length==0)
+            aliases = aliases.Where(a => a != null).ToArray();
+            if(expression == null || aliases.Length == 0)
                 yield break;
 
             int index = 0;
-            foreach (ParameterExpression parameter in expression.Parameters) {
+            foreach(ParameterExpression parameter in expression.Parameters) {
                 yield return new Tuple<string, string>(parameter.Name, aliases[index++]);
-                if (index >= aliases.Length)
+                if(index >= aliases.Length)
                     yield break;
             }
         }
@@ -118,12 +127,12 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
 
         void AppendValueRemainder() {
             switch(remainder) {
-                case ExpressionType.Equal:
-                    preparator.AppendText("=");
-                    break;
-                case ExpressionType.NotEqual:
-                    preparator.AppendText("<>");
-                    break;
+            case ExpressionType.Equal:
+                preparator.AppendText("=");
+                break;
+            case ExpressionType.NotEqual:
+                preparator.AppendText("<>");
+                break;
             }
             remainder = ExpressionType.Default;
         }
@@ -131,12 +140,12 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
         void AppendConstantValue(object value) {
             if(value == null) {
                 switch(remainder) {
-                    case ExpressionType.Equal:
-                        preparator.AppendText("IS");
-                        break;
-                    case ExpressionType.NotEqual:
-                        preparator.AppendText("IS NOT");
-                        break;
+                case ExpressionType.Equal:
+                    preparator.AppendText("IS");
+                    break;
+                case ExpressionType.NotEqual:
+                    preparator.AppendText("IS NOT");
+                    break;
                 }
                 preparator.AppendText("NULL");
             }
@@ -151,10 +160,11 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             }
             else {
                 AppendValueRemainder();
-                if (value is IDBField field)
+                if(value is ISqlField sqlfield)
+                    sqlfield.ToSql(dbinfo, preparator, descriptorgetter, null);
+                else if(value is IDBField field)
                     dbinfo.Append(field, preparator, descriptorgetter);
                 else {
-                    //preparator.AppendText(Converter.Convert<string>(value));
                     preparator.AppendParameter(Converter.Convert(value, dbinfo.GetDBRepresentation(value.GetType())));
                 }
             }
@@ -162,6 +172,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             remainder = ExpressionType.Default;
         }
 
+        /// <inheritdoc />
         protected override Expression VisitConstant(ConstantExpression node) {
             AppendConstantValue(node.Value);
             return base.VisitConstant(node);
@@ -206,7 +217,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                     if(membernode.Member is PropertyInfo info) {
                         if(host == null && !info.GetGetMethod().IsStatic)
                             throw new NullReferenceException("Null reference encountered");
-                        return info.GetValue(host, null);                        
+                        return info.GetValue(host, null);
                     }
 
                     return ((FieldInfo)membernode.Member).GetValue(host);
@@ -238,37 +249,36 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             }
             else if(expression.NodeType == ExpressionType.MemberAccess) {
                 // references a parameter to be specified later when executing the operation
-                if (((PropertyInfo)member).DeclaringType == typeof(DBParameter) 
-                    || (((PropertyInfo)member).DeclaringType.IsGenericType && ((PropertyInfo)member).DeclaringType.GetGenericTypeDefinition() == typeof(DBParameter<>)))
-                {
+                if(((PropertyInfo)member).DeclaringType == typeof(DBParameter)
+                    || (((PropertyInfo)member).DeclaringType.IsGenericType && ((PropertyInfo)member).DeclaringType.GetGenericTypeDefinition() == typeof(DBParameter<>))) {
                     preparator.AppendParameter();
                 }
-                else
-                {
+                else {
                     object host = GetHost(expression);
-                    if (host == null && !((PropertyInfo)member).GetGetMethod().IsStatic)
+                    if(host == null && !((PropertyInfo)member).GetGetMethod().IsStatic)
                         throw new NullReferenceException("Null reference encountered");
 
-                    if (host is IDBField)
+                    if(host is IDBField)
                         // always append dbfields directly
                         // since properties are only stubs for lambdas to work
                         AppendConstantValue(host);
-                    else
-                    {
+                    else {
                         object item = ((PropertyInfo)member).GetValue(host, null);
                         AppendConstantValue(item);
                     }
                 }
             }
-            else throw new NotImplementedException();
+            else
+                throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override Expression VisitMember(MemberExpression node) {
             AppendValueRemainder();
             if(node.Member is PropertyInfo) {
                 Expression host = node.Expression ?? node;
-                if (host.NodeType == ExpressionType.Call) {
-                    VisitMethodCall((MethodCallExpression) host);
+                if(host.NodeType == ExpressionType.Call) {
+                    VisitMethodCall((MethodCallExpression)host);
                     return node;
                 }
                 AppendMemberValue(node.Expression ?? node, node.Member);
@@ -285,12 +295,14 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 }
                 //else throw new NotSupportedException($"{$"Unsupported expression type '{node.Expression.NodeType}' with member '"}{node.Member.GetType()}'");
             }
-            else throw new Exception("Unsupported member type");
+            else
+                throw new Exception("Unsupported member type");
             return node;
         }
 
+        /// <inheritdoc />
         protected override Expression VisitUnary(UnaryExpression node) {
-            if (node.NodeType == ExpressionType.Convert || node.NodeType == ExpressionType.ConvertChecked || node.NodeType == ExpressionType.Quote)
+            if(node.NodeType == ExpressionType.Convert || node.NodeType == ExpressionType.ConvertChecked || node.NodeType == ExpressionType.Quote)
                 return base.VisitUnary(node);
 
             AppendValueRemainder();
@@ -300,11 +312,12 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             return node;
         }
 
+        /// <inheritdoc />
         protected override Expression VisitBinary(BinaryExpression node) {
             AppendValueRemainder();
             remainder = ExpressionType.Default;
 
-            if (node.NodeType == ExpressionType.ArrayIndex) {
+            if(node.NodeType == ExpressionType.ArrayIndex) {
                 if(!(GetValue(node.Left) is Array array))
                     throw new NullReferenceException("ArrayIndex without array");
                 AppendConstantValue(array.GetValue((int)GetValue(node.Right)));
@@ -317,6 +330,14 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             return node;
         }
 
+        /// <inheritdoc />
+        protected override Expression VisitNew(NewExpression node) {
+            object value = node.Constructor.Invoke(node.Arguments.Select(GetHost).ToArray());
+            AppendConstantValue(value);
+            return node;
+        }
+
+        /// <inheritdoc />
         protected override Expression VisitBlock(BlockExpression node) {
             preparator.AppendText("(");
             Expression result = base.VisitBlock(node);
@@ -324,10 +345,11 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             return result;
         }
 
+        /// <inheritdoc />
         protected override Expression VisitMethodCall(MethodCallExpression node) {
             AppendValueRemainder();
 
-            if (node.Method.DeclaringType==typeof(DBOperators)) {
+            if(node.Method.DeclaringType == typeof(DBOperators)) {
                 switch(node.Method.Name) {
                 case "Like":
                     Visit(node.Arguments[0]);
@@ -343,24 +365,25 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 return node;
             }
 
-            if (node.Method.DeclaringType == typeof(Enumerable)) {
-                switch (node.Method.Name) {
+            if(node.Method.DeclaringType == typeof(Enumerable)) {
+                switch(node.Method.Name) {
                 case "Contains":
                     Visit(node.Arguments[1]);
                     preparator.AppendText("IN");
 
-                    if (node.Arguments[0].NodeType == ExpressionType.MemberAccess
-                        && (((MemberExpression) node.Arguments[0]).Member.DeclaringType == typeof(DBParameter)
-                            || ((MemberExpression) node.Arguments[0]).Member.DeclaringType?.BaseType == typeof(DBParameter))) {
+                    if(node.Arguments[0].NodeType == ExpressionType.MemberAccess
+                        && (((MemberExpression)node.Arguments[0]).Member.DeclaringType == typeof(DBParameter)
+                            || ((MemberExpression)node.Arguments[0]).Member.DeclaringType?.BaseType == typeof(DBParameter))) {
                         preparator.AppendArrayParameter();
                     }
                     else {
                         preparator.AppendText("(");
                         bool first = true;
-                        foreach (object item in (IEnumerable) GetValue(node.Arguments[0])) {
-                            if (first)
+                        foreach(object item in (IEnumerable)GetValue(node.Arguments[0])) {
+                            if(first)
                                 first = false;
-                            else preparator.AppendText(",");
+                            else
+                                preparator.AppendText(",");
                             AppendConstantValue(item);
                         }
 
@@ -377,32 +400,19 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
 
             if(node.Method.DeclaringType == typeof(string)) {
                 switch(node.Method.Name) {
-                    case "ToUpper":
-                        dbinfo.ToUpper(this, preparator, node.Object);
-                        break;
-                    case "ToLower":
-                        dbinfo.ToLower(this, preparator, node.Object);
-                        break;
+                case "ToUpper":
+                    dbinfo.ToUpper(this, preparator, node.Object);
+                    break;
+                case "ToLower":
+                    dbinfo.ToLower(this, preparator, node.Object);
+                    break;
                 }
                 return node;
             }
 
-            if (node.Method.DeclaringType == typeof(DBParameter)) {
-                switch (node.Method.Name) {
-                    case "Index":
-                        int index = (int)GetHost(node.Arguments.First());
-                        preparator.AppendParameterIndex(index);
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
-
-                return node;
-            }
-
-            if ((node.Method.DeclaringType?.IsGenericType??false) && node.Method.DeclaringType.GetGenericTypeDefinition() == typeof(DBParameter<>)) {
-                switch (node.Method.Name) {
-                    case "Index":
+            if(node.Method.DeclaringType == typeof(DBParameter)) {
+                switch(node.Method.Name) {
+                case "Index":
                     int index = (int)GetHost(node.Arguments.First());
                     preparator.AppendParameterIndex(index);
                     break;
@@ -413,24 +423,37 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 return node;
             }
 
-            if (node.Method.DeclaringType == typeof(DBFunction)) {
-                
+            if((node.Method.DeclaringType?.IsGenericType ?? false) && node.Method.DeclaringType.GetGenericTypeDefinition() == typeof(DBParameter<>)) {
                 switch(node.Method.Name) {
-                    case "Min":
-                        preparator.AppendText("min(");
-                        break;
-                    case "Max":
-                        preparator.AppendText("max(");
-                        break;
-                    case "Average":
-                        preparator.AppendText("avg(");
-                        break;
-                    case "Sum":
-                        preparator.AppendText("sum(");
-                        break;
-                    case "Total":
-                        preparator.AppendText("total(");
-                        break;
+                case "Index":
+                    int index = (int)GetHost(node.Arguments.First());
+                    preparator.AppendParameterIndex(index);
+                    break;
+                default:
+                    throw new NotImplementedException();
+                }
+
+                return node;
+            }
+
+            if(node.Method.DeclaringType == typeof(DBFunction)) {
+
+                switch(node.Method.Name) {
+                case "Min":
+                    preparator.AppendText("min(");
+                    break;
+                case "Max":
+                    preparator.AppendText("max(");
+                    break;
+                case "Average":
+                    preparator.AppendText("avg(");
+                    break;
+                case "Sum":
+                    preparator.AppendText("sum(");
+                    break;
+                case "Total":
+                    preparator.AppendText("total(");
+                    break;
                 }
 
                 if(node.Arguments[0] is NewArrayExpression arrayparameter) {

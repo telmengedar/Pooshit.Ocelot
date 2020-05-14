@@ -5,21 +5,17 @@ using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
 
-namespace NightlyCode.Database.Info
-{
+namespace NightlyCode.Database.Info {
 
     /// <summary>
     /// information for mysql db
     /// </summary>
-    public class MySQLInfo : DBInfo
-    {
+    public class MySQLInfo : DBInfo {
         public override string Parameter => "?";
 
         public string LastValue => "LAST_INSERT_ID()";
 
         public override string JoinHint => "STRAIGHT_JOIN";
-
-        public override string AutoIncrement => "AUTO_INCREMENT";
 
         public override string ColumnIndicator => "`";
 
@@ -37,43 +33,42 @@ namespace NightlyCode.Database.Info
             throw new NotImplementedException();
         }
 
-        public override bool CheckIfTableExists(IDBClient db, string table, Transaction transaction = null)
-        {
+        public override bool CheckIfTableExists(IDBClient db, string table, Transaction transaction = null) {
             return db.Query(transaction, "SHOW TABLES like ?1", table).Rows.Length > 0;
         }
         public override string GetDBType(Type type) {
-            if (type.IsEnum) return "INT";
+            if(type.IsEnum)
+                return "INT";
 
-            switch (type.Name)
-            {
-                case "DateTime":
-                    return "DATETIME";
-                case "string":
-                case "String":
-                    return "VARCHAR(200)";
-                case "int":
-                case "Int32":
-                    return "INT";
-                case "long":
-                case "Int64":
-                    return "BIGINT";
-                case "short":
-                case "Int16":
-                    return "SMALLINT";
-                case "float":
-                case "Float":
-                    return "FLOAT";
-                case "double":
-                case "Double":
-                    return "DOUBLE";
-                case "bool":
-                case "Boolean":
-                    return "BOOLEAN";
-                case "byte[]":
-                case "Byte[]":
-                    return "BLOB";
-                default:
-                    return "???";
+            switch(type.Name) {
+            case "DateTime":
+                return "DATETIME";
+            case "string":
+            case "String":
+                return "VARCHAR(200)";
+            case "int":
+            case "Int32":
+                return "INT";
+            case "long":
+            case "Int64":
+                return "BIGINT";
+            case "short":
+            case "Int16":
+                return "SMALLINT";
+            case "float":
+            case "Float":
+                return "FLOAT";
+            case "double":
+            case "Double":
+                return "DOUBLE";
+            case "bool":
+            case "Boolean":
+                return "BOOLEAN";
+            case "byte[]":
+            case "Byte[]":
+                return "BLOB";
+            default:
+                return "???";
             }
         }
 
@@ -91,25 +86,35 @@ namespace NightlyCode.Database.Info
             throw new NotImplementedException();
         }
 
-        public override void CreateColumn(OperationPreparator operation, SchemaColumnDescriptor column)
-        {
+        public override void CreateColumn(OperationPreparator operation, SchemaColumnDescriptor column) {
             throw new NotImplementedException();
         }
 
-        public override void AddColumn(IDBClient client, string table, EntityColumnDescriptor column, Transaction transaction) {
+        /// <inheritdoc />
+        public override void AddColumn(OperationPreparator preparator, EntityColumnDescriptor column) {
             throw new NotImplementedException();
         }
 
-        public override void RemoveColumn(IDBClient client, string table, string column) {
+        /// <inheritdoc />
+        public override void DropColumn(OperationPreparator preparator, string column) {
             throw new NotImplementedException();
         }
 
-        public override void AlterColumn(IDBClient client, string table, EntityColumnDescriptor column) {
+        /// <inheritdoc />
+        public override void AlterColumn(OperationPreparator preparator, EntityColumnDescriptor column) {
             throw new NotImplementedException();
         }
 
-        public override SchemaDescriptor GetSchema(IDBClient client, string name)
-        {
+        public override void ReturnID(OperationPreparator preparator, ColumnDescriptor idcolumn) {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public override bool MustRecreateTable(string[] obsolete, EntityColumnDescriptor[] altered, EntityColumnDescriptor[] missing, TableDescriptor tableschema, EntityDescriptor entityschema) {
+            return true;
+        }
+
+        public override SchemaDescriptor GetSchema(IDBClient client, string name) {
             throw new NotImplementedException();
         }
     }

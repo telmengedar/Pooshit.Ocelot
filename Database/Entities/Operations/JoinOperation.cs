@@ -14,9 +14,11 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="joinType">type of entity to join</param>
         /// <param name="criterias">join criterias</param>
         /// <param name="alias">name of alias to use</param>
-        public JoinOperation(Type joinType, Expression criterias, Expression additionalcriterias=null, string alias=null) {
+        /// <param name="joinop">join operation type</param>
+        public JoinOperation(Type joinType, Expression criterias, JoinOp joinop = JoinOp.Inner, Expression additionalcriterias = null, string alias = null) {
             JoinType = joinType;
             Criterias = criterias;
+            Operation = joinop;
             AdditionalCriterias = additionalcriterias;
             Alias = alias;
         }
@@ -40,5 +42,10 @@ namespace NightlyCode.Database.Entities.Operations {
         /// name of alias to use
         /// </summary>
         public string Alias { get; }
+
+        /// <summary>
+        /// join operation type
+        /// </summary>
+        public JoinOp Operation { get; }
     }
 }

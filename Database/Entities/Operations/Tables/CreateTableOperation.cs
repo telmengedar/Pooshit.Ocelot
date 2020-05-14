@@ -12,7 +12,7 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
     public class CreateTableOperation {
         readonly IDBClient dbclient;
         readonly string tablename;
-        readonly List<SchemaColumnDescriptor> columns=new List<SchemaColumnDescriptor>();
+        readonly List<SchemaColumnDescriptor> columns = new List<SchemaColumnDescriptor>();
 
         /// <summary>
         /// creates a new <see cref="CreateTableOperation"/>
@@ -43,7 +43,7 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
         /// <param name="autoincrement">true if column is auto incremented</param>
         /// <param name="defaultvalue">default value for column</param>
         /// <returns>this operation for fluent behavior</returns>
-        public CreateTableOperation Column(string name, Type type = null, bool primarykey = false, bool autoincrement = false, object defaultvalue=null) {
+        public CreateTableOperation Column(string name, Type type = null, bool primarykey = false, bool autoincrement = false, object defaultvalue = null) {
             SchemaColumnDescriptor descriptor = new SchemaColumnDescriptor(name) {
                 Type = dbclient.DBInfo.GetDBType(type ?? typeof(string)),
                 PrimaryKey = primarykey,
@@ -58,8 +58,8 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
         /// </summary>
         /// <param name="transaction">transaction to use (optional)</param>
         /// <returns>number of affected rows</returns>
-        public int Execute(Transaction transaction=null) {
-            if (transaction == null)
+        public long Execute(Transaction transaction = null) {
+            if(transaction == null)
                 return Prepare().Execute();
             return Prepare().Execute(transaction);
         }
@@ -69,21 +69,22 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
         /// </summary>
         /// <returns>operation to execute</returns>
         public PreparedOperation Prepare() {
-            OperationPreparator preparator=new OperationPreparator();
+            OperationPreparator preparator = new OperationPreparator();
             preparator.AppendText("CREATE TABLE").AppendText(tablename).AppendText("(");
 
             bool firstindicator = true;
-            foreach (SchemaColumnDescriptor column in columns)
-            {
-                if (firstindicator) firstindicator = false;
-                else preparator.AppendText(",");
+            foreach(SchemaColumnDescriptor column in columns) {
+                if(firstindicator)
+                    firstindicator = false;
+                else
+                    preparator.AppendText(",");
 
                 dbclient.DBInfo.CreateColumn(preparator, column);
             }
 
             preparator.AppendText(")");
 
-            if (!string.IsNullOrEmpty(dbclient.DBInfo.CreateSuffix))
+            if(!string.IsNullOrEmpty(dbclient.DBInfo.CreateSuffix))
                 preparator.AppendText(dbclient.DBInfo.CreateSuffix);
 
             return preparator.GetOperation(dbclient);

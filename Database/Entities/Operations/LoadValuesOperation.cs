@@ -135,8 +135,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// loads entities using the operation
         /// </summary>
         /// <returns></returns>
-        public Clients.Tables.DataTable Execute(Transaction transaction=null)
-        {
+        public Clients.Tables.DataTable Execute(Transaction transaction = null) {
             return Prepare().Execute(transaction);
         }
 
@@ -144,8 +143,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// loads entities using the operation
         /// </summary>
         /// <returns></returns>
-        public Task<Clients.Tables.DataTable> ExecuteAsync(Transaction transaction=null)
-        {
+        public Task<Clients.Tables.DataTable> ExecuteAsync(Transaction transaction = null) {
             return Prepare().ExecuteAsync(transaction);
         }
 
@@ -155,8 +153,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <typeparam name="TScalar">type of scalar to return</typeparam>
         /// <param name="transaction">transaction to use (optional)</param>
         /// <returns>resulting scalar of operation</returns>
-        public TScalar ExecuteScalar<TScalar>(Transaction transaction=null)
-        {
+        public TScalar ExecuteScalar<TScalar>(Transaction transaction = null) {
             return Prepare().ExecuteScalar<TScalar>(transaction);
         }
 
@@ -166,8 +163,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <typeparam name="TScalar">type of scalar to return</typeparam>
         /// <param name="transaction">transaction to use (optional)</param>
         /// <returns>resulting scalar of operation</returns>
-        public Task<TScalar> ExecuteScalarAsync<TScalar>(Transaction transaction = null)
-        {
+        public Task<TScalar> ExecuteScalarAsync<TScalar>(Transaction transaction = null) {
             return Prepare().ExecuteScalarAsync<TScalar>(transaction);
         }
 
@@ -177,8 +173,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <typeparam name="TScalar">type of resulting set values</typeparam>
         /// <param name="transaction">transaction to use (optional)</param>
         /// <returns>resultset of operation</returns>
-        public IEnumerable<TScalar> ExecuteSet<TScalar>(Transaction transaction=null)
-        {
+        public IEnumerable<TScalar> ExecuteSet<TScalar>(Transaction transaction = null) {
             return Prepare().ExecuteSet<TScalar>(transaction);
         }
 
@@ -188,8 +183,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <typeparam name="TScalar">type of resulting set values</typeparam>
         /// <param name="transaction">transaction to use (optional)</param>
         /// <returns>resultset of operation</returns>
-        public Task<IEnumerable<TScalar>> ExecuteSetAsync<TScalar>(Transaction transaction = null)
-        {
+        public Task<IEnumerable<TScalar>> ExecuteSetAsync<TScalar>(Transaction transaction = null) {
             return Prepare().ExecuteSetAsync<TScalar>(transaction);
         }
 
@@ -211,8 +205,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="transaction">transaction to use for operation execution</param>
         /// <param name="assignments">action used to assign values</param>
         /// <returns>enumeration of result types</returns>
-        public Task<IEnumerable<TType>> ExecuteTypeAsync<TType>(Func<Clients.Tables.DataRow, TType> assignments, Transaction transaction = null)
-        {
+        public Task<IEnumerable<TType>> ExecuteTypeAsync<TType>(Func<Clients.Tables.DataRow, TType> assignments, Transaction transaction = null) {
             return Prepare().ExecuteTypeAsync(transaction, assignments);
         }
 
@@ -221,34 +214,49 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <returns></returns>
         public PreparedLoadValuesOperation Prepare() {
+            List<string> aliases = new List<string>();
+            string tablealias = null;
+            if(joinoperations.Count > 0) {
+                tablealias = "t";
+                aliases.Add(tablealias);
+            }
+
             OperationPreparator preparator = new OperationPreparator().AppendText("SELECT");
-            if (distinct)
+            if(distinct)
                 preparator.AppendText("DISTINCT");
 
             EntityDescriptor descriptor = typeof(T) == typeof(object) ? null : descriptorgetter(typeof(T));
 
             bool flag = true;
             foreach(IDBField criteria in columns) {
-                if(flag) flag = false;
-                else preparator.AppendText(",");
-                dbclient.DBInfo.Append(criteria, preparator, descriptorgetter);
+                if(flag)
+                    flag = false;
+                else
+                    preparator.AppendText(",");
+                preparator.AppendField(criteria, dbclient.DBInfo, descriptorgetter, tablealias);
             }
 
-            if(descriptor!=null)
+            if(descriptor != null)
                 preparator.AppendText("FROM").AppendText(descriptor.TableName);
+
+            if(!string.IsNullOrEmpty(tablealias))
+                preparator.AppendText("AS").AppendText(tablealias);
 
             if(joinoperations.Count > 0) {
                 foreach(JoinOperation operation in joinoperations) {
-                    preparator.AppendText("INNER JOIN")
-                        .AppendText(descriptorgetter(operation.JoinType).TableName)
-                        .AppendText("ON");
-                    CriteriaVisitor.GetCriteriaText(operation.Criterias, descriptorgetter, dbclient.DBInfo, preparator);
+                    preparator.AppendText($"{operation.Operation.ToString().ToUpper()} JOIN")
+                        .AppendText(descriptorgetter(operation.JoinType).TableName);
+                    if(!string.IsNullOrEmpty(operation.Alias))
+                        preparator.AppendText("AS").AppendText(operation.Alias);
+                    preparator.AppendText("ON");
+                    CriteriaVisitor.GetCriteriaText(operation.Criterias, descriptorgetter, dbclient.DBInfo, preparator, tablealias, operation.Alias);
+                    aliases.Add(operation.Alias);
                 }
             }
 
             if(Criterias != null) {
                 preparator.AppendText("WHERE");
-                CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator);
+                CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator, aliases.ToArray());
             }
 
             flag = true;
@@ -256,36 +264,37 @@ namespace NightlyCode.Database.Entities.Operations {
                 preparator.AppendText("GROUP BY");
 
                 foreach(IDBField criteria in groupbycriterias) {
-                    if(flag) flag = false;
-                    else preparator.AppendText(",");
-                    dbclient.DBInfo.Append(criteria, preparator, descriptorgetter);
+                    if(flag)
+                        flag = false;
+                    else
+                        preparator.AppendText(",");
+                    preparator.AppendField(criteria, dbclient.DBInfo, descriptorgetter, tablealias);
                 }
             }
 
             flag = true;
-            if (orderbycriterias != null)
-            {
+            if(orderbycriterias != null) {
                 preparator.AppendText("ORDER BY");
 
-                foreach (OrderByCriteria criteria in orderbycriterias)
-                {
-                    if (flag) flag = false;
-                    else preparator.AppendText(",");
-                    dbclient.DBInfo.Append(criteria.Field, preparator, descriptorgetter);
+                foreach(OrderByCriteria criteria in orderbycriterias) {
+                    if(flag)
+                        flag = false;
+                    else
+                        preparator.AppendText(",");
+                    preparator.AppendField(criteria.Field, dbclient.DBInfo, descriptorgetter, tablealias);
 
-                    if (!criteria.Ascending)
+                    if(!criteria.Ascending)
                         preparator.AppendText("DESC");
                 }
             }
 
-            if (Havings != null) {
+            if(Havings != null) {
                 preparator.AppendText("HAVING");
-                CriteriaVisitor.GetCriteriaText(Havings, descriptorgetter, dbclient.DBInfo, preparator);
+                CriteriaVisitor.GetCriteriaText(Havings, descriptorgetter, dbclient.DBInfo, preparator, aliases.ToArray());
             }
 
-            if (!ReferenceEquals(LimitStatement, null)) {
-                dbclient.DBInfo.Append(LimitStatement, preparator, descriptorgetter);
-            }
+            if(!ReferenceEquals(LimitStatement, null))
+                preparator.AppendField(LimitStatement, dbclient.DBInfo, descriptorgetter, tablealias);
 
             return preparator.GetLoadValuesOperation(dbclient);
         }
@@ -304,7 +313,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="criterias"></param>
         /// <returns></returns>
-        public LoadValuesOperation<T> Where(Expression<Func<T,bool>> criterias) {
+        public LoadValuesOperation<T> Where(Expression<Func<T, bool>> criterias) {
             Criterias = criterias;
             return this;
         }
@@ -349,9 +358,8 @@ namespace NightlyCode.Database.Entities.Operations {
         /// specifies a limited number of rows to return
         /// </summary>
         /// <param name="limit">number of rows to return</param>
-        public LoadValuesOperation<T> Limit(long limit)
-        {
-            if (ReferenceEquals(LimitStatement, null))
+        public LoadValuesOperation<T> Limit(long limit) {
+            if(ReferenceEquals(LimitStatement, null))
                 LimitStatement = new LimitField();
             LimitStatement.Limit = limit;
             return this;
@@ -361,9 +369,8 @@ namespace NightlyCode.Database.Entities.Operations {
         /// specifies an offset from which on to return result rows
         /// </summary>
         /// <param name="offset">number of rows to skip</param>
-        public LoadValuesOperation<T> Offset(long offset)
-        {
-            if (ReferenceEquals(LimitStatement, null))
+        public LoadValuesOperation<T> Offset(long offset) {
+            if(ReferenceEquals(LimitStatement, null))
                 LimitStatement = new LimitField();
             LimitStatement.Offset = offset;
             return this;
@@ -372,11 +379,24 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <summary>
         /// joins another type to the operation
         /// </summary>
-        /// <typeparam name="TJoin"></typeparam>
-        /// <param name="criteria"></param>
-        /// <returns></returns>
-        public LoadValuesOperation<T, TJoin> Join<TJoin>(Expression<Func<T, TJoin, bool>> criteria) {
-            joinoperations.Add(new JoinOperation(typeof(TJoin), criteria));
+        /// <typeparam name="TJoin">type to join</typeparam>
+        /// <param name="criteria">join criteria</param>
+        /// <param name="alias">alias to use</param>
+        /// <returns>this load operation for fluent behavior</returns>
+        public LoadValuesOperation<T, TJoin> Join<TJoin>(Expression<Func<T, TJoin, bool>> criteria, string alias = null) {
+            joinoperations.Add(new JoinOperation(typeof(TJoin), criteria, JoinOp.Inner, null, alias));
+            return new LoadValuesOperation<T, TJoin>(this);
+        }
+
+        /// <summary>
+        /// joins another type to the operation
+        /// </summary>
+        /// <typeparam name="TJoin">type to join</typeparam>
+        /// <param name="criteria">join criteria</param>
+        /// <param name="alias">alias to use</param>
+        /// <returns>this load operation for fluent behavior</returns>
+        public LoadValuesOperation<T, TJoin> LeftJoin<TJoin>(Expression<Func<T, TJoin, bool>> criteria, string alias = null) {
+            joinoperations.Add(new JoinOperation(typeof(TJoin), criteria, JoinOp.Left, null, alias));
             return new LoadValuesOperation<T, TJoin>(this);
         }
     }

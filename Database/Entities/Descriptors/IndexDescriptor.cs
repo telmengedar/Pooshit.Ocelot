@@ -30,31 +30,30 @@ namespace NightlyCode.Database.Entities.Descriptors {
         public IEnumerable<string> Columns => columns;
 
         /// <inheritdocs/>
-        protected bool Equals(IndexDescriptor other)
-        {
-            return Name.Equals(other.Name) && columns.SequenceEqual(other.Columns);
+        protected bool Equals(IndexDescriptor other) {
+            return Name.Equals(other.Name) && columns.OrderBy(c => c).SequenceEqual(other.Columns.OrderBy(c => c));
         }
 
         /// <inheritdocs/>
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
+        public override bool Equals(object obj) {
+            if(ReferenceEquals(null, obj))
+                return false;
+            if(ReferenceEquals(this, obj))
+                return true;
+            if(obj.GetType() != GetType())
+                return false;
             return Equals((IndexDescriptor)obj);
         }
 
         /// <inheritdocs/>
-        public override int GetHashCode()
-        {
+        public override int GetHashCode() {
             int hashcode = Name.GetHashCode();
 
-            if (columns == null)
+            if(columns == null)
                 return hashcode;
 
-            foreach (string column in columns)
-            {
-                hashcode ^= 397;
+            foreach(string column in columns.OrderBy(c => c)) {
+                hashcode *= 397;
                 hashcode ^= column.GetHashCode();
             }
 
@@ -62,9 +61,8 @@ namespace NightlyCode.Database.Entities.Descriptors {
         }
 
         /// <inheritdocs/>
-        public override string ToString()
-        {
-            if (string.IsNullOrEmpty(Name))
+        public override string ToString() {
+            if(string.IsNullOrEmpty(Name))
                 return $"{Name} {string.Join(",", columns)}";
             return string.Join(",", columns);
         }

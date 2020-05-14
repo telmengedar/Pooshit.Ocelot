@@ -36,7 +36,7 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
             OperationPreparator preparator = new OperationPreparator();
             preparator.AppendText($"INSERT INTO {entitydescriptor.TableName} ({dbclient.DBInfo.ColumnIndicator}{string.Join(string.Format("{0}, {0}", dbclient.DBInfo.ColumnIndicator), interestingcolumns.Select(c => c.Name))}{dbclient.DBInfo.ColumnIndicator}) VALUES(");
             preparator.AppendParameter();
-            foreach (EntityColumnDescriptor unused in interestingcolumns.Skip(1)) {
+            foreach(EntityColumnDescriptor unused in interestingcolumns.Skip(1)) {
                 preparator.AppendText(",");
                 preparator.AppendParameter();
             }
@@ -50,11 +50,10 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         /// </summary>
         /// <param name="entities">entities on which to operate</param>
         /// <returns>number of affected rows</returns>
-        public int Execute(params T[] entities) {
-            foreach (T entity in entities)
-            {
+        public long Execute(params T[] entities) {
+            foreach(T entity in entities) {
                 insertoperation.Execute(interestingcolumns.Select(c => c.GetValue(entity)).ToArray());
-                if (entitydescriptor.PrimaryKeyColumn != null && entitydescriptor.PrimaryKeyColumn.AutoIncrement)
+                if(entitydescriptor.PrimaryKeyColumn != null && entitydescriptor.PrimaryKeyColumn.AutoIncrement)
                     entitydescriptor.PrimaryKeyColumn.SetValue(entity, Converter.Convert(loadreturnid.ExecuteScalar<object>(), entitydescriptor.PrimaryKeyColumn.Property.PropertyType));
             }
             return entities.Length;
@@ -66,10 +65,10 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         /// <param name="transaction">transaction to use</param>
         /// <param name="entities">entities on which to operate</param>
         /// <returns>number of affected rows</returns>
-        public int Execute(Transaction transaction, params T[] entities) {
-            foreach (T entity in entities) {
+        public long Execute(Transaction transaction, params T[] entities) {
+            foreach(T entity in entities) {
                 insertoperation.Execute(transaction, interestingcolumns.Select(c => c.GetValue(entity)).ToArray());
-                if (entitydescriptor.PrimaryKeyColumn != null && entitydescriptor.PrimaryKeyColumn.AutoIncrement)
+                if(entitydescriptor.PrimaryKeyColumn != null && entitydescriptor.PrimaryKeyColumn.AutoIncrement)
                     entitydescriptor.PrimaryKeyColumn.SetValue(entity, Converter.Convert(loadreturnid.ExecuteScalar<object>(transaction), entitydescriptor.PrimaryKeyColumn.Property.PropertyType));
             }
             return entities.Length;
@@ -80,24 +79,23 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         /// </summary>
         /// <param name="entities">entities on which to operate</param>
         /// <returns>number of affected rows</returns>
-        public int Execute(IEnumerable<T> entities) {
+        public long Execute(IEnumerable<T> entities) {
             int count = 0;
-            foreach (T entity in entities)
-            {
+            foreach(T entity in entities) {
                 insertoperation.Execute(interestingcolumns.Select(c => c.GetValue(entity)).ToArray());
-                if (entitydescriptor.PrimaryKeyColumn != null && entitydescriptor.PrimaryKeyColumn.AutoIncrement)
+                if(entitydescriptor.PrimaryKeyColumn != null && entitydescriptor.PrimaryKeyColumn.AutoIncrement)
                     entitydescriptor.PrimaryKeyColumn.SetValue(entity, Converter.Convert(loadreturnid.ExecuteScalar<object>(), entitydescriptor.PrimaryKeyColumn.Property.PropertyType));
                 ++count;
             }
             return count;
         }
 
-        public int Execute(Transaction transaction, IEnumerable<T> entities) {
+        /// <inheritdoc />
+        public long Execute(Transaction transaction, IEnumerable<T> entities) {
             int count = 0;
-            foreach (T entity in entities)
-            {
+            foreach(T entity in entities) {
                 insertoperation.Execute(transaction, interestingcolumns.Select(c => c.GetValue(entity)).ToArray());
-                if (entitydescriptor.PrimaryKeyColumn != null && entitydescriptor.PrimaryKeyColumn.AutoIncrement)
+                if(entitydescriptor.PrimaryKeyColumn != null && entitydescriptor.PrimaryKeyColumn.AutoIncrement)
                     entitydescriptor.PrimaryKeyColumn.SetValue(entity, Converter.Convert(loadreturnid.ExecuteScalar<object>(transaction), entitydescriptor.PrimaryKeyColumn.Property.PropertyType));
                 ++count;
             }

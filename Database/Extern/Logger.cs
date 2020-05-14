@@ -5,26 +5,22 @@ namespace NightlyCode.Database.Extern {
     /// <summary>
     /// provides logging functions to the current assembly
     /// </summary>
-    internal class Logger {
+    public class Logger {
 
-        static readonly Action<object, string, string> info = (s, m, d) => { };
+        /// <summary>
+        /// triggered when an info message is generated
+        /// </summary>
+        public static event Action<object, string, string> InfoMessage;
 
-        static readonly Action<object, string, string> warning = (s, m, d) => { };
+        /// <summary>
+        /// triggered when a warning message is generated
+        /// </summary>
+        public static event Action<object, string, string> WarningMessage;
 
-        static readonly Action<object, string, Exception> error = (s, m, d) => { };
-
-        static Logger() {
-
-#if NIGHTLYCODE
-            // this looks whether the main assembly has referenced "NightlyCode.Core" and links the logs methods automatically
-            if(Assembly.GetEntryAssembly()?.GetReferencedAssemblies()?.Any(a => a.Name == "NightlyCode.Core")??false) {
-                ILoggerProvider nightlycodeprovider = (ILoggerProvider)Activator.CreateInstance(Type.GetType(typeof(Logger).Namespace + ".NightlyCodeLoggerProvider"));
-                info = nightlycodeprovider.Info;
-                warning = nightlycodeprovider.Warning;
-                error = nightlycodeprovider.Error;
-            }
-#endif
-        }
+        /// <summary>
+        /// triggered when an error message is generated
+        /// </summary>
+        public static event Action<object, string, Exception> ErrorMessage;
 
         /// <summary>
         /// logs an info
@@ -33,7 +29,7 @@ namespace NightlyCode.Database.Extern {
         /// <param name="message">message content</param>
         /// <param name="details">message details</param>
         public static void Info(object sender, string message, string details = null) {
-            info(sender, message, details);
+            InfoMessage?.Invoke(sender, message, details);
         }
 
         /// <summary>
@@ -43,7 +39,7 @@ namespace NightlyCode.Database.Extern {
         /// <param name="message">message content</param>
         /// <param name="details">message details</param>
         public static void Warning(object sender, string message, string details = null) {
-            warning(sender, message, details);
+            WarningMessage?.Invoke(sender, message, details);
         }
 
         /// <summary>
@@ -53,51 +49,7 @@ namespace NightlyCode.Database.Extern {
         /// <param name="message">message content</param>
         /// <param name="details">message details</param>
         public static void Error(object sender, string message, Exception details = null) {
-            error(sender, message, details);
+            ErrorMessage?.Invoke(sender, message, details);
         }
     }
-
-    /// <summary>
-    /// interface for a provider of logging functions
-    /// </summary>
-    internal interface ILoggerProvider {
-
-        /// <summary>
-        /// method to use to log an info
-        /// </summary>
-        Action<object, string, string> Info { get; }
-
-        /// <summary>
-        /// method to use to log a warning
-        /// </summary>
-        Action<object, string, string> Warning { get; }
-
-        /// <summary>
-        /// method to use to log an error
-        /// </summary>
-        Action<object, string, Exception> Error { get; }
-    }
-
-#if NIGHTLYCODE
-    /// <summary>
-    /// provides the logger of the core assembly
-    /// </summary>
-    internal class NightlyCodeLoggerProvider : ILoggerProvider {
-
-        /// <summary>
-        /// method to use to log an info
-        /// </summary>
-        public Action<object, string, string> Info => Core.Logs.Logger.Info;
-
-        /// <summary>
-        /// method to use to log a warning
-        /// </summary>
-        public Action<object, string, string> Warning => Core.Logs.Logger.Warning;
-
-        /// <summary>
-        /// method to use to log an error
-        /// </summary>
-        public Action<object, string, Exception> Error => Core.Logs.Logger.Error;
-    }
-#endif
 }

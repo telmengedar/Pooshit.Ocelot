@@ -21,7 +21,7 @@ namespace NightlyCode.Database.Tests {
 
             Assert.IsTrue(entitymanager.Exists("testtable"));
 
-            int result=entitymanager.InsertData("testtable")
+            long result = entitymanager.InsertData("testtable")
                 .Columns("bumm", "bommel")
                 .Values("neubert", "sonne")
                 .Execute();

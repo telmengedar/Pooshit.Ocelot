@@ -14,7 +14,7 @@ namespace NightlyCode.Database.Entities.Operations {
     public class DeleteOperation<T> {
         readonly IDBClient dbclient;
         readonly Func<Type, EntityDescriptor> descriptorgetter;
- 
+
         /// <summary>
         /// creates a new delete operation
         /// </summary>
@@ -34,7 +34,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// loads entities using the operation
         /// </summary>
         /// <returns>number of rows deleted</returns>
-        public int Execute(Transaction transaction=null) {
+        public long Execute(Transaction transaction = null) {
             return Prepare().Execute(transaction);
         }
 
@@ -42,8 +42,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// loads entities using the operation
         /// </summary>
         /// <returns>number of rows deleted</returns>
-        public Task<int> ExecuteAsync(Transaction transaction = null)
-        {
+        public Task<long> ExecuteAsync(Transaction transaction = null) {
             return Prepare().ExecuteAsync(transaction);
         }
 
@@ -69,7 +68,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// specifies criterias for the operation
         /// </summary>
         /// <param name="criterias">criterias of entities to delete</param>
-        public DeleteOperation<T> Where(Expression<Func<T,bool>> criterias) {
+        public DeleteOperation<T> Where(Expression<Func<T, bool>> criterias) {
             Criterias = criterias;
             return this;
         }

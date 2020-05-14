@@ -27,7 +27,7 @@ namespace NightlyCode.Database.Info {
             AddFieldLogic<LimitField>(AppendLimit);
         }
 
-        void AppendLimit(LimitField limit, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter) {
+        void AppendLimit(LimitField limit, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
             preparator.AppendText("LIMIT");
             if(limit.Offset.HasValue) {
                 preparator.AppendText(limit.Offset.Value.ToString()).AppendText(",");
@@ -41,7 +41,7 @@ namespace NightlyCode.Database.Info {
                 preparator.AppendText(limit.Limit.Value.ToString());
         }
 
-        void Append(DBFunction function, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter) {
+        void Append(DBFunction function, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
             switch(function.Type) {
             case DBFunctionType.Random:
                 preparator.AppendText("RANDOM()");
@@ -78,11 +78,6 @@ namespace NightlyCode.Database.Info {
         /// parameter used when joining
         /// </summary>
         public override string JoinHint => "";
-
-        /// <summary>
-        /// parameter used to create autoincrement columns
-        /// </summary>
-        public override string AutoIncrement => "AUTOINCREMENT";
 
         /// <summary>
         /// character used to specify columns explicitely
@@ -145,6 +140,13 @@ namespace NightlyCode.Database.Info {
         /// <returns></returns>
         public override bool CheckIfTableExists(IDBClient db, string table, Transaction transaction = null) {
             return db.Query(transaction, "SELECT name FROM sqlite_master WHERE (type='table' OR type='view') AND name like @1", table).Rows.Length > 0;
+        }
+
+        /// <inheritdoc />
+        public override bool IsTypeEqual(string lhs, string rhs) {
+            if(lhs == "TEXT" || lhs == "VARCHAR")
+                return rhs == "TEXT" || rhs == "VARCHAR";
+            return base.IsTypeEqual(lhs, rhs);
         }
 
         /// <summary>
@@ -260,7 +262,7 @@ namespace NightlyCode.Database.Info {
             if(primarykey)
                 operation.AppendText("PRIMARY KEY");
             if(autoincrement)
-                operation.AppendText(AutoIncrement);
+                operation.AppendText("AUTOINCREMENT");
             if(unique)
                 operation.AppendText("UNIQUE");
             if(notnull) {
@@ -276,7 +278,9 @@ namespace NightlyCode.Database.Info {
             }
         }
 
-        void AddColumn(OperationPreparator operation, EntityColumnDescriptor column) {
+        /// <inheritdoc />
+        public override void AddColumn(OperationPreparator operation, EntityColumnDescriptor column) {
+            operation.AppendText("ADD COLUMN");
             AddColumn(operation,
                 column.Name,
                 GetDBType(DBConverterCollection.ContainsConverter(column.Property.PropertyType) ? DBConverterCollection.GetDBType(column.Property.PropertyType) : column.Property.PropertyType),
@@ -296,7 +300,7 @@ namespace NightlyCode.Database.Info {
             if(primarykey)
                 operation.AppendText("PRIMARY KEY");
             if(autoincrement)
-                operation.AppendText(AutoIncrement);
+                operation.AppendText("AUTOINCREMENT");
             if(unique)
                 operation.AppendText("UNIQUE");
             if(notnull) {
@@ -368,7 +372,7 @@ namespace NightlyCode.Database.Info {
         /// <param name="table">table to modify</param>
         /// <param name="column">column to add</param>
         /// <param name="transaction">transaction to use (optional)</param>
-        public override void AddColumn(IDBClient client, string table, EntityColumnDescriptor column, Transaction transaction = null) {
+        public void AddColumn(IDBClient client, string table, EntityColumnDescriptor column, Transaction transaction = null) {
             OperationPreparator operation = new OperationPreparator();
             operation.AppendText($"ALTER TABLE {table} ADD COLUMN");
             AddColumn(operation, column);
@@ -378,59 +382,28 @@ namespace NightlyCode.Database.Info {
                 operation.GetOperation(client).Execute();
         }
 
-        /// <summary>
-        /// removes a column from a table
-        /// </summary>
-        /// <param name="client">db access</param>
-        /// <param name="table">table to modify</param>
-        /// <param name="column">column to remove</param>
-        /// <remarks>
-        /// creates a new table and transfers the data since SQLite has no drop column command
-        /// </remarks>
-        public override void RemoveColumn(IDBClient client, string table, string column) {
-            TableDescriptor schema = GetSchema(client, table) as TableDescriptor;
-            if(schema == null)
-                throw new Exception("Type not a table");
-
-            // rename old table
-            client.NonQuery($"ALTER TABLE {table} RENAME TO {table}_original");
-
-            SchemaColumnDescriptor[] remainingcolumns = schema.Columns.Where(c => c.Name != column).ToArray();
-            string columnlist = string.Join(", ", remainingcolumns.Select(c => c.Name));
-
-            // create new table without the column
-            bool flag = false;
-
-            OperationPreparator preparator = new OperationPreparator();
-            preparator.AppendText($"CREATE TABLE {table} (");
-            foreach(SchemaColumnDescriptor columndesc in remainingcolumns) {
-                if(flag)
-                    preparator.AppendText(",");
-                CreateColumn(preparator, columndesc.Name, columndesc.Type, columndesc.PrimaryKey, columndesc.AutoIncrement, columndesc.IsUnique, columndesc.NotNull, columndesc.DefaultValue);
-                flag = true;
-            }
-            preparator.AppendText(")");
-            preparator.GetOperation(client).Execute();
-
-            // transfer data to new table
-            client.NonQuery($"INSERT INTO {table} ({columnlist}) SELECT {columnlist} FROM {table}_original");
-
-            // remove old data
-            client.NonQuery($"DROP TABLE {table}_original");
+        /// <inheritdoc />
+        public override void DropColumn(OperationPreparator preparator, string column) {
+            throw new NotSupportedException("SQLite is not able to drop columns directly");
         }
 
-        /// <summary>
-        /// modifies a column of a table
-        /// </summary>
-        /// <param name="client">db access</param>
-        /// <param name="table">table to modify</param>
-        /// <param name="column">column to modify</param>
-        /// <remarks>
-        /// Removes the column and recreates it. So you will lose all your data in that column.
-        /// </remarks>
-        public override void AlterColumn(IDBClient client, string table, EntityColumnDescriptor column) {
-            RemoveColumn(client, table, column.Name);
-            AddColumn(client, table, column);
+        /// <inheritdoc />
+        public override void AlterColumn(OperationPreparator preparator, EntityColumnDescriptor column) {
+            throw new NotSupportedException("SQLite is not able to alter columns directly");
+        }
+
+        /// <inheritdoc />
+        public override void ReturnID(OperationPreparator preparator, ColumnDescriptor idcolumn) {
+            preparator.AppendText(";SELECT last_insert_rowid()");
+        }
+
+        /// <inheritdoc />
+        public override bool MustRecreateTable(string[] obsolete, EntityColumnDescriptor[] altered, EntityColumnDescriptor[] missing, TableDescriptor tableschema, EntityDescriptor entityschema) {
+            return obsolete.Length > 0
+                   || altered.Length > 0
+                   || missing.Any(m => m.IsUnique || m.PrimaryKey)
+                   || !tableschema.Uniques.Equals(entityschema.Uniques)
+                   || !tableschema.Indices.Equals(entityschema.Indices);
         }
 
         /// <summary>

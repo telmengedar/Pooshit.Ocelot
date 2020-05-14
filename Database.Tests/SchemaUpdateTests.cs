@@ -1,15 +1,18 @@
 ﻿using System.Linq;
+using Moq;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Schema;
+using NightlyCode.Database.Info;
 using NightlyCode.Database.Tests.Data;
+using NightlyCode.Database.Tests.Entities;
 using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;
 
-namespace NightlyCode.Database.Tests.Entities {
+namespace NightlyCode.Database.Tests {
 
-    [TestFixture]
+    [TestFixture, Parallelizable]
     public class SchemaUpdateTests {
         readonly EntityDescriptorCache modelcache = new EntityDescriptorCache();
         SchemaCreator creator;
@@ -21,7 +24,7 @@ namespace NightlyCode.Database.Tests.Entities {
             updater = new SchemaUpdater(modelcache);
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void AddColumns() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             creator.Create(typeof(OriginalEntity), dbclient);
@@ -37,7 +40,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.That(descriptor.Indices.Any(i => i.Name == "field4" && i.Columns.Any(c => c == "field4")));
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void RemoveColumns() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             creator.Create(typeof(OriginalEntity), dbclient);
@@ -54,7 +57,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.That(!descriptor.Indices.Any(i => i.Name == "field4" && i.Columns.Any(c => c == "field4")));
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void AlterColumns() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             creator.Create(typeof(OriginalEntity), dbclient);
@@ -69,7 +72,7 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.That(!descriptor.Indices.Any(i => i.Name == "field4" && i.Columns.Any(c => c == "field4")));
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void AlterColumnsInFilledTable() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -89,9 +92,8 @@ namespace NightlyCode.Database.Tests.Entities {
                 Assert.AreEqual(0, value.Integer);
         }
 
-        [Test]
-        public void ChangeUniqueSpecifiers()
-        {
+        [Test, Parallelizable]
+        public void ChangeUniqueSpecifiers() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
@@ -104,15 +106,14 @@ namespace NightlyCode.Database.Tests.Entities {
             TableDescriptor descriptor = dbclient.DBInfo.GetSchema(dbclient, modelcache.Get<ValueModel>().TableName) as TableDescriptor;
             Assert.NotNull(descriptor);
             Assert.AreEqual(3, descriptor.Uniques.Length);
-            Assert.That(descriptor.Uniques.Any(u => u.Columns.SequenceEqual(new[] {"string", "double"})));
-            Assert.That(descriptor.Uniques.Any(u => u.Columns.SequenceEqual(new[] {"integer", "single"})));
-            Assert.That(descriptor.Uniques.Any(u => u.Columns.SequenceEqual(new[] {"single", "string"})));
-            Assert.That(descriptor.Uniques.All(u => !u.Columns.SequenceEqual(new[] {"double", "integer"})));
+            Assert.That(descriptor.Uniques.Any(u => u.Columns.SequenceEqual(new[] { "string", "double" })));
+            Assert.That(descriptor.Uniques.Any(u => u.Columns.SequenceEqual(new[] { "integer", "single" })));
+            Assert.That(descriptor.Uniques.Any(u => u.Columns.SequenceEqual(new[] { "single", "string" })));
+            Assert.That(descriptor.Uniques.All(u => !u.Columns.SequenceEqual(new[] { "double", "integer" })));
         }
 
-        [Test]
-        public void AddMissingComplexUniqueConstraint()
-        {
+        [Test, Parallelizable]
+        public void AddMissingComplexUniqueConstraint() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
@@ -127,20 +128,37 @@ namespace NightlyCode.Database.Tests.Entities {
             Assert.That(descriptor.Uniques.Any(u => u.Columns.SequenceEqual(new[] { "single", "string" })));
         }
 
-        [Test]
+        [Test, Parallelizable]
         public void AddGuidColumn() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Model<GuidEntity>().DropColumn(e => e.Guid);
             entitymanager.UpdateSchema<GuidEntity>();
 
-            for (int i = 0; i < 5; ++i)
+            for(int i = 0; i < 5; ++i)
                 entitymanager.Insert<GuidEntity>().Columns(e => e.SomeValue).Values(i).Execute();
 
             entitymanager.Model<GuidEntity>().AddColumn(e => e.Guid);
             entitymanager.UpdateSchema<GuidEntity>();
 
             Assert.DoesNotThrow(() => entitymanager.LoadEntities<GuidEntity>().Execute().ToArray());
+        }
+
+        [Test, Parallelizable]
+        public void DontCreateViewTwice() {
+            Mock<IDBInfo> dbinfomock = new Mock<IDBInfo>();
+            dbinfomock.Setup(i => i.DropView(It.IsAny<IDBClient>(), It.IsAny<ViewDescriptor>())).Callback(() => { Assert.Fail("View should not get dropped"); });
+            dbinfomock.Setup(i => i.GetSchema(It.IsAny<IDBClient>(), It.IsAny<string>())).Returns(new ViewDescriptor("testview") {
+                SQL = "SELECT 2 AS first,\n\t3+4 AS second,\n\t'test' AS third"
+            });
+
+            Mock<IDBClient> clientmock = new Mock<IDBClient>();
+            clientmock.SetupGet(c => c.DBInfo).Returns(dbinfomock.Object);
+
+            EntityDescriptorCache cache = new EntityDescriptorCache();
+            SchemaUpdater updater = new SchemaUpdater(cache);
+
+            updater.Update<TestView>(clientmock.Object);
         }
     }
 

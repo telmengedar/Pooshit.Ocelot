@@ -17,7 +17,7 @@ namespace NightlyCode.Database.Tests {
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.UpdateSchema<ValueModel>();
 
-            int result = entitymanager.InsertData("valuemodel")
+            long result = entitymanager.InsertData("valuemodel")
                 .Columns("integer", "single", "double", "string")
                 .Values(1, 3.0f, 3.0, "7")
                 .Execute();
@@ -38,11 +38,11 @@ namespace NightlyCode.Database.Tests {
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.UpdateSchema<ValueModel>();
 
-            PreparedOperation operation= entitymanager.InsertData("valuemodel")
+            PreparedOperation operation = entitymanager.InsertData("valuemodel")
                 .Columns("integer", "single", "double", "string")
                 .Prepare();
 
-            int result=operation.Execute(1, 3.0f, 3.0, "7");
+            long result = operation.Execute(1, 3.0f, 3.0, "7");
 
             Assert.AreEqual(1, result);
 
@@ -55,8 +55,7 @@ namespace NightlyCode.Database.Tests {
         }
 
         [Test, Parallelizable]
-        public void InsertUsingPreparedOperationAndStringValues()
-        {
+        public void InsertUsingPreparedOperationAndStringValues() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.UpdateSchema<ValueModel>();
@@ -65,7 +64,7 @@ namespace NightlyCode.Database.Tests {
                 .Columns("integer", "single", "double", "string")
                 .Prepare();
 
-            int result = operation.Execute("1", "3", "3", "7");
+            long result = operation.Execute("1", "3", "3", "7");
 
             Assert.AreEqual(1, result);
 

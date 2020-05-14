@@ -10,6 +10,7 @@ using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
 
 namespace NightlyCode.Database.Entities.Operations {
+
     /// <summary>
     /// operation used to load entities
     /// </summary>
@@ -195,7 +196,8 @@ namespace NightlyCode.Database.Entities.Operations {
                         flag = false;
                     else
                         preparator.AppendText(",");
-                    dbclient.DBInfo.Append(criteria, preparator, descriptorgetter);
+
+                    preparator.AppendField(criteria, dbclient.DBInfo, descriptorgetter);
                 }
 
             }
@@ -209,7 +211,8 @@ namespace NightlyCode.Database.Entities.Operations {
                         flag = false;
                     else
                         preparator.AppendText(",");
-                    dbclient.DBInfo.Append(criteria.Field, preparator, descriptorgetter);
+
+                    preparator.AppendField(criteria.Field, dbclient.DBInfo, descriptorgetter);
 
                     if(!criteria.Ascending)
                         preparator.AppendText("DESC");
@@ -224,9 +227,8 @@ namespace NightlyCode.Database.Entities.Operations {
                     CriteriaVisitor.GetCriteriaText(Havings, descriptorgetter, dbclient.DBInfo, preparator);
             }
 
-            if(!ReferenceEquals(LimitStatement, null)) {
-                dbclient.DBInfo.Append(LimitStatement, preparator, descriptorgetter);
-            }
+            if(!ReferenceEquals(LimitStatement, null))
+                preparator.AppendField(LimitStatement, dbclient.DBInfo, descriptorgetter);
 
             return preparator.GetLoadEntitiesOperation<TEntity>(dbclient, modeldescriptor);
         }
@@ -248,7 +250,7 @@ namespace NightlyCode.Database.Entities.Operations {
 
         /// <inheritdoc />
         ILoadEntitiesOperation ILoadEntitiesOperation.Join<TJoin>(Expression criterias, Expression additionalcriterias = null) {
-            joinoperations.Add(new JoinOperation(typeof(TJoin), criterias, additionalcriterias, $"j{joinoperations.Count}"));
+            joinoperations.Add(new JoinOperation(typeof(TJoin), criterias, JoinOp.Inner, additionalcriterias, $"j{joinoperations.Count}"));
             return this;
         }
 

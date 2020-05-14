@@ -32,12 +32,11 @@ namespace NightlyCode.Database.Tests {
             );
 
             Tuple<int, string>[] result = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).ExecuteType(row => new Tuple<int, string>((int)(long)row[0], null)).ToArray();
-            Assert.True(result.Select(r => r.Item1).SequenceEqual(new[] {1, 2, 5, 3, 75, 234, 124}));
+            Assert.True(result.Select(r => r.Item1).SequenceEqual(new[] { 1, 2, 5, 3, 75, 234, 124 }));
         }
 
         [Test, Parallelizable]
-        public async Task ExecuteTypeAsync()
-        {
+        public async Task ExecuteTypeAsync() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
@@ -54,20 +53,19 @@ namespace NightlyCode.Database.Tests {
             );
 
             Tuple<int, string>[] result = (await entitymanager.Load<ValueModel>(m => m.Integer, m => m.String)
-                    .ExecuteTypeAsync(row => new Tuple<int, string>((int) (long) row[0], null)))
+                    .ExecuteTypeAsync(row => new Tuple<int, string>((int)(long)row[0], null)))
                     .ToArray();
             Assert.True(result.Select(r => r.Item1).SequenceEqual(new[] { 1, 2, 5, 3, 75, 234, 124 }));
         }
 
         [Test, Parallelizable]
-        public void ExecuteTypeTransaction()
-        {
+        public void ExecuteTypeTransaction() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            using (Transaction transaction=entitymanager.Transaction()) {
+            using(Transaction transaction = entitymanager.Transaction()) {
                 entitymanager.InsertEntities<ValueModel>().Execute(transaction,
                     new ValueModel(1),
                     new ValueModel(2),
@@ -84,15 +82,13 @@ namespace NightlyCode.Database.Tests {
         }
 
         [Test, Parallelizable]
-        public async Task ExecuteTypeTransactionAsync()
-        {
+        public async Task ExecuteTypeTransactionAsync() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            using (Transaction transaction = entitymanager.Transaction())
-            {
+            using(Transaction transaction = entitymanager.Transaction()) {
                 entitymanager.InsertEntities<ValueModel>().Execute(transaction,
                     new ValueModel(1),
                     new ValueModel(2),
@@ -104,15 +100,14 @@ namespace NightlyCode.Database.Tests {
                 );
 
                 Tuple<int, string>[] result = (await entitymanager.Load<ValueModel>(m => m.Integer, m => m.String)
-                        .ExecuteTypeAsync(row => new Tuple<int, string>((int) (long) row[0], null), transaction))
+                        .ExecuteTypeAsync(row => new Tuple<int, string>((int)(long)row[0], null), transaction))
                         .ToArray();
                 Assert.True(result.Select(r => r.Item1).SequenceEqual(new[] { 1, 2, 5, 3, 75, 234, 124 }));
             }
         }
 
         [Test, Parallelizable]
-        public void ExecuteTypeWithParameters()
-        {
+        public void ExecuteTypeWithParameters() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
@@ -134,8 +129,7 @@ namespace NightlyCode.Database.Tests {
         }
 
         [Test, Parallelizable]
-        public async Task ExecuteTypeWithParametersAsync()
-        {
+        public async Task ExecuteTypeWithParametersAsync() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
@@ -157,15 +151,13 @@ namespace NightlyCode.Database.Tests {
         }
 
         [Test, Parallelizable]
-        public void ExecuteTypeWithParametersTransaction()
-        {
+        public void ExecuteTypeWithParametersTransaction() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            using (Transaction transaction = entitymanager.Transaction())
-            {
+            using(Transaction transaction = entitymanager.Transaction()) {
                 entitymanager.InsertEntities<ValueModel>().Execute(transaction,
                     new ValueModel(1),
                     new ValueModel(2),
@@ -183,15 +175,13 @@ namespace NightlyCode.Database.Tests {
         }
 
         [Test, Parallelizable]
-        public async Task ExecuteTypeWithParametersTransactionAsync()
-        {
+        public async Task ExecuteTypeWithParametersTransactionAsync() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            using (Transaction transaction = entitymanager.Transaction())
-            {
+            using(Transaction transaction = entitymanager.Transaction()) {
                 entitymanager.InsertEntities<ValueModel>().Execute(transaction,
                     new ValueModel(1),
                     new ValueModel(2),
@@ -209,8 +199,7 @@ namespace NightlyCode.Database.Tests {
         }
 
         [Test, Parallelizable]
-        public void ExecuteScalar()
-        {
+        public void ExecuteScalar() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
@@ -226,13 +215,12 @@ namespace NightlyCode.Database.Tests {
                 new ValueModel(124)
             );
 
-            int result=entitymanager.Load<ValueModel>(m => m.Integer).ExecuteScalar<int>();
+            int result = entitymanager.Load<ValueModel>(m => m.Integer).ExecuteScalar<int>();
             Assert.AreEqual(1, result);
         }
 
         [Test, Parallelizable]
-        public void Distinct()
-        {
+        public void Distinct() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
@@ -249,12 +237,11 @@ namespace NightlyCode.Database.Tests {
             );
 
             int[] result = entitymanager.Load<ValueModel>(m => m.Integer).Distinct().ExecuteSet<int>().ToArray();
-            Assert.That(result.SequenceEqual(new[] {1, 2, 5, 9}));
+            Assert.That(result.SequenceEqual(new[] { 1, 2, 5, 9 }));
         }
 
         [Test, Parallelizable]
-        public async Task ExecuteScalarAsync()
-        {
+        public async Task ExecuteScalarAsync() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
@@ -275,15 +262,13 @@ namespace NightlyCode.Database.Tests {
         }
 
         [Test, Parallelizable]
-        public void ExecuteScalarTransaction()
-        {
+        public void ExecuteScalarTransaction() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            using (Transaction transaction = entitymanager.Transaction())
-            {
+            using(Transaction transaction = entitymanager.Transaction()) {
                 entitymanager.InsertEntities<ValueModel>().Execute(transaction,
                     new ValueModel(1),
                     new ValueModel(2),
@@ -294,21 +279,19 @@ namespace NightlyCode.Database.Tests {
                     new ValueModel(124)
                 );
 
-                int result=entitymanager.Load<ValueModel>(m => m.Integer).ExecuteScalar<int>(transaction);
+                int result = entitymanager.Load<ValueModel>(m => m.Integer).ExecuteScalar<int>(transaction);
                 Assert.AreEqual(1, result);
             }
         }
 
         [Test, Parallelizable]
-        public async Task ExecuteScalarTransactionAsync()
-        {
+        public async Task ExecuteScalarTransactionAsync() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            using (Transaction transaction = entitymanager.Transaction())
-            {
+            using(Transaction transaction = entitymanager.Transaction()) {
                 entitymanager.InsertEntities<ValueModel>().Execute(transaction,
                     new ValueModel(1),
                     new ValueModel(2),
@@ -325,8 +308,7 @@ namespace NightlyCode.Database.Tests {
         }
 
         [Test, Parallelizable]
-        public void ExecuteScalarWithParameters()
-        {
+        public void ExecuteScalarWithParameters() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
@@ -343,13 +325,12 @@ namespace NightlyCode.Database.Tests {
             );
 
             PreparedLoadValuesOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
-            int result=loadvaluesoperation.ExecuteScalar<int>(50);
+            int result = loadvaluesoperation.ExecuteScalar<int>(50);
             Assert.AreEqual(75, result);
         }
 
         [Test, Parallelizable]
-        public async Task ExecuteScalarWithParametersAsync()
-        {
+        public async Task ExecuteScalarWithParametersAsync() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
@@ -371,15 +352,13 @@ namespace NightlyCode.Database.Tests {
         }
 
         [Test, Parallelizable]
-        public void ExecuteScalarWithParametersTransaction()
-        {
+        public void ExecuteScalarWithParametersTransaction() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            using (Transaction transaction = entitymanager.Transaction())
-            {
+            using(Transaction transaction = entitymanager.Transaction()) {
                 entitymanager.InsertEntities<ValueModel>().Execute(transaction,
                     new ValueModel(1),
                     new ValueModel(2),
@@ -391,21 +370,19 @@ namespace NightlyCode.Database.Tests {
                 );
 
                 PreparedLoadValuesOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
-                int result=loadvaluesoperation.ExecuteScalar<int>(transaction, 50);
+                int result = loadvaluesoperation.ExecuteScalar<int>(transaction, 50);
                 Assert.AreEqual(75, result);
             }
         }
 
         [Test, Parallelizable]
-        public async Task ExecuteScalarWithParametersTransactionAsync()
-        {
+        public async Task ExecuteScalarWithParametersTransactionAsync() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            using (Transaction transaction = entitymanager.Transaction())
-            {
+            using(Transaction transaction = entitymanager.Transaction()) {
                 entitymanager.InsertEntities<ValueModel>().Execute(transaction,
                     new ValueModel(1),
                     new ValueModel(2),
@@ -423,8 +400,7 @@ namespace NightlyCode.Database.Tests {
         }
 
         [Test, Parallelizable]
-        public void ExecuteSet()
-        {
+        public void ExecuteSet() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
@@ -445,8 +421,7 @@ namespace NightlyCode.Database.Tests {
         }
 
         [Test, Parallelizable]
-        public async Task ExecuteSetAsync()
-        {
+        public async Task ExecuteSetAsync() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
@@ -467,15 +442,13 @@ namespace NightlyCode.Database.Tests {
         }
 
         [Test, Parallelizable]
-        public void ExecuteSetTransaction()
-        {
+        public void ExecuteSetTransaction() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            using (Transaction transaction = entitymanager.Transaction())
-            {
+            using(Transaction transaction = entitymanager.Transaction()) {
                 entitymanager.InsertEntities<ValueModel>().Execute(transaction,
                     new ValueModel(1),
                     new ValueModel(2),
@@ -492,15 +465,13 @@ namespace NightlyCode.Database.Tests {
         }
 
         [Test, Parallelizable]
-        public void ExecuteSetTransactionAsync()
-        {
+        public void ExecuteSetTransactionAsync() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            using (Transaction transaction = entitymanager.Transaction())
-            {
+            using(Transaction transaction = entitymanager.Transaction()) {
                 entitymanager.InsertEntities<ValueModel>().Execute(transaction,
                     new ValueModel(1),
                     new ValueModel(2),
@@ -517,8 +488,7 @@ namespace NightlyCode.Database.Tests {
         }
 
         [Test, Parallelizable]
-        public void ExecuteSetWithParameters()
-        {
+        public void ExecuteSetWithParameters() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
@@ -540,15 +510,13 @@ namespace NightlyCode.Database.Tests {
         }
 
         [Test, Parallelizable]
-        public void ExecuteSetWithParametersTransaction()
-        {
+        public void ExecuteSetWithParametersTransaction() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            using (Transaction transaction = entitymanager.Transaction())
-            {
+            using(Transaction transaction = entitymanager.Transaction()) {
                 entitymanager.InsertEntities<ValueModel>().Execute(transaction,
                     new ValueModel(1),
                     new ValueModel(2),
@@ -560,7 +528,7 @@ namespace NightlyCode.Database.Tests {
                 );
 
                 PreparedLoadValuesOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
-                int[] result= loadvaluesoperation.ExecuteSet<int>(transaction, 50).ToArray();
+                int[] result = loadvaluesoperation.ExecuteSet<int>(transaction, 50).ToArray();
                 Assert.True(result.SequenceEqual(new[] { 75, 234, 124 }));
             }
         }
@@ -595,5 +563,38 @@ namespace NightlyCode.Database.Tests {
 
             Assert.That(operation.ToString().Contains("WHERE"));
         }
+
+        [Test, Parallelizable]
+        public void LeftJoinWithAlias() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+
+            entitymanager.UpdateSchema<Option>();
+            entitymanager.UpdateSchema<ConstructOption>();
+
+            PreparedLoadValuesOperation operation = entitymanager.Load<Option>(o => o.Id)
+                .Where(o => o.Name == "Test")
+                .LeftJoin<ConstructOption>((o, co) => co.OptionId == o.Id, "test")
+                .Prepare();
+
+            Assert.AreEqual("SELECT t.\"id\" FROM option AS t LEFT JOIN constructoption AS test ON test.\"optionid\" = t.\"id\" WHERE t.\"name\" = @1", operation.CommandText);
+        }
+
+        [Test, Parallelizable]
+        public void WhereAfterJoinUsesAlias() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+
+            entitymanager.UpdateSchema<Option>();
+            entitymanager.UpdateSchema<ConstructOption>();
+
+            PreparedLoadValuesOperation operation = entitymanager.Load<Option>(o => o.Id)
+                .LeftJoin<ConstructOption>((o, co) => co.OptionId == o.Id, "test")
+                .Where((o, co) => co.OptionId == Guid.Empty)
+                .Prepare();
+
+            Assert.AreEqual("SELECT t.\"id\" FROM option AS t LEFT JOIN constructoption AS test ON test.\"optionid\" = t.\"id\" WHERE test.\"optionid\" = @1", operation.CommandText);
+        }
+
     }
 }

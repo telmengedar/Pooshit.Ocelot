@@ -8,14 +8,13 @@ using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
 
-namespace NightlyCode.Database.Info
-{
+namespace NightlyCode.Database.Info {
 
     /// <summary>
     /// db specific information
     /// </summary>
-    public interface IDBInfo
-    {
+    public interface IDBInfo {
+
         /// <summary>
         /// character used for parameters
         /// </summary>
@@ -25,11 +24,6 @@ namespace NightlyCode.Database.Info
         /// parameter used when joining
         /// </summary>
         string JoinHint { get; }
-
-        /// <summary>
-        /// parameter used to create autoincrement columns
-        /// </summary>
-        string AutoIncrement { get; }
 
         /// <summary>
         /// character used to specify columns explicitely
@@ -74,7 +68,7 @@ namespace NightlyCode.Database.Info
         /// <param name="db"></param>
         /// <param name="table"></param>
         /// <returns></returns>
-        bool CheckIfTableExists(IDBClient db, string table, Transaction transaction=null);
+        bool CheckIfTableExists(IDBClient db, string table, Transaction transaction = null);
 
         /// <summary>
         /// get db type of an application type
@@ -82,6 +76,14 @@ namespace NightlyCode.Database.Info
         /// <param name="type"></param>
         /// <returns></returns>
         string GetDBType(Type type);
+
+        /// <summary>
+        /// determines whether two types are equal
+        /// </summary>
+        /// <param name="lhs">first type to check</param>
+        /// <param name="rhs">second type to check whether it is equal to the first type</param>
+        /// <returns>true when types are equal, false otherwise</returns>
+        bool IsTypeEqual(string lhs, string rhs);
 
         /// <summary>
         /// get db representation type
@@ -101,6 +103,13 @@ namespace NightlyCode.Database.Info
         /// suffix to use when creating tables
         /// </summary>
         string CreateSuffix { get; }
+
+        /// <summary>
+        /// drops a view from database
+        /// </summary>
+        /// <param name="client">client to use to execute command</param>
+        /// <param name="view">view to drop</param>
+        void DropView(IDBClient client, ViewDescriptor view);
 
         /// <summary>
         /// text used to create a column
@@ -125,29 +134,25 @@ namespace NightlyCode.Database.Info
         SchemaDescriptor GetSchema(IDBClient client, string name);
 
         /// <summary>
-        /// adds a column to a table
+        /// adds drop column statement to the preparator
         /// </summary>
-        /// <param name="client">db access</param>
-        /// <param name="table">table to modify</param>
-        /// <param name="column">column to add</param>
-        /// <param name="transaction">transaction to use (optional)</param>
-        void AddColumn(IDBClient client, string table, EntityColumnDescriptor column, Transaction transaction=null);
+        /// <param name="preparator">preparator to which to add sql</param>
+        /// <param name="column">name of column to drop</param>
+        void DropColumn(OperationPreparator preparator, string column);
 
         /// <summary>
-        /// removes a column from a table
+        /// adds add column sql text to the preparator
         /// </summary>
-        /// <param name="client">db access</param>
-        /// <param name="table">table to modify</param>
-        /// <param name="column">column to remove</param>
-        void RemoveColumn(IDBClient client, string table, string column);
+        /// <param name="preparator">preparator to which to add sql</param>
+        /// <param name="column">column info for which to generate sql</param>
+        void AddColumn(OperationPreparator preparator, EntityColumnDescriptor column);
 
         /// <summary>
-        /// modifies a column of a table
+        /// adds alter column statement to the preparator
         /// </summary>
-        /// <param name="client">db access</param>
-        /// <param name="table">table to modify</param>
-        /// <param name="column">column to modify</param>
-        void AlterColumn(IDBClient client, string table, EntityColumnDescriptor column);
+        /// <param name="preparator">preparator to which to add sql</param>
+        /// <param name="column">column info for which to generate sql</param>
+        void AlterColumn(OperationPreparator preparator, EntityColumnDescriptor column);
 
         /// <summary>
         /// appends a database field to an <see cref="OperationPreparator"/>
@@ -155,7 +160,8 @@ namespace NightlyCode.Database.Info
         /// <param name="field">field to append</param>
         /// <param name="preparator">operation to append function to</param>
         /// <param name="descriptorgetter">function used to get <see cref="EntityDescriptor"/>s for types</param>
-        void Append(IDBField field, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter);
+        /// <param name="tablealias">alias to use when resolving properties</param>
+        void Append(IDBField field, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias = null);
 
         /// <summary>
         /// begins a new transaction
@@ -167,5 +173,23 @@ namespace NightlyCode.Database.Info
         /// ends a transaction
         /// </summary>
         void EndTransaction(SemaphoreSlim semaphore);
+
+        /// <summary>
+        /// adds statement used to return id of insert operation
+        /// </summary>
+        /// <param name="preparator">command to modify</param>
+        /// <param name="idcolumn">id column of which to return value</param>
+        void ReturnID(OperationPreparator preparator, ColumnDescriptor idcolumn);
+
+        /// <summary>
+        /// determines whether table has to get recreated
+        /// </summary>
+        /// <param name="obsolete">list of columns which need to get dropped</param>
+        /// <param name="altered">list of columns which were altered in definition</param>
+        /// <param name="missing">list of columns which need to get added</param>
+        /// <param name="tableschema">schema of table currently stored in database</param>
+        /// <param name="entityschema">schema of entity which needs to get mapped to database</param>
+        /// <returns>true when table has to get recreated, false otherwise</returns>
+        bool MustRecreateTable(string[] obsolete, EntityColumnDescriptor[] altered, EntityColumnDescriptor[] missing, TableDescriptor tableschema, EntityDescriptor entityschema);
     }
 }

@@ -18,7 +18,7 @@ namespace NightlyCode.Database.Info {
     /// base implementation for db specific logic
     /// </summary>
     public abstract class DBInfo : IDBInfo {
-        readonly Dictionary<Type, Action<IDBField, OperationPreparator, Func<Type, EntityDescriptor>>> fieldlogic = new Dictionary<Type, Action<IDBField, OperationPreparator, Func<Type, EntityDescriptor>>>();
+        readonly Dictionary<Type, Action<IDBField, OperationPreparator, Func<Type, EntityDescriptor>, string>> fieldlogic = new Dictionary<Type, Action<IDBField, OperationPreparator, Func<Type, EntityDescriptor>, string>>();
 
         /// <summary>
         /// creates a new <see cref="DBInfo"/>
@@ -34,15 +34,15 @@ namespace NightlyCode.Database.Info {
         /// </summary>
         /// <typeparam name="T">type of field</typeparam>
         /// <param name="logic">logic to use when generating code</param>
-        protected void AddFieldLogic<T>(Action<T, OperationPreparator, Func<Type, EntityDescriptor>> logic) {
-            fieldlogic[typeof(T)] = (field, preparator, getter) => logic((T) field, preparator, getter);
+        protected void AddFieldLogic<T>(Action<T, OperationPreparator, Func<Type, EntityDescriptor>, string> logic) {
+            fieldlogic[typeof(T)] = (field, preparator, getter, alias) => logic((T)field, preparator, getter, alias);
         }
 
-        void AppendAggregate(Aggregate aggregate, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter) {
+        void AppendAggregate(Aggregate aggregate, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
             preparator.AppendText(aggregate.Method).AppendText("(");
-            if (aggregate.Arguments.Length > 0) {
+            if(aggregate.Arguments.Length > 0) {
                 Append(aggregate.Arguments[0], preparator, descriptorgetter);
-                foreach (IDBField field in aggregate.Arguments.Skip(1)) {
+                foreach(IDBField field in aggregate.Arguments.Skip(1)) {
                     preparator.AppendText(", ");
                     Append(field, preparator, descriptorgetter);
                 }
@@ -51,19 +51,19 @@ namespace NightlyCode.Database.Info {
             preparator.AppendText(")");
         }
 
-        void AppendConstant(Constant constant, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter) {
-            if (constant.Value == null)
+        void AppendConstant(Constant constant, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
+            if(constant.Value == null)
                 preparator.AppendText("NULL");
-            else
-            {
-                if (constant.Value is Expression expression)
-                    CriteriaVisitor.GetCriteriaText(expression, descriptorgetter, this, preparator);
-                else preparator.AppendParameter(constant.Value);
+            else {
+                if(constant.Value is Expression expression)
+                    CriteriaVisitor.GetCriteriaText(expression, descriptorgetter, this, preparator, tablealias);
+                else
+                    preparator.AppendParameter(constant.Value);
             }
         }
 
-        void AppendEntityField(EntityField field, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter) {
-            CriteriaVisitor.GetCriteriaText(field.FieldExpression, descriptorgetter, this, preparator);
+        void AppendEntityField(EntityField field, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
+            CriteriaVisitor.GetCriteriaText(field.FieldExpression, descriptorgetter, this, preparator, tablealias);
         }
 
         /// <summary>
@@ -75,11 +75,6 @@ namespace NightlyCode.Database.Info {
         /// parameter used when joining
         /// </summary>
         public abstract string JoinHint { get; }
-
-        /// <summary>
-        /// parameter used to create autoincrement columns
-        /// </summary>
-        public abstract string AutoIncrement { get; }
 
         /// <summary>
         /// character used to specify columns explicitely
@@ -123,6 +118,7 @@ namespace NightlyCode.Database.Info {
         /// </summary>
         /// <param name="db"></param>
         /// <param name="table"></param>
+        /// <param name="transaction">transaction to use</param>
         /// <returns></returns>
         public abstract bool CheckIfTableExists(IDBClient db, string table, Transaction transaction = null);
 
@@ -132,6 +128,11 @@ namespace NightlyCode.Database.Info {
         /// <param name="type"></param>
         /// <returns></returns>
         public abstract string GetDBType(Type type);
+
+        /// <inheritdoc />
+        public virtual bool IsTypeEqual(string lhs, string rhs) {
+            return lhs == rhs;
+        }
 
         /// <summary>
         /// get db representation type
@@ -153,6 +154,11 @@ namespace NightlyCode.Database.Info {
         public abstract string CreateSuffix { get; }
 
         /// <inheritdoc />
+        public virtual void DropView(IDBClient client, ViewDescriptor view) {
+            client.NonQuery($"DROP VIEW {view.Name}");
+        }
+
+        /// <inheritdoc />
         public abstract void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column);
 
         /// <inheritdoc />
@@ -169,38 +175,29 @@ namespace NightlyCode.Database.Info {
         /// <summary>
         /// adds a column to a table
         /// </summary>
-        /// <param name="client">db access</param>
-        /// <param name="table">table to modify</param>
+        /// <param name="preparator">preparator to which to add sql</param>
         /// <param name="column">column to add</param>
-        /// <param name="transaction">transaction to use (optional)</param>
-        public abstract void AddColumn(IDBClient client, string table, EntityColumnDescriptor column, Transaction transaction = null);
+        public abstract void AddColumn(OperationPreparator preparator, EntityColumnDescriptor column);
 
         /// <summary>
         /// removes a column from a table
         /// </summary>
-        /// <param name="client">db access</param>
-        /// <param name="table">table to modify</param>
+        /// <param name="preparator">preparator to which to add sql</param>
         /// <param name="column">column to remove</param>
-        public abstract void RemoveColumn(IDBClient client, string table, string column);
+        public abstract void DropColumn(OperationPreparator preparator, string column);
 
         /// <summary>
         /// modifies a column of a table
         /// </summary>
-        /// <param name="client">db access</param>
-        /// <param name="table">table to modify</param>
+        /// <param name="preparator">preparator to which to add sql</param>
         /// <param name="column">column to modify</param>
-        public abstract void AlterColumn(IDBClient client, string table, EntityColumnDescriptor column);
+        public abstract void AlterColumn(OperationPreparator preparator, EntityColumnDescriptor column);
 
-        /// <summary>
-        /// appends a database field to an <see cref="OperationPreparator"/>
-        /// </summary>
-        /// <param name="field">field to append</param>
-        /// <param name="preparator">operation to append function to</param>
-        /// <param name="descriptorgetter">function used to get <see cref="EntityDescriptor"/>s for types</param>
-        public void Append(IDBField field, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter) {
-            if (!fieldlogic.TryGetValue(field.GetType(), out Action<IDBField, OperationPreparator, Func<Type, EntityDescriptor>> logic))
+        /// <inheritdoc />
+        public void Append(IDBField field, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias = null) {
+            if(!fieldlogic.TryGetValue(field.GetType(), out Action<IDBField, OperationPreparator, Func<Type, EntityDescriptor>, string> logic))
                 throw new NotSupportedException($"{field.GetType()} not supported");
-            logic(field, preparator, descriptorgetter);
+            logic(field, preparator, descriptorgetter, tablealias);
         }
 
         /// <inheritdoc />
@@ -209,7 +206,7 @@ namespace NightlyCode.Database.Info {
             try {
                 return connection.BeginTransaction();
             }
-            catch (Exception) {
+            catch(Exception) {
                 semaphore?.Release();
                 throw;
             }
@@ -219,5 +216,11 @@ namespace NightlyCode.Database.Info {
         public void EndTransaction(SemaphoreSlim semaphore) {
             semaphore?.Release();
         }
+
+        /// <inheritdoc />
+        public abstract void ReturnID(OperationPreparator preparator, ColumnDescriptor idcolumn);
+
+        /// <inheritdoc />
+        public abstract bool MustRecreateTable(string[] obsolete, EntityColumnDescriptor[] altered, EntityColumnDescriptor[] missing, TableDescriptor tableschema, EntityDescriptor entityschema);
     }
 }

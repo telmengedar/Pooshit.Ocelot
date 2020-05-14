@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Entities.Operations.Fields.Sql;
 using NightlyCode.Database.Info;
 
 namespace NightlyCode.Database.Entities.Operations.Prepared {
-
     /// <summary>
     /// preparator for operations
     /// </summary>
-    public class OperationPreparator {
+    public class OperationPreparator : IOperationPreparator {
         readonly List<IOperationToken> tokens = new List<IOperationToken>();
 
         /// <summary>
@@ -42,8 +43,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <summary>
         /// appends a reference to a parameter index to the command
         /// </summary>
-        public OperationPreparator AppendParameterIndex(int index)
-        {
+        public OperationPreparator AppendParameterIndex(int index) {
             tokens.Add(new ParameterToken(false) {
                 Index = index
             });
@@ -68,9 +68,25 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
             return this;
         }
 
+        /// <summary>
+        /// appends a field to this preparator
+        /// </summary>
+        /// <param name="field">field to append</param>
+        /// <param name="dbinfo">db info for database specific formatting</param>
+        /// <param name="modelinfo">access to entity models</param>
+        /// <param name="tablealias">alias to use when resolving properties</param>
+        /// <returns>this preparator for fluent behavior</returns>
+        public OperationPreparator AppendField(IDBField field, IDBInfo dbinfo, Func<Type, EntityDescriptor> modelinfo, string tablealias = null) {
+            if(field is ISqlField sqlfield)
+                sqlfield.ToSql(dbinfo, this, modelinfo, tablealias);
+            else
+                dbinfo.Append(field, this, modelinfo, tablealias);
+            return this;
+        }
+
         bool PrepareParameters() {
             int index = 1;
-            foreach(ParameterToken token in tokens.OfType<ParameterToken>().Where(o => !o.IsArray && o.IsConstant && o.Index==-1))
+            foreach(ParameterToken token in tokens.OfType<ParameterToken>().Where(o => !o.IsArray && o.IsConstant && o.Index == -1))
                 token.Index = index++;
             foreach(ParameterToken token in tokens.OfType<ParameterToken>().Where(o => !o.IsArray && !o.IsConstant && o.Index == -1))
                 token.Index = index++;
@@ -116,9 +132,31 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <param name="dbclient">client used to execute operation</param>
         /// <returns>operation which can get executed</returns>
-        public PreparedLoadValuesOperation GetLoadValuesOperation(IDBClient dbclient)
-        {
-            if (PrepareParameters())
+        public PreparedOperation GetReturnIdOperation(IDBClient dbclient) {
+            if(PrepareParameters())
+                return new PreparedArrayOperation(dbclient,
+                    GetCommandText(dbclient.DBInfo),
+                    tokens.OfType<ParameterToken>()
+                        .Where(p => p.IsConstant && !p.IsArray)
+                        .Select(p => p.Value).ToArray(),
+                    tokens.OfType<ParameterToken>()
+                        .Where(p => p.IsConstant && p.IsArray)
+                        .Select(p => p.Value).Cast<Array>().ToArray());
+
+            return new PreparedReturnIdOperation(dbclient,
+                GetCommandText(dbclient.DBInfo),
+                tokens.OfType<ParameterToken>()
+                    .Where(p => p.IsConstant)
+                    .Select(p => p.Value).ToArray());
+        }
+
+        /// <summary>
+        /// create prepared operation
+        /// </summary>
+        /// <param name="dbclient">client used to execute operation</param>
+        /// <returns>operation which can get executed</returns>
+        public PreparedLoadValuesOperation GetLoadValuesOperation(IDBClient dbclient) {
+            if(PrepareParameters())
                 return new PreparedArrayLoadValuesOperation(dbclient,
                     GetCommandText(dbclient.DBInfo),
                     tokens.OfType<ParameterToken>()
@@ -140,9 +178,8 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <param name="dbclient">client used to execute operation</param>
         /// <returns>operation which can get executed</returns>
-        public PreparedLoadEntitiesOperation<T> GetLoadEntitiesOperation<T>(IDBClient dbclient, EntityDescriptor descriptor)
-        {
-            if (PrepareParameters())
+        public PreparedLoadEntitiesOperation<T> GetLoadEntitiesOperation<T>(IDBClient dbclient, EntityDescriptor descriptor) {
+            if(PrepareParameters())
                 return new PreparedArrayLoadEntitiesOperation<T>(dbclient,
                     descriptor,
                     GetCommandText(dbclient.DBInfo),

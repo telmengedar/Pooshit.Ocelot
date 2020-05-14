@@ -14,7 +14,7 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         /// </summary>
         /// <param name="entities">entities on which to operate</param>
         /// <returns>number of affected rows</returns>
-        int Execute(params T[] entities);
+        long Execute(params T[] entities);
 
         /// <summary>
         /// executes the operation using a transaction
@@ -22,14 +22,14 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         /// <param name="transaction">transaction to use</param>
         /// <param name="entities">entities on which to operate</param>
         /// <returns>number of affected rows</returns>
-        int Execute(Transaction transaction, params T[] entities);
+        long Execute(Transaction transaction, params T[] entities);
 
         /// <summary>
         /// executes the operation
         /// </summary>
         /// <param name="entities">entities on which to operate</param>
         /// <returns>number of affected rows</returns>
-        int Execute(IEnumerable<T> entities);
+        long Execute(IEnumerable<T> entities);
 
         /// <summary>
         /// executes the operation using a transaction
@@ -37,6 +37,6 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         /// <param name="transaction">transaction to use</param>
         /// <param name="entities">entities on which to operate</param>
         /// <returns>number of affected rows</returns>
-        int Execute(Transaction transaction, IEnumerable<T> entities);
+        long Execute(Transaction transaction, IEnumerable<T> entities);
     }
 }

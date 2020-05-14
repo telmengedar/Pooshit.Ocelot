@@ -44,7 +44,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <param name="parameters">parameters for operation</param>
         /// <returns>number of affected rows if applicable</returns>
-        public virtual int Execute(params object[] parameters) {
+        public virtual long Execute(params object[] parameters) {
             return Execute(null, parameters);
         }
 
@@ -54,7 +54,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="transaction">transaction used to execute operation</param>
         /// <param name="parameters">parameters for operation</param>
         /// <returns>number of affected rows if applicable</returns>
-        public virtual int Execute(Transaction transaction, params object[] parameters) {
+        public virtual long Execute(Transaction transaction, params object[] parameters) {
             return DBClient.NonQuery(transaction, CommandText, ConstantParameters.Concat(parameters));
         }
 
@@ -63,8 +63,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <param name="parameters">parameters for operation</param>
         /// <returns>number of affected rows if applicable</returns>
-        public virtual Task<int> ExecuteAsync(params object[] parameters)
-        {
+        public virtual Task<long> ExecuteAsync(params object[] parameters) {
             return ExecuteAsync(null, parameters);
         }
 
@@ -74,9 +73,8 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="transaction">transaction used to execute operation</param>
         /// <param name="parameters">parameters for operation</param>
         /// <returns>number of affected rows if applicable</returns>
-        public virtual Task<int> ExecuteAsync(Transaction transaction, params object[] parameters)
-        {
-            return DBClient.NonQueryAsync(transaction, CommandText, ConstantParameters.Concat(parameters));
+        public virtual async Task<long> ExecuteAsync(Transaction transaction, params object[] parameters) {
+            return await DBClient.NonQueryAsync(transaction, CommandText, ConstantParameters.Concat(parameters));
         }
 
         /// <inheritdoc/>

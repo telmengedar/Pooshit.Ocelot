@@ -19,6 +19,7 @@ namespace NightlyCode.Database.Entities.Operations {
         readonly Func<Type, EntityDescriptor> descriptorgetter;
         IDBField[] insertcolumns;
         object[] insertvalues;
+        bool returnid;
 
         /// <summary>
         /// creates a new insert values operation
@@ -28,6 +29,15 @@ namespace NightlyCode.Database.Entities.Operations {
         public InsertValuesOperation(IDBClient dbclient, Func<Type, EntityDescriptor> descriptorgetter) {
             this.dbclient = dbclient;
             this.descriptorgetter = descriptorgetter;
+        }
+
+        /// <summary>
+        /// indicates that the insert operation shall return the id of the inserted row
+        /// </summary>
+        /// <returns>this operation for fluent behavior</returns>
+        public InsertValuesOperation<T> ReturnID() {
+            returnid = true;
+            return this;
         }
 
         /// <summary>
@@ -72,7 +82,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="parameters">parameters to use when executing operation</param>
         /// <returns>number of rows affected</returns>
         public long Execute(Transaction transaction, params object[] parameters) {
-            if (insertcolumns?.Length != insertvalues?.Length)
+            if(insertcolumns?.Length != insertvalues?.Length)
                 throw new InvalidOperationException("unable to execute insert operation. Number of value parameters does not match number of columns.");
 
             PreparedOperation operation = Prepare();
@@ -85,8 +95,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="parameters">parameters to use when executing operation</param>
         /// <returns>number of rows affected</returns>
-        public Task<int> ExecuteAsync(params object[] parameters)
-        {
+        public Task<long> ExecuteAsync(params object[] parameters) {
             return ExecuteAsync(null, parameters);
         }
 
@@ -96,9 +105,8 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="transaction">transaction to use</param>
         /// <param name="parameters">parameters to use when executing operation</param>
         /// <returns>number of rows affected</returns>
-        public Task<int> ExecuteAsync(Transaction transaction, params object[] parameters)
-        {
-            if (insertcolumns?.Length != insertvalues?.Length)
+        public Task<long> ExecuteAsync(Transaction transaction, params object[] parameters) {
+            if(insertcolumns?.Length != insertvalues?.Length)
                 throw new InvalidOperationException("unable to execute insert operation. Number of value parameters does not match number of columns.");
 
             PreparedOperation operation = Prepare();
@@ -124,7 +132,8 @@ namespace NightlyCode.Database.Entities.Operations {
                 foreach(IDBField field in insertcolumns) {
                     if(!first)
                         preparator.AppendText(",");
-                    else first = false;
+                    else
+                        first = false;
                     dbclient.DBInfo.Append(field, preparator, descriptorgetter);
                 }
                 preparator.AppendText(")");
@@ -132,11 +141,12 @@ namespace NightlyCode.Database.Entities.Operations {
 
             first = true;
             preparator.AppendText("VALUES(");
-            if (insertvalues?.Length > 0) {
+            if(insertvalues?.Length > 0) {
                 foreach(object value in insertvalues) {
                     if(!first)
                         preparator.AppendText(",");
-                    else first = false;
+                    else
+                        first = false;
 
                     object dbvalue = value;
                     if(dbvalue is Enum)
@@ -145,15 +155,19 @@ namespace NightlyCode.Database.Entities.Operations {
                 }
             }
             else {
-                foreach (IDBField column in insertcolumns)
-                {
-                    if (!first)
+                foreach(IDBField column in insertcolumns) {
+                    if(!first)
                         preparator.AppendText(", ");
-                    else first = false;
+                    else
+                        first = false;
                     preparator.AppendParameter();
                 }
             }
             preparator.AppendText(")");
+            if(returnid) {
+                dbclient.DBInfo.ReturnID(preparator, descriptor.PrimaryKeyColumn);
+                return preparator.GetReturnIdOperation(dbclient);
+            }
 
             return preparator.GetOperation(dbclient);
         }

@@ -56,8 +56,7 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
         /// <param name="value">value to compare against</param>
         /// <param name="type">type how criteria is linked</param>
         /// <returns>this operation for fluent behavior</returns>
-        public UpdateDataOperation Where(string column, string op, string value, CriteriaOperator type = CriteriaOperator.AND)
-        {
+        public UpdateDataOperation Where(string column, string op, string value, CriteriaOperator type = CriteriaOperator.AND) {
             criterias.Add(new LoadCriteria(column, op, value, type));
             return this;
         }
@@ -66,20 +65,19 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
         /// prepares the operation for execution
         /// </summary>
         /// <returns></returns>
-        public PreparedOperation Prepare()
-        {
-            if((columns?.Length??0)==0)
+        public PreparedOperation Prepare() {
+            if((columns?.Length ?? 0) == 0)
                 throw new InvalidOperationException("No columns to update specified");
 
             OperationPreparator preparator = new OperationPreparator();
             preparator.AppendText($"UPDATE {tablename} SET ");
 
-            if (values != null) {
-                if (values.Length != columns.Length)
+            if(values != null) {
+                if(values.Length != columns.Length)
                     throw new InvalidOperationException("Value count does not match column count");
                 preparator.AppendText($"{dbclient.DBInfo.ColumnIndicator}{columns.First()}{dbclient.DBInfo.ColumnIndicator}=");
                 preparator.AppendParameter(values[0]);
-                for (int i = 1; i < columns.Length; ++i) {
+                for(int i = 1; i < columns.Length; ++i) {
                     preparator.AppendText($",{dbclient.DBInfo.ColumnIndicator}{columns[i]}{dbclient.DBInfo.ColumnIndicator}=");
                     preparator.AppendParameter(values[i]);
                 }
@@ -87,20 +85,20 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
             else {
                 preparator.AppendText($"{dbclient.DBInfo.ColumnIndicator}{columns.First()}{dbclient.DBInfo.ColumnIndicator}=");
                 preparator.AppendParameter();
-                foreach (string column in columns.Skip(1)) {
+                foreach(string column in columns.Skip(1)) {
                     preparator.AppendText($",{dbclient.DBInfo.ColumnIndicator}{column}{dbclient.DBInfo.ColumnIndicator}=");
                     preparator.AppendParameter();
                 }
             }
 
-            if (criterias.Any())
-            {
+            if(criterias.Any()) {
                 preparator.AppendText("WHERE");
                 bool flag = true;
-                foreach (LoadCriteria criteria in criterias)
-                {
-                    if (flag) flag = false;
-                    else preparator.AppendText(criteria.Type.ToString());
+                foreach(LoadCriteria criteria in criterias) {
+                    if(flag)
+                        flag = false;
+                    else
+                        preparator.AppendText(criteria.Type.ToString());
 
                     preparator.AppendText(dbclient.DBInfo.MaskColumn(criteria.Column));
                     preparator.AppendText(criteria.Operator);
@@ -117,7 +115,7 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
         /// <param name="transaction">transaction to use</param>
         /// <param name="parameters">parameters to use for operation</param>
         /// <returns>number of affected rows</returns>
-        public int Execute(Transaction transaction, params object[] parameters) {
+        public long Execute(Transaction transaction, params object[] parameters) {
             return Prepare().Execute(transaction, parameters);
         }
 
@@ -126,8 +124,7 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
         /// </summary>
         /// <param name="parameters">parameters to use for operation</param>
         /// <returns>number of affected rows</returns>
-        public int Execute(params object[] parameters)
-        {
+        public long Execute(params object[] parameters) {
             return Prepare().Execute(parameters);
         }
 
