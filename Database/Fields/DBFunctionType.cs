@@ -33,6 +33,11 @@ namespace NightlyCode.Database.Entities.Operations.Fields {
         /// <summary>
         /// all fields of type
         /// </summary>
-        All
+        All,
+        
+        /// <summary>
+        /// determines whether a value is contained in a collection
+        /// </summary>
+        InCollection
     }
 }

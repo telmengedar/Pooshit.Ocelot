@@ -5,8 +5,8 @@ using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
-using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
+using NightlyCode.Database.Fields;
 using NightlyCode.Database.Tests.Data;
 using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;
@@ -69,7 +69,7 @@ namespace NightlyCode.Database.Tests.Entities {
             foreach (TestEntityWithoutAnySpecifications entity in TestEntities)
                 operation.Execute(entity.Column1, entity.BooleanValue, entity.IntegerValue, entity.Something);
 
-            Assert.AreEqual(TestEntities.Count(), entitymanager.Load<TestEntityWithoutAnySpecifications>(m => DBFunction.Count).ExecuteScalar<int>());
+            Assert.AreEqual(TestEntities.Count(), entitymanager.Load<TestEntityWithoutAnySpecifications>(m => DBFunction.Count()).ExecuteScalar<int>());
         }
 
         [Test, Parallelizable]
@@ -361,8 +361,8 @@ namespace NightlyCode.Database.Tests.Entities {
         public void UseTransaction() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             IEntityManager entitymanager = new EntityManager(dbclient);
-            using (Transaction transaction = entitymanager.Transaction())
-                transaction.Rollback();
+            using Transaction transaction = entitymanager.Transaction();
+            transaction.Rollback();
         }
     }
 

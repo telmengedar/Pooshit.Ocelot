@@ -21,15 +21,15 @@ namespace NightlyCode.Database.Info {
 
         public override string LikeTerm => "LIKE";
 
-        public override void Replace(ExpressionVisitor visitor, OperationPreparator preparator, Expression value, Expression src, Expression target) {
+        public override void Replace(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value, Expression src, Expression target) {
             throw new NotImplementedException();
         }
 
-        public override void ToUpper(ExpressionVisitor visitor, OperationPreparator preparator, Expression value) {
+        public override void ToUpper(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value) {
             throw new NotImplementedException();
         }
 
-        public override void ToLower(ExpressionVisitor visitor, OperationPreparator preparator, Expression value) {
+        public override void ToLower(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value) {
             throw new NotImplementedException();
         }
 

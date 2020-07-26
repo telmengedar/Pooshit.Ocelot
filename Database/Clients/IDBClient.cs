@@ -254,7 +254,7 @@ namespace NightlyCode.Database.Clients {
         /// <param name="query">command text to execute</param>
         /// <param name="parameters">parameters for command</param>
         /// <returns>resulting set of values</returns>
-        Task<IEnumerable<object>> SetAsync(string query, params object[] parameters);
+        Task<object[]> SetAsync(string query, params object[] parameters);
 
         /// <summary>
         /// executes a query returning a set of values
@@ -262,16 +262,7 @@ namespace NightlyCode.Database.Clients {
         /// <param name="query">command text to execute</param>
         /// <param name="parameters">parameters for command</param>
         /// <returns>resulting set of values</returns>
-        Task<IEnumerable<object>> SetAsync(string query, IEnumerable<object> parameters);
-
-        /// <summary>
-        /// executes a query returning a set of values
-        /// </summary>
-        /// <param name="transaction">transaction to use</param>
-        /// <param name="query">command text to execute</param>
-        /// <param name="parameters">parameters for command</param>
-        /// <returns>resulting set of values</returns>
-        Task<IEnumerable<object>> SetAsync(Transaction transaction, string query, params object[] parameters);
+        Task<object[]> SetAsync(string query, IEnumerable<object> parameters);
 
         /// <summary>
         /// executes a query returning a set of values
@@ -280,7 +271,16 @@ namespace NightlyCode.Database.Clients {
         /// <param name="query">command text to execute</param>
         /// <param name="parameters">parameters for command</param>
         /// <returns>resulting set of values</returns>
-        Task<IEnumerable<object>> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters);
+        Task<object[]> SetAsync(Transaction transaction, string query, params object[] parameters);
+
+        /// <summary>
+        /// executes a query returning a set of values
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>resulting set of values</returns>
+        Task<object[]> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters);
 
         /// <summary>
         /// begins a transaction

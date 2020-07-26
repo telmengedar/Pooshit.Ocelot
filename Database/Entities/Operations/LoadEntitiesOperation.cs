@@ -8,6 +8,7 @@ using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Expressions;
 using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
+using NightlyCode.Database.Fields;
 
 namespace NightlyCode.Database.Entities.Operations {
 
@@ -77,7 +78,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// loads entities using the operation
         /// </summary>
         /// <returns>all loaded entities</returns>
-        public Task<IEnumerable<T>> ExecuteAsync(Transaction transaction, params object[] parameters) {
+        public Task<T[]> ExecuteAsync(Transaction transaction, params object[] parameters) {
             return Prepare<T>().ExecuteAsync(transaction, parameters);
         }
 
@@ -93,7 +94,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// loads entities using the operation
         /// </summary>
         /// <returns>all loaded entities</returns>
-        public Task<IEnumerable<T>> ExecuteAsync(params object[] parameters) {
+        public Task<T[]> ExecuteAsync(params object[] parameters) {
             return Prepare<T>().ExecuteAsync(parameters);
         }
 
@@ -109,7 +110,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// loads entities from joined data
         /// </summary>
         /// <returns>all loaded entities</returns>
-        public Task<IEnumerable<TEntity>> ExecuteAsync<TEntity>(params object[] parameters) {
+        public Task<TEntity[]> ExecuteAsync<TEntity>(params object[] parameters) {
             return Prepare<TEntity>().ExecuteAsync(parameters);
         }
 
@@ -125,7 +126,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// loads entities from joined data
         /// </summary>
         /// <returns>all loaded entities</returns>
-        public Task<IEnumerable<TEntity>> ExecuteAsync<TEntity>(Transaction transaction, params object[] parameters) {
+        public Task<TEntity[]> ExecuteAsync<TEntity>(Transaction transaction, params object[] parameters) {
             return Prepare<TEntity>().ExecuteAsync(parameters);
         }
 

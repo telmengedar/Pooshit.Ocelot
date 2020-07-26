@@ -10,6 +10,7 @@ using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Tables;
 using NightlyCode.Database.Entities.Schema;
 using NightlyCode.Database.Extern;
+using NightlyCode.Database.Fields;
 
 namespace NightlyCode.Database.Entities {
 

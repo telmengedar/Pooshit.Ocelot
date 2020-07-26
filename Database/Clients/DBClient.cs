@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
+using NightlyCode.Database.Extern;
 using NightlyCode.Database.Info;
 
 namespace NightlyCode.Database.Clients {
@@ -37,7 +38,7 @@ namespace NightlyCode.Database.Clients {
             foreach(object value in parameters) {
                 DbParameter parameter = command.CreateParameter();
                 parameter.ParameterName = DBInfo.Parameter + (command.Parameters.Count + 1);
-                parameter.Value = value ?? DBNull.Value;
+                parameter.Value = value == null ? DBNull.Value : Converter.Convert(value, DBInfo.GetDBRepresentation(value.GetType()));
                 command.Parameters.Add(parameter);
             }
 
@@ -122,7 +123,7 @@ namespace NightlyCode.Database.Clients {
         }
 
         /// <inheritdoc />
-        public Task<IEnumerable<object>> SetAsync(string query, params object[] parameters) {
+        public Task<object[]> SetAsync(string query, params object[] parameters) {
             return SetAsync(query, (IEnumerable<object>)parameters);
         }
 
@@ -132,7 +133,7 @@ namespace NightlyCode.Database.Clients {
         }
 
         /// <inheritdoc />
-        public Task<IEnumerable<object>> SetAsync(string query, IEnumerable<object> parameters) {
+        public Task<object[]> SetAsync(string query, IEnumerable<object> parameters) {
             return SetAsync(null, query, parameters);
         }
 
@@ -234,7 +235,7 @@ namespace NightlyCode.Database.Clients {
         }
 
         /// <inheritdoc />
-        public Task<IEnumerable<object>> SetAsync(Transaction transaction, string query, params object[] parameters) {
+        public Task<object[]> SetAsync(Transaction transaction, string query, params object[] parameters) {
             return SetAsync(transaction, query, (IEnumerable<object>)parameters);
         }
 
@@ -253,7 +254,7 @@ namespace NightlyCode.Database.Clients {
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<object>> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+        public async Task<object[]> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
             using(IConnection connection = await Connection.ConnectAsync())
             using(DbCommand command = PrepareCommand(connection, query, parameters)) {
                 if(transaction != null)

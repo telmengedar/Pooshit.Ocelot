@@ -12,6 +12,7 @@ using NightlyCode.Database.Entities.Operations.Expressions;
 using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
+using NightlyCode.Database.Fields;
 using NightlyCode.Database.Info.Postgre;
 using Converter = NightlyCode.Database.Extern.Converter;
 
@@ -30,7 +31,7 @@ namespace NightlyCode.Database.Info {
             AddFieldLogic<LimitField>(AppendLimit);
         }
 
-        void AppendLimit(LimitField limit, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
+        void AppendLimit(LimitField limit, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
 
             if(limit.Limit.HasValue)
                 preparator.AppendText("LIMIT").AppendText(limit.Limit.Value.ToString());
@@ -44,7 +45,7 @@ namespace NightlyCode.Database.Info {
         /// <param name="function">function to be executed</param>
         /// <param name="preparator">operation to append function to</param>
         /// <param name="descriptorgetter">function used to get <see cref="EntityDescriptor"/>s for types</param>
-        public void AppendFunction(DBFunction function, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
+        public void AppendFunction(DBFunction function, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
             switch(function.Type) {
             case DBFunctionType.Random:
                 preparator.AppendText("RANDOM()");
@@ -97,7 +98,7 @@ namespace NightlyCode.Database.Info {
         /// <param name="target"></param>
         /// <param name="visitor"> </param>
         /// <returns></returns>
-        public override void Replace(ExpressionVisitor visitor, OperationPreparator preparator, Expression value, Expression src, Expression target) {
+        public override void Replace(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value, Expression src, Expression target) {
             preparator.AppendText("replace(");
             visitor.Visit(value);
             preparator.AppendText(",");
@@ -112,11 +113,11 @@ namespace NightlyCode.Database.Info {
             client.NonQuery($"DROP VIEW {view.Name} CASCADE");
         }
 
-        public override void ToUpper(ExpressionVisitor visitor, OperationPreparator preparator, Expression value) {
+        public override void ToUpper(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value) {
             throw new NotImplementedException();
         }
 
-        public override void ToLower(ExpressionVisitor visitor, OperationPreparator preparator, Expression value) {
+        public override void ToLower(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value) {
             throw new NotImplementedException();
         }
 
@@ -137,12 +138,24 @@ namespace NightlyCode.Database.Info {
             case "int8":
             case "serial8":
             case "bigint":
-                return rhs == "int8" || rhs == "serial8" || rhs == "bigint";
+            case "bigserial":
+                return rhs == "int8" || rhs == "serial8" || rhs == "bigint" || rhs == "bigserial";
+            case "float4":
+            case "real":
+                return rhs == "float4" || rhs == "real";
+            case "float8":
+            case "double":
+            case "double precision":
+                return rhs == "float8" || rhs == "double" || rhs == "double precision";
+            case "decimal":
+            case "numeric":
+                return rhs == "decimal" || rhs == "numeric";
             case "int4":
             case "serial4":
             case "int":
             case "integer":
-                return rhs == "int4" || rhs == "serial4" || rhs == "int" || rhs == "integer";
+            case "serial":
+                return rhs == "int4" || rhs == "serial4" || rhs == "int" || rhs == "integer" || rhs == "serial";
             case "timestamp":
             case "timestamp without time zone":
             case "timestamp with time zone":
@@ -198,7 +211,7 @@ namespace NightlyCode.Database.Info {
             case "byte[]":
                 return "bytea";
             case "timespan":
-                return "int4";
+                return "int8";
             case "decimal":
                 return "decimal";
             default:
@@ -217,7 +230,7 @@ namespace NightlyCode.Database.Info {
             if(type.IsEnum)
                 return typeof(int);
             if(type == typeof(TimeSpan))
-                return typeof(int);
+                return typeof(long);
             if(type == typeof(Version))
                 return typeof(string);
             return type;

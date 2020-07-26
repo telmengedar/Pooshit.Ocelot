@@ -22,6 +22,11 @@ namespace NightlyCode.Database.Clients.Tables
         }
 
         /// <summary>
+        /// data cells in row
+        /// </summary>
+        public object[] Cells => data;
+        
+        /// <summary>
         /// indexer for row data
         /// </summary>
         /// <param name="index">index at which to get value</param>

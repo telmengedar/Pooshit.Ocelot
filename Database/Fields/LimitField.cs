@@ -1,4 +1,6 @@
-﻿namespace NightlyCode.Database.Entities.Operations.Fields {
+﻿using NightlyCode.Database.Fields;
+
+namespace NightlyCode.Database.Entities.Operations.Fields {
 
     /// <summary>
     /// limits the number of result rows

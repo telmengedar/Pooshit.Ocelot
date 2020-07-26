@@ -8,6 +8,8 @@ using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Fields.Sql;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Errors;
+using NightlyCode.Database.Fields;
+using NightlyCode.Database.Fields.Sql;
 using NightlyCode.Database.Info;
 using NightlyCode.Database.Tests.Entities;
 using NUnit.Framework;

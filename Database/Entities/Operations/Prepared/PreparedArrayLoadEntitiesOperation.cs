@@ -60,7 +60,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// executes the statement
         /// </summary>
         /// <returns>entities created from result set</returns>
-        public override Task<IEnumerable<T>> ExecuteAsync(params object[] parameters)
+        public override Task<T[]> ExecuteAsync(params object[] parameters)
         {
             return ExecuteAsync(null, parameters);
         }
@@ -71,7 +71,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="transaction">transaction to use for execution</param>
         /// <param name="parameters">parameters to use for execution</param>
         /// <returns>entities created from result set</returns>
-        public override async Task<IEnumerable<T>> ExecuteAsync(Transaction transaction, params object[] parameters)
+        public override async Task<T[]> ExecuteAsync(Transaction transaction, params object[] parameters)
         {
             PreparedOperationData operation = PreparedOperationData.Create(DBClient,
                 CommandText,
@@ -80,7 +80,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
                 parameters.Where(p => !(p is Array)).ToArray(),
                 parameters.OfType<Array>().ToArray());
             Clients.Tables.DataTable data = await DBClient.QueryAsync(transaction, operation.Command, operation.Parameters);
-            return CreateObjects(data);
+            return CreateObjects(data).ToArray();
         }
 
     }

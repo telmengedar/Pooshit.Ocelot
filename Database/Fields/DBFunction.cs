@@ -1,7 +1,8 @@
 using System;
 using System.Linq.Expressions;
+using NightlyCode.Database.Entities.Operations.Fields;
 
-namespace NightlyCode.Database.Entities.Operations.Fields {
+namespace NightlyCode.Database.Fields {
 
     /// <summary>
     /// function of db
@@ -32,12 +33,7 @@ namespace NightlyCode.Database.Entities.Operations.Fields {
         /// random value
         /// </summary>
         public static DBFunction All => new DBFunction(DBFunctionType.All);
-
-        /// <summary>
-        /// count the rows of the result
-        /// </summary>
-        public static DBFunction Count => new DBFunction(DBFunctionType.Count);
-
+        
         /// <summary>
         /// table wide unique id of row
         /// </summary>
@@ -47,6 +43,20 @@ namespace NightlyCode.Database.Entities.Operations.Fields {
         /// used to get id of last inserted row of the session
         /// </summary>
         public static DBFunction LastInsertID => new DBFunction(DBFunctionType.LastInsertID);
+        
+        /// <summary>
+        /// count the rows of the result
+        /// </summary>
+        public static long Count() {
+            throw new NotImplementedException("Method has no implementation since it is only used for typed expressions");
+        }
+
+        /// <summary>
+        /// count the rows of the result
+        /// </summary>
+        public static long Count(object field) {
+            throw new NotImplementedException("Method has no implementation since it is only used for typed expressions");
+        }
 
         /// <summary>
         /// length of a text or blob

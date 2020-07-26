@@ -8,9 +8,9 @@ using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Expressions;
-using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
+using NightlyCode.Database.Fields;
 
 namespace NightlyCode.Database.Info {
 
@@ -18,7 +18,7 @@ namespace NightlyCode.Database.Info {
     /// base implementation for db specific logic
     /// </summary>
     public abstract class DBInfo : IDBInfo {
-        readonly Dictionary<Type, Action<IDBField, OperationPreparator, Func<Type, EntityDescriptor>, string>> fieldlogic = new Dictionary<Type, Action<IDBField, OperationPreparator, Func<Type, EntityDescriptor>, string>>();
+        readonly Dictionary<Type, Action<IDBField, IOperationPreparator, Func<Type, EntityDescriptor>, string>> fieldlogic = new Dictionary<Type, Action<IDBField, IOperationPreparator, Func<Type, EntityDescriptor>, string>>();
 
         /// <summary>
         /// creates a new <see cref="DBInfo"/>
@@ -34,11 +34,11 @@ namespace NightlyCode.Database.Info {
         /// </summary>
         /// <typeparam name="T">type of field</typeparam>
         /// <param name="logic">logic to use when generating code</param>
-        protected void AddFieldLogic<T>(Action<T, OperationPreparator, Func<Type, EntityDescriptor>, string> logic) {
+        protected void AddFieldLogic<T>(Action<T, IOperationPreparator, Func<Type, EntityDescriptor>, string> logic) {
             fieldlogic[typeof(T)] = (field, preparator, getter, alias) => logic((T)field, preparator, getter, alias);
         }
 
-        void AppendAggregate(Aggregate aggregate, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
+        void AppendAggregate(Aggregate aggregate, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
             preparator.AppendText(aggregate.Method).AppendText("(");
             if(aggregate.Arguments.Length > 0) {
                 Append(aggregate.Arguments[0], preparator, descriptorgetter);
@@ -51,7 +51,7 @@ namespace NightlyCode.Database.Info {
             preparator.AppendText(")");
         }
 
-        void AppendConstant(Constant constant, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
+        void AppendConstant(Constant constant, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
             if(constant.Value == null)
                 preparator.AppendText("NULL");
             else {
@@ -62,7 +62,7 @@ namespace NightlyCode.Database.Info {
             }
         }
 
-        void AppendEntityField(EntityField field, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
+        void AppendEntityField(EntityField field, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
             CriteriaVisitor.GetCriteriaText(field.FieldExpression, descriptorgetter, this, preparator, tablealias);
         }
 
@@ -95,7 +95,7 @@ namespace NightlyCode.Database.Info {
         /// <param name="target"></param>
         /// <param name="visitor"> </param>
         /// <returns></returns>
-        public abstract void Replace(ExpressionVisitor visitor, OperationPreparator preparator, Expression value, Expression src, Expression target);
+        public abstract void Replace(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value, Expression src, Expression target);
 
         /// <summary>
         /// converts an expression to uppercase using database command
@@ -103,7 +103,7 @@ namespace NightlyCode.Database.Info {
         /// <param name="visitor"></param>
         /// <param name="preparator"></param>
         /// <param name="value"></param>
-        public abstract void ToUpper(ExpressionVisitor visitor, OperationPreparator preparator, Expression value);
+        public abstract void ToUpper(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value);
 
         /// <summary>
         /// converts an expression to lowercase using database command
@@ -111,7 +111,7 @@ namespace NightlyCode.Database.Info {
         /// <param name="visitor"></param>
         /// <param name="preparator"></param>
         /// <param name="value"></param>
-        public abstract void ToLower(ExpressionVisitor visitor, OperationPreparator preparator, Expression value);
+        public abstract void ToLower(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value);
 
         /// <summary>
         /// command used to check whether a table exists
@@ -194,8 +194,8 @@ namespace NightlyCode.Database.Info {
         public abstract void AlterColumn(OperationPreparator preparator, EntityColumnDescriptor column);
 
         /// <inheritdoc />
-        public void Append(IDBField field, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias = null) {
-            if(!fieldlogic.TryGetValue(field.GetType(), out Action<IDBField, OperationPreparator, Func<Type, EntityDescriptor>, string> logic))
+        public void Append(IDBField field, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias = null) {
+            if(!fieldlogic.TryGetValue(field.GetType(), out Action<IDBField, IOperationPreparator, Func<Type, EntityDescriptor>, string> logic))
                 throw new NotSupportedException($"{field.GetType()} not supported");
             logic(field, preparator, descriptorgetter, tablealias);
         }

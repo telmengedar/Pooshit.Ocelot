@@ -4,6 +4,7 @@ using NightlyCode.Database.Entities;
 using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
+using NightlyCode.Database.Fields;
 using NightlyCode.Database.Tests.Data;
 using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;
@@ -18,6 +19,13 @@ namespace NightlyCode.Database.Tests.Fields {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Update<EnumEntity>().Set(e => e.Enum == DBParameter<TestEnum>.Value).Prepare();
+        }
+
+        [Test]
+        public void PrepareConstantEnumParameter() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+            entitymanager.Update<EnumEntity>().Set(e => e.Enum == TestEnum.Insane).Prepare();
         }
 
         [Test]
@@ -40,9 +48,9 @@ namespace NightlyCode.Database.Tests.Fields {
             entitymanager.Insert<ValueModel>().Columns(v => v.Integer, v => v.Single, v => v.Double).Values(1, 0.0f, 0.0).Execute();
             entitymanager.Insert<ValueModel>().Columns(v => v.Integer, v => v.Single, v => v.Double).Values(2, 0.0f, 0.0).Execute();
             entitymanager.Insert<ValueModel>().Columns(v => v.Integer, v => v.Single, v => v.Double).Values(3, 0.0f, 0.0).Execute();
-            ValueModel[] result = entitymanager.LoadEntities<ValueModel>().Where(v => DBParameter<int[]>.Value.Contains(v.Integer)).Prepare().Execute(new[] {1, 2}).ToArray();
+            ValueModel[] result = entitymanager.LoadEntities<ValueModel>().Where(v => DBParameter<int[]>.Value.Contains(v.Integer)).Prepare().Execute(new[] { 1, 2 }).ToArray();
             Assert.AreEqual(2, result.Length);
-            for (int i = 0; i < 2; ++i)
+            for(int i = 0; i < 2; ++i)
                 Assert.AreEqual(i + 1, result[i].Integer);
         }
 
@@ -55,8 +63,7 @@ namespace NightlyCode.Database.Tests.Fields {
         }
 
         [Test]
-        public void ParameterArrayWithOtherParametersContains()
-        {
+        public void ParameterArrayWithOtherParametersContains() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.UpdateSchema<ValueModel>();
@@ -64,7 +71,7 @@ namespace NightlyCode.Database.Tests.Fields {
             entitymanager.Insert<ValueModel>().Columns(v => v.Integer, v => v.Single, v => v.Double).Values(1, 0.0f, 0.0).Execute();
             entitymanager.Insert<ValueModel>().Columns(v => v.Integer, v => v.Single, v => v.Double).Values(2, 0.0f, 1.0).Execute();
             entitymanager.Insert<ValueModel>().Columns(v => v.Integer, v => v.Single, v => v.Double).Values(3, 0.0f, 0.0).Execute();
-            ValueModel[] result = entitymanager.LoadEntities<ValueModel>().Where(v => DBParameter<int[]>.Value.Contains(v.Integer) && v.Double==DBParameter.Double).Prepare().Execute(new[] { 1, 2 }, 1.0).ToArray();
+            ValueModel[] result = entitymanager.LoadEntities<ValueModel>().Where(v => DBParameter<int[]>.Value.Contains(v.Integer) && v.Double == DBParameter.Double).Prepare().Execute(new[] { 1, 2 }, 1.0).ToArray();
             Assert.AreEqual(1, result.Length);
             Assert.AreEqual(2, result[0].Integer);
             Assert.AreEqual(1.0, result[0].Double);

@@ -52,7 +52,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// executes the statement
         /// </summary>
         /// <returns>entities created from result set</returns>
-        public new virtual Task<IEnumerable<T>> ExecuteAsync(params object[] parameters)
+        public new virtual Task<T[]> ExecuteAsync(params object[] parameters)
         {
             return ExecuteAsync(null, parameters);
         }
@@ -63,10 +63,10 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="transaction">transaction to use for execution</param>
         /// <param name="parameters">parameters to use for execution</param>
         /// <returns>entities created from result set</returns>
-        public new virtual async Task<IEnumerable<T>> ExecuteAsync(Transaction transaction, params object[] parameters)
+        public new virtual async Task<T[]> ExecuteAsync(Transaction transaction, params object[] parameters)
         {
             Clients.Tables.DataTable data = await DBClient.QueryAsync(transaction, CommandText, ConstantParameters.Concat(parameters));
-            return CreateObjects(data);
+            return CreateObjects(data).ToArray();
         }
 
         /// <summary>

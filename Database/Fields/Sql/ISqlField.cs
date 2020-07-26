@@ -1,6 +1,7 @@
 ﻿using System;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Prepared;
+using NightlyCode.Database.Fields;
 using NightlyCode.Database.Info;
 
 namespace NightlyCode.Database.Entities.Operations.Fields.Sql {

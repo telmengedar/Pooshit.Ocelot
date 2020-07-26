@@ -1,8 +1,8 @@
 ﻿using System.Linq;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
 using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Fields;
 using NightlyCode.Database.Tests.Data;
 using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;

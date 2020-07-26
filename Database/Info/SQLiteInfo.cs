@@ -10,6 +10,7 @@ using NightlyCode.Database.Entities.Operations.Expressions;
 using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
+using NightlyCode.Database.Fields;
 using Converter = NightlyCode.Database.Extern.Converter;
 
 namespace NightlyCode.Database.Info {
@@ -23,11 +24,11 @@ namespace NightlyCode.Database.Info {
         /// creates a new <see cref="SQLiteInfo"/>
         /// </summary>
         public SQLiteInfo() {
-            AddFieldLogic<DBFunction>(Append);
+            AddFieldLogic<DBFunction>(AppendFunction);
             AddFieldLogic<LimitField>(AppendLimit);
         }
 
-        void AppendLimit(LimitField limit, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
+        void AppendLimit(LimitField limit, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
             preparator.AppendText("LIMIT");
             if(limit.Offset.HasValue) {
                 preparator.AppendText(limit.Offset.Value.ToString()).AppendText(",");
@@ -41,7 +42,7 @@ namespace NightlyCode.Database.Info {
                 preparator.AppendText(limit.Limit.Value.ToString());
         }
 
-        void Append(DBFunction function, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
+        void AppendFunction(DBFunction function, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
             switch(function.Type) {
             case DBFunctionType.Random:
                 preparator.AppendText("RANDOM()");
@@ -98,7 +99,7 @@ namespace NightlyCode.Database.Info {
         /// <param name="target"></param>
         /// <param name="visitor"> </param>
         /// <returns></returns>
-        public override void Replace(ExpressionVisitor visitor, OperationPreparator preparator, Expression value, Expression src, Expression target) {
+        public override void Replace(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value, Expression src, Expression target) {
             preparator.AppendText("replace(");
             visitor.Visit(value);
             preparator.AppendText(",");
@@ -114,7 +115,7 @@ namespace NightlyCode.Database.Info {
         /// <param name="visitor"></param>
         /// <param name="preparator"></param>
         /// <param name="value"></param>
-        public override void ToUpper(ExpressionVisitor visitor, OperationPreparator preparator, Expression value) {
+        public override void ToUpper(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value) {
             preparator.AppendText("upper(");
             visitor.Visit(value);
             preparator.AppendText(")");
@@ -126,7 +127,7 @@ namespace NightlyCode.Database.Info {
         /// <param name="visitor"></param>
         /// <param name="preparator"></param>
         /// <param name="value"></param>
-        public override void ToLower(ExpressionVisitor visitor, OperationPreparator preparator, Expression value) {
+        public override void ToLower(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value) {
             preparator.AppendText("lower(");
             visitor.Visit(value);
             preparator.AppendText(")");

@@ -4,7 +4,7 @@
 // it could be argued whether at least Equals should be supported in CriteriaVisitor
 #pragma warning disable 660,661
 
-namespace NightlyCode.Database.Entities.Operations.Fields {
+namespace NightlyCode.Database.Fields {
 
     /// <summary>
     /// interface for a db field

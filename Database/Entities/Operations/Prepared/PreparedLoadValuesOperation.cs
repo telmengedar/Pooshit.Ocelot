@@ -144,7 +144,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <typeparam name="TScalar">type of scalar to return</typeparam>
         /// <returns>values of first column of result set converted to TScalar</returns>
-        public virtual Task<IEnumerable<TScalar>> ExecuteSetAsync<TScalar>(params object[] parameters)
+        public virtual Task<TScalar[]> ExecuteSetAsync<TScalar>(params object[] parameters)
         {
             return ExecuteSetAsync<TScalar>(null, parameters);
         }
@@ -154,8 +154,8 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <typeparam name="TScalar">type of scalar to return</typeparam>
         /// <returns>values of first column of result set converted to TScalar</returns>
-        public virtual async Task<IEnumerable<TScalar>> ExecuteSetAsync<TScalar>(Transaction transaction, params object[] parameters) {
-            return (await DBClient.SetAsync(transaction, CommandText, ConstantParameters.Concat(parameters))).Select(v => Converter.Convert<TScalar>(v, true));
+        public virtual async Task<TScalar[]> ExecuteSetAsync<TScalar>(Transaction transaction, params object[] parameters) {
+            return (await DBClient.SetAsync(transaction, CommandText, ConstantParameters.Concat(parameters))).Select(v => Converter.Convert<TScalar>(v, true)).ToArray();
         }
 
         /// <summary>
@@ -165,7 +165,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="assignments">action used to assign values</param>
         /// <param name="parameters">custom parameters for query execution</param>
         /// <returns>enumeration of result types</returns>
-        public virtual Task<IEnumerable<TType>> ExecuteTypeAsync<TType>(Func<DataRow, TType> assignments, params object[] parameters)
+        public virtual Task<TType[]> ExecuteTypeAsync<TType>(Func<DataRow, TType> assignments, params object[] parameters)
         {
             return ExecuteTypeAsync(null, assignments, parameters);
         }
@@ -178,10 +178,10 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="transaction">transaction to use for execution</param>
         /// <param name="parameters">custom parameters for query execution</param>
         /// <returns>enumeration of result types</returns>
-        public virtual async Task<IEnumerable<TType>> ExecuteTypeAsync<TType>(Transaction transaction, Func<DataRow, TType> assignments, params object[] parameters)
+        public virtual async Task<TType[]> ExecuteTypeAsync<TType>(Transaction transaction, Func<DataRow, TType> assignments, params object[] parameters)
         {
             DataTable table = await ExecuteAsync(transaction, parameters);
-            return table.Rows.Select(assignments);
+            return table.Rows.Select(assignments).ToArray();
         }
 
     }

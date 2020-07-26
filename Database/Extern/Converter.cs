@@ -25,6 +25,7 @@ namespace NightlyCode.Database.Extern {
             specificconverters[new ConversionKey(typeof(string), typeof(int[]))] = o => ((string)o).Split(';').Select(int.Parse).ToArray();
             specificconverters[new ConversionKey(typeof(long), typeof(TimeSpan))] = o => TimeSpan.FromTicks((long)o);
             specificconverters[new ConversionKey(typeof(TimeSpan), typeof(long))] = v => ((TimeSpan)v).Ticks;
+            specificconverters[new ConversionKey(typeof(TimeSpan), typeof(int))] = v => (int)((TimeSpan)v).Ticks;
             specificconverters[new ConversionKey(typeof(string), typeof(Type))] = o => Type.GetType((string)o);
             specificconverters[new ConversionKey(typeof(long), typeof(DateTime))] = v => new DateTime((long)v);
             specificconverters[new ConversionKey(typeof(DateTime), typeof(long))] = v => ((DateTime)v).Ticks;
@@ -111,8 +112,7 @@ namespace NightlyCode.Database.Extern {
             }
 
             ConversionKey key = new ConversionKey(value.GetType(), targettype);
-            Func<object, object> specificconverter;
-            if(specificconverters.TryGetValue(key, out specificconverter))
+            if(specificconverters.TryGetValue(key, out Func<object, object> specificconverter))
                 return specificconverter(value);
 
 

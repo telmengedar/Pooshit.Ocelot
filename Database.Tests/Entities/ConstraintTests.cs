@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.Sqlite;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
-using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Fields;
 using NightlyCode.Database.Tests.Data;
 using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;
@@ -32,7 +32,7 @@ namespace NightlyCode.Database.Tests.Entities
                 .Columns(u => u.Integer, u => u.String, u => u.Single, u => u.Double)
                 .Values(0, "String3", 0.0f, 0.0).Execute();
 
-            Assert.AreEqual(3, entitymanager.Load<ValueModel>(m=>DBFunction.Count).ExecuteScalar<int>());
+            Assert.AreEqual(3, entitymanager.Load<ValueModel>(m=>DBFunction.Count()).ExecuteScalar<int>());
         }
 
         [Test]

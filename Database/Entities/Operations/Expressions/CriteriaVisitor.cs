@@ -5,9 +5,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using NightlyCode.Database.Entities.Descriptors;
-using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Fields.Sql;
 using NightlyCode.Database.Entities.Operations.Prepared;
+using NightlyCode.Database.Fields;
 using NightlyCode.Database.Info;
 using Converter = NightlyCode.Database.Extern.Converter;
 
@@ -19,7 +19,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
     public class CriteriaVisitor : ExpressionVisitor {
         readonly Dictionary<string, string> aliases = new Dictionary<string, string>();
         readonly Func<Type, EntityDescriptor> descriptorgetter;
-        readonly OperationPreparator preparator;
+        readonly IOperationPreparator preparator;
         readonly IDBInfo dbinfo;
 
         ExpressionType remainder = ExpressionType.Default;
@@ -31,7 +31,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
         /// <param name="preparator">preparator to fill with sql</param>
         /// <param name="dbinfo">database specific implementation info</param>
         /// <param name="aliases">known table aliases</param>
-        public CriteriaVisitor(Func<Type, EntityDescriptor> descriptorgetter, OperationPreparator preparator, IDBInfo dbinfo, params Tuple<string, string>[] aliases) {
+        public CriteriaVisitor(Func<Type, EntityDescriptor> descriptorgetter, IOperationPreparator preparator, IDBInfo dbinfo, params Tuple<string, string>[] aliases) {
             this.descriptorgetter = descriptorgetter;
             this.dbinfo = dbinfo;
             this.preparator = preparator;
@@ -59,7 +59,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
         /// <param name="dbinfo">db info</param>
         /// <param name="preparator">operation to modify</param>
         /// <param name="aliases">alias to use for properties</param>
-        public static void GetCriteriaText(Expression expression, Func<Type, EntityDescriptor> descriptorgetter, IDBInfo dbinfo, OperationPreparator preparator, params string[] aliases) {
+        public static void GetCriteriaText(Expression expression, Func<Type, EntityDescriptor> descriptorgetter, IDBInfo dbinfo, IOperationPreparator preparator, params string[] aliases) {
 
             CriteriaVisitor visitor = new CriteriaVisitor(descriptorgetter, preparator, dbinfo, GetParameterAliases(expression as LambdaExpression, aliases).ToArray());
             visitor.Visit(expression);
@@ -157,6 +157,10 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 AppendValueRemainder();
                 object enumvalue = Converter.Convert(value, Enum.GetUnderlyingType(value.GetType()));
                 AppendConstantValue(enumvalue);
+            }
+            else if (value is IDatabaseOperation dboperation) {
+                AppendValueRemainder();
+                dboperation.Prepare(preparator);
             }
             else {
                 AppendValueRemainder();
@@ -338,6 +342,18 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
         }
 
         /// <inheritdoc />
+        protected override Expression VisitNewArray(NewArrayExpression node) {
+            bool first = true;
+            foreach (Expression item in node.Expressions) {
+                if (first) first = false;
+                else preparator.AppendText(",");
+                Visit(item);
+            }
+
+            return node;
+        }
+
+        /// <inheritdoc />
         protected override Expression VisitBlock(BlockExpression node) {
             preparator.AppendText("(");
             Expression result = base.VisitBlock(node);
@@ -454,26 +470,58 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 case "Total":
                     preparator.AppendText("total(");
                     break;
+                case "Count":
+                    preparator.AppendText("count(");
+                    if (node.Arguments.Count == 0)
+                        preparator.AppendText("*");
+                    break;
                 }
 
-                if(node.Arguments[0] is NewArrayExpression arrayparameter) {
-                    NewArrayExpression parameter = (NewArrayExpression)node.Arguments[0];
-                    Visit(parameter.Expressions[0]);
-                    foreach(Expression funcparameter in parameter.Expressions.Skip(1)) {
-                        preparator.AppendText(",");
-                        Visit(funcparameter);
+                ProcessExpressionList(node.Arguments, parameter => {
+                    if (parameter is NewArrayExpression arrayparameter) {
+                        ProcessExpressionList(arrayparameter.Expressions, arrayargument => {
+                            Visit(arrayargument);
+                        });
                     }
-                }
-                else {
-                    Visit(node.Arguments[0]);
-                }
+                    else {
+                        Visit(node.Arguments[0]);
+                    }
+                });
+                
                 preparator.AppendText(")");
                 return node;
             }
 
+            if (node.Method.DeclaringType == typeof(Function)) {
+                switch (node.Method.Name) {
+                case nameof(Function.In):
+                    if (node.Arguments.Count != 2)
+                        throw new ArgumentException("Invalid method call, expected 2 arguments. First being value to check, second being collection");
+                    Visit(node.Arguments[0]);
+                    preparator.AppendText("IN(");
+                    Visit(node.Arguments[1]);
+                    preparator.AppendText(")");
+                    break;
+                default:
+                    throw new ArgumentException("Unsupported db function call");
+                }
+
+                return node;
+            }
+            
             object value = node.Method.Invoke(GetHost(node.Object), node.Arguments.Select(GetHost).ToArray());
             AppendConstantValue(value);
             return node;
+        }
+
+        void ProcessExpressionList(IEnumerable<Expression> expressions, Action<Expression> actions) {
+            bool first = true;
+            foreach (Expression expression in expressions) {
+                if (first) first = false;
+                else preparator.AppendText(",");
+
+                actions(expression);
+            }
         }
     }
 }

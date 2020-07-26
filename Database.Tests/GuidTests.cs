@@ -4,6 +4,7 @@ using Microsoft.Data.Sqlite;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
 using NightlyCode.Database.Entities.Operations.Fields;
+using NightlyCode.Database.Fields;
 using NightlyCode.Database.Info;
 using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;

@@ -10,6 +10,7 @@ using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
+using NightlyCode.Database.Fields;
 using NightlyCode.Database.Info;
 using NightlyCode.Database.Info.Postgre;
 using NightlyCode.Database.Tests.Entities;
@@ -114,9 +115,9 @@ namespace NightlyCode.Database.Tests.Postgres {
             client.SetupGet(c => c.DBInfo).Returns(dbinfo);
 
 
-            PreparedLoadValuesOperation loadop = new LoadValuesOperation<PgView>(client.Object, new IDBField[] { DBFunction.Count }, type => new EntityDescriptor("test")).Limit(7).Prepare();
+            PreparedLoadValuesOperation loadop = new LoadValuesOperation<PgView>(client.Object, type => new EntityDescriptor("test"), v=>DBFunction.Count()).Limit(7).Prepare();
 
-            Assert.AreEqual("SELECT COUNT(*) FROM test LIMIT 7", loadop.CommandText);
+            Assert.AreEqual("SELECT count( * ) FROM test LIMIT 7", loadop.CommandText);
         }
 
         [Test, Parallelizable]
@@ -126,9 +127,9 @@ namespace NightlyCode.Database.Tests.Postgres {
             client.SetupGet(c => c.DBInfo).Returns(dbinfo);
 
 
-            PreparedLoadValuesOperation loadop = new LoadValuesOperation<PgView>(client.Object, new IDBField[] { DBFunction.Count }, type => new EntityDescriptor("test")).Offset(3).Prepare();
+            PreparedLoadValuesOperation loadop = new LoadValuesOperation<PgView>(client.Object, type => new EntityDescriptor("test"), v=>DBFunction.Count()).Offset(3).Prepare();
 
-            Assert.AreEqual("SELECT COUNT(*) FROM test OFFSET 3", loadop.CommandText);
+            Assert.AreEqual("SELECT count( * ) FROM test OFFSET 3", loadop.CommandText);
         }
 
         [Test, Parallelizable]
@@ -138,9 +139,9 @@ namespace NightlyCode.Database.Tests.Postgres {
             client.SetupGet(c => c.DBInfo).Returns(dbinfo);
 
 
-            PreparedLoadValuesOperation loadop = new LoadValuesOperation<PgView>(client.Object, new IDBField[] { DBFunction.Count }, type => new EntityDescriptor("test")).Limit(7).Offset(3).Prepare();
+            PreparedLoadValuesOperation loadop = new LoadValuesOperation<PgView>(client.Object, type => new EntityDescriptor("test"), v=>DBFunction.Count()).Limit(7).Offset(3).Prepare();
 
-            Assert.AreEqual("SELECT COUNT(*) FROM test LIMIT 7 OFFSET 3", loadop.CommandText);
+            Assert.AreEqual("SELECT count( * ) FROM test LIMIT 7 OFFSET 3", loadop.CommandText);
         }
 
         [Test, Parallelizable]

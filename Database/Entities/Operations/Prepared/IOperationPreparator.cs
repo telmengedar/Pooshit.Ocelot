@@ -1,5 +1,8 @@
-﻿using NightlyCode.Database.Clients;
+﻿using System;
+using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
+using NightlyCode.Database.Fields;
+using NightlyCode.Database.Info;
 
 namespace NightlyCode.Database.Entities.Operations.Prepared {
 
@@ -67,5 +70,15 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="dbclient">client used to execute operation</param>
         /// <returns>operation which can get executed</returns>
         PreparedLoadEntitiesOperation<T> GetLoadEntitiesOperation<T>(IDBClient dbclient, EntityDescriptor descriptor);
+
+        /// <summary>
+        /// appends a field to this preparator
+        /// </summary>
+        /// <param name="field">field to append</param>
+        /// <param name="dbinfo">db info for database specific formatting</param>
+        /// <param name="modelinfo">access to entity models</param>
+        /// <param name="tablealias">alias to use when resolving properties</param>
+        /// <returns>this preparator for fluent behavior</returns>
+        IOperationPreparator AppendField(IDBField field, IDBInfo dbinfo, Func<Type, EntityDescriptor> modelinfo, string tablealias = null);
     }
 }

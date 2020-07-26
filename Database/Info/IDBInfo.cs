@@ -7,6 +7,7 @@ using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
+using NightlyCode.Database.Fields;
 
 namespace NightlyCode.Database.Info {
 
@@ -44,7 +45,7 @@ namespace NightlyCode.Database.Info {
         /// <param name="target"></param>
         /// <param name="visitor"> </param>
         /// <returns></returns>
-        void Replace(ExpressionVisitor visitor, OperationPreparator preparator, Expression value, Expression src, Expression target);
+        void Replace(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value, Expression src, Expression target);
 
         /// <summary>
         /// converts an expression to uppercase using database command
@@ -52,7 +53,7 @@ namespace NightlyCode.Database.Info {
         /// <param name="visitor"></param>
         /// <param name="preparator"></param>
         /// <param name="value"></param>
-        void ToUpper(ExpressionVisitor visitor, OperationPreparator preparator, Expression value);
+        void ToUpper(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value);
 
         /// <summary>
         /// converts an expression to lowercase using database command
@@ -60,7 +61,7 @@ namespace NightlyCode.Database.Info {
         /// <param name="visitor"></param>
         /// <param name="preparator"></param>
         /// <param name="value"></param>
-        void ToLower(ExpressionVisitor visitor, OperationPreparator preparator, Expression value);
+        void ToLower(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value);
 
         /// <summary>
         /// command used to check whether a table exists
@@ -161,7 +162,7 @@ namespace NightlyCode.Database.Info {
         /// <param name="preparator">operation to append function to</param>
         /// <param name="descriptorgetter">function used to get <see cref="EntityDescriptor"/>s for types</param>
         /// <param name="tablealias">alias to use when resolving properties</param>
-        void Append(IDBField field, OperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias = null);
+        void Append(IDBField field, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias = null);
 
         /// <summary>
         /// begins a new transaction

@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
-using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
+using NightlyCode.Database.Fields;
 using NightlyCode.Database.Tests.Data;
 using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;
@@ -38,7 +38,7 @@ namespace NightlyCode.Database.Tests {
 
             PreparedOperation operation = entitymanager.Insert<ValueModel>().Columns(v => v.Integer, v => v.Single, v => v.Double).Prepare();
             for (int i = 0; i < 5; ++i)
-                operation.Execute(i, 0.0f, 0.0);
+                await operation.ExecuteAsync(i, 0.0f, 0.0);
 
             int[] result = (await entitymanager.Load<ValueModel>(v => v.Integer).ExecuteSetAsync<int>()).ToArray();
             Assert.True(new[] { 0, 1, 2, 3, 4 }.SequenceEqual(result));
@@ -65,7 +65,7 @@ namespace NightlyCode.Database.Tests {
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            entitymanager.Insert<ValueModel>().Columns(v => v.Integer, v => v.Single, v => v.Double).Values(4, 0.0f, 0.0).Execute();
+            await entitymanager.Insert<ValueModel>().Columns(v => v.Integer, v => v.Single, v => v.Double).Values(4, 0.0f, 0.0).ExecuteAsync();
 
             Assert.AreEqual(4, await entitymanager.Load<ValueModel>(v => v.Integer).ExecuteScalarAsync<int>());
         }
@@ -82,7 +82,7 @@ namespace NightlyCode.Database.Tests {
                 operation.Execute(i, 0.0f, 0.0);
 
             entitymanager.Delete<ValueModel>().Execute();
-            Assert.AreEqual(0, entitymanager.Load<ValueModel>(m => DBFunction.Count).ExecuteScalar<int>());
+            Assert.AreEqual(0, entitymanager.Load<ValueModel>(m => DBFunction.Count()).ExecuteScalar<int>());
         }
 
         [Test, Parallelizable]
@@ -95,10 +95,10 @@ namespace NightlyCode.Database.Tests {
 
             PreparedOperation operation = entitymanager.Insert<ValueModel>().Columns(v => v.Integer, v => v.Single, v => v.Double).Prepare();
             for (int i = 0; i < 5; ++i)
-                operation.Execute(i, 0.0f, 0.0);
+                await operation.ExecuteAsync(i, 0.0f, 0.0);
 
-            entitymanager.Delete<ValueModel>().Execute();
-            Assert.AreEqual(0, await entitymanager.Load<ValueModel>(m => DBFunction.Count).ExecuteScalarAsync<int>());
+            await entitymanager.Delete<ValueModel>().ExecuteAsync();
+            Assert.AreEqual(0, await entitymanager.Load<ValueModel>(m => DBFunction.Count()).ExecuteScalarAsync<int>());
         }
 
         [Test, Parallelizable]
@@ -130,9 +130,9 @@ namespace NightlyCode.Database.Tests {
 
             PreparedOperation operation = entitymanager.Insert<ValueModel>().Columns(v => v.Integer, v => v.Single, v => v.Double).Prepare();
             for (int i = 0; i < 5; ++i)
-                operation.Execute(i, 0.0f, 0.0);
+                await operation.ExecuteAsync(i, 0.0f, 0.0);
 
-            entitymanager.Delete<ValueModel>().Where(v => v.Integer == 3).Execute();
+            await entitymanager.Delete<ValueModel>().Where(v => v.Integer == 3).ExecuteAsync();
 
             int[] values = (await entitymanager.Load<ValueModel>(v => v.Integer).ExecuteSetAsync<int>()).ToArray();
             Assert.AreEqual(4, values.Length);
@@ -155,7 +155,7 @@ namespace NightlyCode.Database.Tests {
                 transaction.Rollback();
             }
 
-            Assert.AreEqual(5, entitymanager.Load<ValueModel>(m => DBFunction.Count).ExecuteScalar<int>());
+            Assert.AreEqual(5, entitymanager.Load<ValueModel>(m => DBFunction.Count()).ExecuteScalar<int>());
         }
 
         [Test, Parallelizable]
@@ -176,8 +176,7 @@ namespace NightlyCode.Database.Tests {
                 transaction.Rollback();
             }
 
-            Assert.AreEqual(5, await entitymanager.Load<ValueModel>(m => DBFunction.Count).ExecuteScalarAsync<int>());
+            Assert.AreEqual(5, await entitymanager.Load<ValueModel>(m => DBFunction.Count()).ExecuteScalarAsync<int>());
         }
-
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
@@ -7,8 +8,10 @@ using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Expressions;
 using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
+using NightlyCode.Database.Fields;
 
 namespace NightlyCode.Database.Entities.Operations {
+    
     /// <summary>
     /// operation used to load values of an entity based on a join operation
     /// </summary>
@@ -75,8 +78,8 @@ namespace NightlyCode.Database.Entities.Operations {
     /// <summary>
     /// operation used to load values of an entity
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class LoadValuesOperation<T> {
+    /// <typeparam name="T">type of entity of which to load values</typeparam>
+    public class LoadValuesOperation<T> : IDatabaseOperation {
         readonly IDBClient dbclient;
         readonly Func<Type, EntityDescriptor> descriptorgetter;
         readonly IDBField[] columns;
@@ -97,6 +100,18 @@ namespace NightlyCode.Database.Entities.Operations {
             LimitStatement = origin.LimitStatement;
             Criterias = origin.Criterias;
             Havings = origin.Havings;
+        }
+
+        /// <summary>
+        /// creates a new <see cref="LoadValuesOperation{T}"/>
+        /// </summary>
+        /// <param name="dbclient"> </param>
+        /// <param name="fields">fields to load</param>
+        /// <param name="descriptorgetter"></param>
+        public LoadValuesOperation(IDBClient dbclient, Func<Type, EntityDescriptor> descriptorgetter, params Expression<Func<T, object>>[] fields) {
+            this.descriptorgetter = descriptorgetter;
+            this.dbclient = dbclient;
+            columns = fields.Select(EntityField.Create).Cast<IDBField>().ToArray();
         }
 
         /// <summary>
@@ -183,7 +198,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <typeparam name="TScalar">type of resulting set values</typeparam>
         /// <param name="transaction">transaction to use (optional)</param>
         /// <returns>resultset of operation</returns>
-        public Task<IEnumerable<TScalar>> ExecuteSetAsync<TScalar>(Transaction transaction = null) {
+        public Task<TScalar[]> ExecuteSetAsync<TScalar>(Transaction transaction = null) {
             return Prepare().ExecuteSetAsync<TScalar>(transaction);
         }
 
@@ -205,7 +220,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="transaction">transaction to use for operation execution</param>
         /// <param name="assignments">action used to assign values</param>
         /// <returns>enumeration of result types</returns>
-        public Task<IEnumerable<TType>> ExecuteTypeAsync<TType>(Func<Clients.Tables.DataRow, TType> assignments, Transaction transaction = null) {
+        public Task<TType[]> ExecuteTypeAsync<TType>(Func<Clients.Tables.DataRow, TType> assignments, Transaction transaction = null) {
             return Prepare().ExecuteTypeAsync(transaction, assignments);
         }
 
@@ -214,88 +229,8 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <returns></returns>
         public PreparedLoadValuesOperation Prepare() {
-            List<string> aliases = new List<string>();
-            string tablealias = null;
-            if(joinoperations.Count > 0) {
-                tablealias = "t";
-                aliases.Add(tablealias);
-            }
-
-            OperationPreparator preparator = new OperationPreparator().AppendText("SELECT");
-            if(distinct)
-                preparator.AppendText("DISTINCT");
-
-            EntityDescriptor descriptor = typeof(T) == typeof(object) ? null : descriptorgetter(typeof(T));
-
-            bool flag = true;
-            foreach(IDBField criteria in columns) {
-                if(flag)
-                    flag = false;
-                else
-                    preparator.AppendText(",");
-                preparator.AppendField(criteria, dbclient.DBInfo, descriptorgetter, tablealias);
-            }
-
-            if(descriptor != null)
-                preparator.AppendText("FROM").AppendText(descriptor.TableName);
-
-            if(!string.IsNullOrEmpty(tablealias))
-                preparator.AppendText("AS").AppendText(tablealias);
-
-            if(joinoperations.Count > 0) {
-                foreach(JoinOperation operation in joinoperations) {
-                    preparator.AppendText($"{operation.Operation.ToString().ToUpper()} JOIN")
-                        .AppendText(descriptorgetter(operation.JoinType).TableName);
-                    if(!string.IsNullOrEmpty(operation.Alias))
-                        preparator.AppendText("AS").AppendText(operation.Alias);
-                    preparator.AppendText("ON");
-                    CriteriaVisitor.GetCriteriaText(operation.Criterias, descriptorgetter, dbclient.DBInfo, preparator, tablealias, operation.Alias);
-                    aliases.Add(operation.Alias);
-                }
-            }
-
-            if(Criterias != null) {
-                preparator.AppendText("WHERE");
-                CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator, aliases.ToArray());
-            }
-
-            flag = true;
-            if(groupbycriterias != null) {
-                preparator.AppendText("GROUP BY");
-
-                foreach(IDBField criteria in groupbycriterias) {
-                    if(flag)
-                        flag = false;
-                    else
-                        preparator.AppendText(",");
-                    preparator.AppendField(criteria, dbclient.DBInfo, descriptorgetter, tablealias);
-                }
-            }
-
-            flag = true;
-            if(orderbycriterias != null) {
-                preparator.AppendText("ORDER BY");
-
-                foreach(OrderByCriteria criteria in orderbycriterias) {
-                    if(flag)
-                        flag = false;
-                    else
-                        preparator.AppendText(",");
-                    preparator.AppendField(criteria.Field, dbclient.DBInfo, descriptorgetter, tablealias);
-
-                    if(!criteria.Ascending)
-                        preparator.AppendText("DESC");
-                }
-            }
-
-            if(Havings != null) {
-                preparator.AppendText("HAVING");
-                CriteriaVisitor.GetCriteriaText(Havings, descriptorgetter, dbclient.DBInfo, preparator, aliases.ToArray());
-            }
-
-            if(!ReferenceEquals(LimitStatement, null))
-                preparator.AppendField(LimitStatement, dbclient.DBInfo, descriptorgetter, tablealias);
-
+            OperationPreparator preparator = new OperationPreparator();
+            ((IDatabaseOperation)this).Prepare(preparator);
             return preparator.GetLoadValuesOperation(dbclient);
         }
 
@@ -398,6 +333,92 @@ namespace NightlyCode.Database.Entities.Operations {
         public LoadValuesOperation<T, TJoin> LeftJoin<TJoin>(Expression<Func<T, TJoin, bool>> criteria, string alias = null) {
             joinoperations.Add(new JoinOperation(typeof(TJoin), criteria, JoinOp.Left, null, alias));
             return new LoadValuesOperation<T, TJoin>(this);
+        }
+
+        /// <inheritdoc />
+        void IDatabaseOperation.Prepare(IOperationPreparator preparator) {
+            List<string> aliases = new List<string>();
+            string tablealias = null;
+            if(joinoperations.Count > 0) {
+                tablealias = "t";
+                aliases.Add(tablealias);
+            }
+
+            preparator.AppendText("SELECT");
+            
+            if(distinct)
+                preparator.AppendText("DISTINCT");
+
+            EntityDescriptor descriptor = typeof(T) == typeof(object) ? null : descriptorgetter(typeof(T));
+
+            bool flag = true;
+            foreach(IDBField criteria in columns) {
+                if(flag)
+                    flag = false;
+                else
+                    preparator.AppendText(",");
+                preparator.AppendField(criteria, dbclient.DBInfo, descriptorgetter, tablealias);
+            }
+
+            if(descriptor != null)
+                preparator.AppendText("FROM").AppendText(descriptor.TableName);
+
+            if(!string.IsNullOrEmpty(tablealias))
+                preparator.AppendText("AS").AppendText(tablealias);
+
+            if(joinoperations.Count > 0) {
+                foreach(JoinOperation operation in joinoperations) {
+                    preparator.AppendText($"{operation.Operation.ToString().ToUpper()} JOIN")
+                        .AppendText(descriptorgetter(operation.JoinType).TableName);
+                    if(!string.IsNullOrEmpty(operation.Alias))
+                        preparator.AppendText("AS").AppendText(operation.Alias);
+                    preparator.AppendText("ON");
+                    CriteriaVisitor.GetCriteriaText(operation.Criterias, descriptorgetter, dbclient.DBInfo, preparator, tablealias, operation.Alias);
+                    aliases.Add(operation.Alias);
+                }
+            }
+
+            if(Criterias != null) {
+                preparator.AppendText("WHERE");
+                CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator, aliases.ToArray());
+            }
+
+            flag = true;
+            if(groupbycriterias != null) {
+                preparator.AppendText("GROUP BY");
+
+                foreach(IDBField criteria in groupbycriterias) {
+                    if(flag)
+                        flag = false;
+                    else
+                        preparator.AppendText(",");
+                    preparator.AppendField(criteria, dbclient.DBInfo, descriptorgetter, tablealias);
+                }
+            }
+
+            flag = true;
+            if(orderbycriterias != null) {
+                preparator.AppendText("ORDER BY");
+
+                foreach(OrderByCriteria criteria in orderbycriterias) {
+                    if(flag)
+                        flag = false;
+                    else
+                        preparator.AppendText(",");
+                    preparator.AppendField(criteria.Field, dbclient.DBInfo, descriptorgetter, tablealias);
+
+                    if(!criteria.Ascending)
+                        preparator.AppendText("DESC");
+                }
+            }
+
+            if(Havings != null) {
+                preparator.AppendText("HAVING");
+                CriteriaVisitor.GetCriteriaText(Havings, descriptorgetter, dbclient.DBInfo, preparator, aliases.ToArray());
+            }
+
+            if(!ReferenceEquals(LimitStatement, null))
+                preparator.AppendField(LimitStatement, dbclient.DBInfo, descriptorgetter, tablealias);
         }
     }
 }

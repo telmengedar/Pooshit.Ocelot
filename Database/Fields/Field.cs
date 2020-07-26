@@ -1,13 +1,18 @@
 ﻿using System;
-using NightlyCode.Database.Entities.Operations.Fields.Sql;
+using NightlyCode.Database.Fields.Sql;
 
-namespace NightlyCode.Database.Entities.Operations.Fields {
+namespace NightlyCode.Database.Fields {
 
     /// <summary>
     /// helper class used to create expression fields
     /// </summary>
     public static class Field {
 
+        /// <summary>
+        /// all fields
+        /// </summary>
+        const string All = "*";
+        
         /// <summary>
         /// creates a new <see cref="PropName"/>
         /// </summary>

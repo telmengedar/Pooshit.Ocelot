@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NightlyCode.Database.Entities.Operations.Fields {
+namespace NightlyCode.Database.Fields {
     
     /// <summary>
     /// parameter for statements

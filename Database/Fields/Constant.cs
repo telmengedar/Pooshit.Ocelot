@@ -1,4 +1,4 @@
-﻿namespace NightlyCode.Database.Entities.Operations.Fields {
+﻿namespace NightlyCode.Database.Fields {
 
     /// <summary>
     /// constant value

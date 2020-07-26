@@ -182,7 +182,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <typeparam name="TScalar">type of scalar to return</typeparam>
         /// <returns>values of first column of result set converted to TScalar</returns>
-        public override Task<IEnumerable<TScalar>> ExecuteSetAsync<TScalar>(params object[] parameters)
+        public override Task<TScalar[]> ExecuteSetAsync<TScalar>(params object[] parameters)
         {
             return ExecuteSetAsync<TScalar>(null, parameters);
         }
@@ -192,7 +192,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <typeparam name="TScalar">type of scalar to return</typeparam>
         /// <returns>values of first column of result set converted to TScalar</returns>
-        public override async Task<IEnumerable<TScalar>> ExecuteSetAsync<TScalar>(Transaction transaction, params object[] parameters)
+        public override async Task<TScalar[]> ExecuteSetAsync<TScalar>(Transaction transaction, params object[] parameters)
         {
             PreparedOperationData operation = PreparedOperationData.Create(DBClient,
                 CommandText,
@@ -200,7 +200,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
                 ConstantArrayParameters,
                 parameters.Where(p => !(p is Array)).ToArray(),
                 parameters.OfType<Array>().ToArray());
-            return (await DBClient.SetAsync(transaction, operation.Command, operation.Parameters)).Select(v => Converter.Convert<TScalar>(v, true));
+            return (await DBClient.SetAsync(transaction, operation.Command, operation.Parameters)).Select(v => Converter.Convert<TScalar>(v, true)).ToArray();
         }
 
         /// <summary>
@@ -210,7 +210,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="assignments">action used to assign values</param>
         /// <param name="parameters">custom parameters for query execution</param>
         /// <returns>enumeration of result types</returns>
-        public override Task<IEnumerable<TType>> ExecuteTypeAsync<TType>(Func<DataRow, TType> assignments, params object[] parameters)
+        public override Task<TType[]> ExecuteTypeAsync<TType>(Func<DataRow, TType> assignments, params object[] parameters)
         {
             return ExecuteTypeAsync(null, assignments, parameters);
         }
@@ -223,10 +223,10 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="transaction">transaction to use for execution</param>
         /// <param name="parameters">custom parameters for query execution</param>
         /// <returns>enumeration of result types</returns>
-        public override async Task<IEnumerable<TType>> ExecuteTypeAsync<TType>(Transaction transaction, Func<DataRow, TType> assignments, params object[] parameters)
+        public override async Task<TType[]> ExecuteTypeAsync<TType>(Transaction transaction, Func<DataRow, TType> assignments, params object[] parameters)
         {
             DataTable table = await ExecuteAsync(transaction, parameters);
-            return table.Rows.Select(assignments);
+            return table.Rows.Select(assignments).ToArray();
         }
 
     }
