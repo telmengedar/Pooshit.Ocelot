@@ -87,6 +87,8 @@ namespace NightlyCode.Database.Entities.Operations {
         IDBField[] groupbycriterias;
         readonly List<JoinOperation> joinoperations = new List<JoinOperation>();
         bool distinct;
+        string alias;
+        readonly List<IDatabaseOperation> unions=new List<IDatabaseOperation>();
 
         /// <summary>
         /// creates a new <see cref="LoadValuesOperation{T}"/>
@@ -100,6 +102,8 @@ namespace NightlyCode.Database.Entities.Operations {
             LimitStatement = origin.LimitStatement;
             Criterias = origin.Criterias;
             Havings = origin.Havings;
+            distinct = origin.distinct;
+            alias = origin.alias;
         }
 
         /// <summary>
@@ -235,6 +239,29 @@ namespace NightlyCode.Database.Entities.Operations {
         }
 
         /// <summary>
+        /// provides an alias to use for the operation
+        /// </summary>
+        /// <remarks>
+        /// necessary to prevent conflicts if the loaded type is used multiple times in a complex query
+        /// </remarks>
+        /// <param name="tablealias">name of alias to use</param>
+        /// <returns>this operation for fluent behavior</returns>
+        public LoadValuesOperation<T> Alias(string tablealias) {
+            alias = tablealias;
+            return this;
+        }
+
+        /// <summary>
+        /// executes a union with another statement
+        /// </summary>
+        /// <param name="operation">operation to use as union</param>
+        /// <returns>this operation for fluent behavior</returns>
+        public LoadValuesOperation<T> Union(IDatabaseOperation operation) {
+            unions.Add(operation);
+            return this;
+        }
+
+        /// <summary>
         /// specifies to only load rows with distinct values
         /// </summary>
         /// <returns></returns>
@@ -339,7 +366,12 @@ namespace NightlyCode.Database.Entities.Operations {
         void IDatabaseOperation.Prepare(IOperationPreparator preparator) {
             List<string> aliases = new List<string>();
             string tablealias = null;
-            if(joinoperations.Count > 0) {
+
+            if (!string.IsNullOrEmpty(alias)) {
+                tablealias = alias;
+                aliases.Add(tablealias);
+            }
+            else if(joinoperations.Count > 0) {
                 tablealias = "t";
                 aliases.Add(tablealias);
             }
@@ -419,6 +451,11 @@ namespace NightlyCode.Database.Entities.Operations {
 
             if(!ReferenceEquals(LimitStatement, null))
                 preparator.AppendField(LimitStatement, dbclient.DBInfo, descriptorgetter, tablealias);
+
+            foreach(IDatabaseOperation union in unions) {
+                preparator.AppendText("UNION ALL");
+                union.Prepare(preparator);
+            }
         }
     }
 }

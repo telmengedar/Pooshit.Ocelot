@@ -4,7 +4,6 @@ using System.Linq.Expressions;
 using System.Threading;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
-using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
 using NightlyCode.Database.Fields;
@@ -111,6 +110,13 @@ namespace NightlyCode.Database.Info {
         /// <param name="client">client to use to execute command</param>
         /// <param name="view">view to drop</param>
         void DropView(IDBClient client, ViewDescriptor view);
+
+        /// <summary>
+        /// drops a table from database
+        /// </summary>
+        /// <param name="client">client to use to execute command</param>
+        /// <param name="entity">entity to drop</param>
+        void DropTable(IDBClient client, TableDescriptor entity);
 
         /// <summary>
         /// text used to create a column

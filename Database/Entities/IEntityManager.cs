@@ -38,6 +38,12 @@ namespace NightlyCode.Database.Entities {
         void Create(params Type[] types);
 
         /// <summary>
+        /// drops tables or views of an entity
+        /// </summary>
+        /// <typeparam name="T">type of entity of which to drop table/view</typeparam>
+        void Drop<T>();
+
+        /// <summary>
         /// get an operation used to create tables
         /// </summary>
         /// <returns>operation to execute</returns>

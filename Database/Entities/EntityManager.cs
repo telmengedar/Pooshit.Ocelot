@@ -6,7 +6,6 @@ using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Entities;
-using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Tables;
 using NightlyCode.Database.Entities.Schema;
 using NightlyCode.Database.Extern;
@@ -52,6 +51,17 @@ namespace NightlyCode.Database.Entities {
         public void Create(params Type[] types) {
             foreach(Type type in types)
                 CreateSingle(type);
+        }
+
+        /// <inheritdoc />
+        public void Drop<T>() {
+            SchemaDescriptor schema = DBClient.DBInfo.GetSchema(DBClient, modelcache.Get<T>().TableName);
+            if (schema is ViewDescriptor descriptor)
+                DBClient.DBInfo.DropView(DBClient, descriptor);
+            else if (schema is TableDescriptor tableDescriptor)
+                DBClient.DBInfo.DropTable(DBClient, tableDescriptor);
+            else
+                throw new Exception("Invalid descriptor type");
         }
 
         /// <inheritdoc />

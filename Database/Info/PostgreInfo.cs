@@ -110,7 +110,12 @@ namespace NightlyCode.Database.Info {
 
         /// <inheritdoc />
         public override void DropView(IDBClient client, ViewDescriptor view) {
-            client.NonQuery($"DROP VIEW {view.Name} CASCADE");
+            client.NonQuery($"DROP VIEW IF EXISTS {view.Name} CASCADE");
+        }
+
+        /// <inheritdoc />
+        public override void DropTable(IDBClient client, TableDescriptor entity) {
+            client.NonQuery($"DROP TABLE IF EXISTS {entity.Name} CASCADE");
         }
 
         public override void ToUpper(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value) {
@@ -184,6 +189,7 @@ namespace NightlyCode.Database.Info {
             switch(type.Name.ToLower()) {
             case "datetime":
                 return "timestamp";
+            case "guid":
             case "string":
             case "version":
                 return "character varying";
@@ -215,7 +221,7 @@ namespace NightlyCode.Database.Info {
             case "decimal":
                 return "decimal";
             default:
-                throw new InvalidOperationException("unsupported type");
+                throw new InvalidOperationException($"unsupported type '{type.Name}'");
             }
 
 
@@ -227,11 +233,16 @@ namespace NightlyCode.Database.Info {
         /// <param name="type"></param>
         /// <returns></returns>
         public override Type GetDBRepresentation(Type type) {
+            if(type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                type = Nullable.GetUnderlyingType(type);
+
             if(type.IsEnum)
                 return typeof(int);
             if(type == typeof(TimeSpan))
                 return typeof(long);
             if(type == typeof(Version))
+                return typeof(string);
+            if (type == typeof(Guid))
                 return typeof(string);
             return type;
         }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
+using NightlyCode.Database.Dto;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Expressions;
 using NightlyCode.Database.Entities.Operations.Fields;
@@ -21,6 +22,7 @@ namespace NightlyCode.Database.Entities.Operations {
         OrderByCriteria[] orderbycriterias;
         IDBField[] groupbycriterias;
         readonly List<JoinOperation> joinoperations = new List<JoinOperation>();
+        string alias;
 
         /// <summary>
         /// creates a new <see cref="LoadEntitiesOperation{T}"/>
@@ -34,6 +36,7 @@ namespace NightlyCode.Database.Entities.Operations {
             LimitStatement = origin.LimitStatement;
             Criterias = origin.Criterias;
             Havings = origin.Havings;
+            alias = origin.alias;
         }
 
         /// <summary>
@@ -143,49 +146,60 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <returns>prepared operation which can get reused</returns>
         public PreparedLoadEntitiesOperation<TEntity> Prepare<TEntity>() {
+            List<string> aliases = new List<string>();
+
             OperationPreparator preparator = new OperationPreparator();
             preparator.AppendText("SELECT");
 
-            string columnindicator = dbclient.DBInfo.ColumnIndicator;
+            string tablealias = null;
+
+            if (!string.IsNullOrEmpty(alias)) {
+                tablealias = alias;
+                aliases.Add(tablealias);
+            }
+            else if (joinoperations.Count > 0) {
+                tablealias = "t";
+                aliases.Add(tablealias);
+            }
 
             EntityDescriptor modeldescriptor = descriptorgetter(typeof(TEntity));
-            if(typeof(TEntity) == typeof(T))
+            if (typeof(TEntity) == typeof(T)) {
                 // most simple case, entity is created from base table
-                preparator.AppendText(string.Join(", ", modeldescriptor.Columns.Select(c => $"{columnindicator}{c.Name}{columnindicator}")));
+                if(!string.IsNullOrEmpty(tablealias))
+                    preparator.AppendText(string.Join(", ", modeldescriptor.Columns.Select(c => $"{tablealias}.{dbclient.DBInfo.MaskColumn(c.Name)}")));
+                else preparator.AppendText(string.Join(", ", modeldescriptor.Columns.Select(c => $"{dbclient.DBInfo.MaskColumn(c.Name)}")));
+            }
             else {
                 // entity is created from some joined table data
                 JoinOperation entityjoin = JoinOperations.FirstOrDefault(o => o.JoinType == typeof(TEntity));
                 if(entityjoin == null)
                     throw new InvalidOperationException("Unable to determine where to select entity values from (not selecting from base table and no join matches entity type)");
-                preparator.AppendText(string.Join(", ", modeldescriptor.Columns.Select(c => $"{entityjoin.Alias}.{columnindicator}{c.Name}{columnindicator}")));
+                preparator.AppendText(string.Join(", ", modeldescriptor.Columns.Select(c => $"{entityjoin.Alias}.{dbclient.DBInfo.MaskColumn(c.Name)}")));
             }
 
             EntityDescriptor descriptor = descriptorgetter(typeof(T));
             preparator.AppendText("FROM").AppendText(descriptor.TableName);
 
-            string tablealias = null;
-            if(joinoperations.Count > 0) {
-                preparator.AppendText("AS t");
-                tablealias = "t";
-                foreach(JoinOperation operation in joinoperations) {
-                    preparator.AppendText("INNER JOIN").AppendText(descriptorgetter(operation.JoinType).TableName);
-                    if(!string.IsNullOrEmpty(operation.Alias))
-                        preparator.AppendText("AS").AppendText(operation.Alias);
-                    preparator.AppendText("ON");
-                    CriteriaVisitor.GetCriteriaText(operation.Criterias, descriptorgetter, dbclient.DBInfo, preparator, tablealias, operation.Alias);
-                    if(operation.AdditionalCriterias != null) {
-                        preparator.AppendText("AND");
-                        CriteriaVisitor.GetCriteriaText(operation.AdditionalCriterias, descriptorgetter, dbclient.DBInfo, preparator, operation.Alias);
-                    }
+            if(!string.IsNullOrEmpty(tablealias))
+                preparator.AppendText($"AS {tablealias}");
+
+            foreach(JoinOperation operation in joinoperations) {
+                preparator.AppendText("INNER JOIN").AppendText(descriptorgetter(operation.JoinType).TableName);
+                if(!string.IsNullOrEmpty(operation.Alias))
+                    preparator.AppendText("AS").AppendText(operation.Alias);
+                preparator.AppendText("ON");
+                CriteriaVisitor.GetCriteriaText(operation.Criterias, descriptorgetter, dbclient.DBInfo, preparator, tablealias, operation.Alias);
+                if(operation.AdditionalCriterias != null) {
+                    preparator.AppendText("AND");
+                    CriteriaVisitor.GetCriteriaText(operation.AdditionalCriterias, descriptorgetter, dbclient.DBInfo, preparator, operation.Alias);
                 }
+
+                aliases.Add(operation.Alias);
             }
 
             if(Criterias != null) {
                 preparator.AppendText("WHERE");
-                if(tablealias != null)
-                    CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator, tablealias);
-                else
-                    CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator);
+                CriteriaVisitor.GetCriteriaText(Criterias, descriptorgetter, dbclient.DBInfo, preparator, aliases.ToArray());
             }
 
             bool flag = true;
@@ -198,7 +212,7 @@ namespace NightlyCode.Database.Entities.Operations {
                     else
                         preparator.AppendText(",");
 
-                    preparator.AppendField(criteria, dbclient.DBInfo, descriptorgetter);
+                    preparator.AppendField(criteria, dbclient.DBInfo, descriptorgetter, tablealias);
                 }
 
             }
@@ -213,7 +227,7 @@ namespace NightlyCode.Database.Entities.Operations {
                     else
                         preparator.AppendText(",");
 
-                    preparator.AppendField(criteria.Field, dbclient.DBInfo, descriptorgetter);
+                    preparator.AppendField(criteria.Field, dbclient.DBInfo, descriptorgetter, tablealias);
 
                     if(!criteria.Ascending)
                         preparator.AppendText("DESC");
@@ -222,16 +236,26 @@ namespace NightlyCode.Database.Entities.Operations {
 
             if(Havings != null) {
                 preparator.AppendText("HAVING");
-                if(tablealias != null)
-                    CriteriaVisitor.GetCriteriaText(Havings, descriptorgetter, dbclient.DBInfo, preparator, tablealias);
-                else
-                    CriteriaVisitor.GetCriteriaText(Havings, descriptorgetter, dbclient.DBInfo, preparator);
+                CriteriaVisitor.GetCriteriaText(Havings, descriptorgetter, dbclient.DBInfo, preparator, aliases.ToArray());
             }
 
             if(!ReferenceEquals(LimitStatement, null))
                 preparator.AppendField(LimitStatement, dbclient.DBInfo, descriptorgetter);
 
             return preparator.GetLoadEntitiesOperation<TEntity>(dbclient, modeldescriptor);
+        }
+
+        /// <summary>
+        /// provides an alias to use for the operation
+        /// </summary>
+        /// <remarks>
+        /// necessary to prevent conflicts if the loaded type is used multiple times in a complex query
+        /// </remarks>
+        /// <param name="tablealias">name of alias to use</param>
+        /// <returns>this operation for fluent behavior</returns>
+        public LoadEntitiesOperation<T> Alias(string tablealias) {
+            alias = tablealias;
+            return this;
         }
 
         /// <summary>

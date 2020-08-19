@@ -1,4 +1,7 @@
-﻿namespace NightlyCode.Database.Tests.Models {
+﻿using System;
+using NightlyCode.Database.Entities.Attributes;
+
+namespace NightlyCode.Database.Tests.Models {
 
     public class ValueModel {
         public ValueModel() { }
@@ -10,9 +13,17 @@
             String = s;
         }
 
+        [DefaultValue(0)]
         public int Integer { get; set; }
+
+        [DefaultValue(0)]
         public float Single { get; set; }
+
+        [DefaultValue(0)]
         public double Double { get; set; }
+
         public string String { get; set; }
+
+        public DateTime? NDatetime { get; set; }
     }
 }

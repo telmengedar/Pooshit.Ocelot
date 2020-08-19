@@ -142,8 +142,8 @@ namespace NightlyCode.Database.Entities.Schema {
 
                 SchemaColumnDescriptor[] remainingcolumns = olddescriptor.Columns.Where(c => newdescriptor.Columns.Any(c1 => c1.Name == c.Name)).ToArray();
                 EntityColumnDescriptor[] newcolumns = newdescriptor.Columns.Where(c => c.NotNull && !c.AutoIncrement && c.DefaultValue == null && olddescriptor.Columns.All(o => o.Name != c.Name)).ToArray();
-                string columnlist = string.Join(", ", remainingcolumns.Select(c => c.Name));
-                string newcolumnlist = string.Join(", ", newcolumns.Select(c => c.Name));
+                string columnlist = string.Join(", ", remainingcolumns.Select(c => client.DBInfo.MaskColumn(c.Name)));
+                string newcolumnlist = string.Join(", ", newcolumns.Select(c => client.DBInfo.MaskColumn(c.Name)));
                 creator.CreateTable(client, newdescriptor, transaction);
 
                 // transfer data to new table

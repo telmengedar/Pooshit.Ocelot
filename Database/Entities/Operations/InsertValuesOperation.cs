@@ -4,7 +4,6 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
-using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Fields;
 using Converter = NightlyCode.Database.Extern.Converter;
@@ -83,7 +82,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="parameters">parameters to use when executing operation</param>
         /// <returns>number of rows affected</returns>
         public long Execute(Transaction transaction, params object[] parameters) {
-            if(insertcolumns?.Length != insertvalues?.Length)
+            if(parameters.Length==0 && insertcolumns?.Length != insertvalues?.Length)
                 throw new InvalidOperationException("unable to execute insert operation. Number of value parameters does not match number of columns.");
 
             PreparedOperation operation = Prepare();

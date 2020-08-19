@@ -73,7 +73,7 @@ namespace NightlyCode.Database.Tests.Entities {
             LoadEntitiesOperation<ObjectIndexDecimal> load = entitymanager.LoadEntities<ObjectIndexDecimal>();
             load.Where(i => i.Key == "Key" && i.Value == 42);
             load.Join<ObjectIndexDecimal>((i1, i2) => i1.Object == i2.Object && i2.Key == "Kee" && i2.Value == 70);
-            Assert.That(load.Prepare().CommandText.Contains("ON t.\"object\" = j0.\"object\" AND j0.\"key\" = @1 AND j0.\"value\" = @2"));
+            Assert.That(load.Prepare().CommandText.Contains("ON t.[object] = j0.[object] AND j0.[key] = @1 AND j0.[value] = @2"));
         }
     }
 }

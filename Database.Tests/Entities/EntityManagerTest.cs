@@ -49,6 +49,32 @@ namespace NightlyCode.Database.Tests.Entities {
         }
 
         [Test, Parallelizable]
+        public void TestEntityDrop() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+            entitymanager.Create<TestEntityWithoutAnySpecifications>();
+            entitymanager.Drop<TestEntityWithoutAnySpecifications>();
+            Assert.That(!dbclient.DBInfo.CheckIfTableExists(dbclient, "testentitywithoutanyspecifications"));
+        }
+
+        [Test, Parallelizable]
+        public void CreateView() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+            entitymanager.Create<TestView>();
+            Assert.That(dbclient.DBInfo.CheckIfTableExists(dbclient, "testview"));
+        }
+
+        [Test, Parallelizable]
+        public void DropView() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+            entitymanager.Create<TestView>();
+            entitymanager.Drop<TestView>();
+            Assert.That(!dbclient.DBInfo.CheckIfTableExists(dbclient, "testview"));
+        }
+
+        [Test, Parallelizable]
         public void InsertEntities() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
@@ -82,6 +108,19 @@ namespace NightlyCode.Database.Tests.Entities {
             int[] array = {2, 3};
             TestEntityWithoutAnySpecifications[] result = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Where(e => array.Contains(e.IntegerValue)).Execute().ToArray();
             Assert.AreEqual(2, result.Length);
+        }
+
+        [Test, Parallelizable]
+        public void DoesNotContain() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+            entitymanager.Create<TestEntityWithoutAnySpecifications>();
+            entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(TestEntities);
+
+            int[] array = { 2, 3 };
+            TestEntityWithoutAnySpecifications[] result = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Where(e => !array.Contains(e.IntegerValue)).Execute().ToArray();
+            Assert.AreEqual(1, result.Length);
+            Assert.AreEqual(1, result[0].IntegerValue);
         }
 
         [Test, Parallelizable]

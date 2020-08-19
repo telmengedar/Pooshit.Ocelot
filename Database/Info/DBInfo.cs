@@ -159,6 +159,11 @@ namespace NightlyCode.Database.Info {
         }
 
         /// <inheritdoc />
+        public virtual void DropTable(IDBClient client, TableDescriptor entity) {
+            client.NonQuery($"DROP TABLE {entity.Name}");
+        }
+
+        /// <inheritdoc />
         public abstract void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column);
 
         /// <inheritdoc />

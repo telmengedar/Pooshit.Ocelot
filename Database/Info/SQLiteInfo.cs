@@ -206,6 +206,9 @@ namespace NightlyCode.Database.Info {
         /// <param name="type"></param>
         /// <returns></returns>
         public override Type GetDBRepresentation(Type type) {
+            if(type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                type = Nullable.GetUnderlyingType(type);
+
             // sqlite understands datetime but not timespan
             if(type == typeof(TimeSpan))
                 return typeof(long);

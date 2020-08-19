@@ -8,6 +8,7 @@ namespace NightlyCode.Database.Entities.Descriptors {
     /// </summary>
     public class EntityDescriptorCache {
         readonly Dictionary<Type, EntityDescriptor> descriptors = new Dictionary<Type, EntityDescriptor>();
+        object modellock = new object();
 
         /// <summary>
         /// get entitydescriptor for the specified type
@@ -26,9 +27,11 @@ namespace NightlyCode.Database.Entities.Descriptors {
         /// <returns>entity descriptor for specified type</returns>
         public EntityDescriptor Get(Type type)
         {
-            if (!descriptors.TryGetValue(type, out EntityDescriptor descriptor))
-                descriptors[type] = descriptor = EntityDescriptor.Create(type);
-            return descriptor;
+            lock (modellock) {
+                if (!descriptors.TryGetValue(type, out EntityDescriptor descriptor))
+                    descriptors[type] = descriptor = EntityDescriptor.Create(type);
+                return descriptor;
+            }
         }
 
     }

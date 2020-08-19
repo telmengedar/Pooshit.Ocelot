@@ -160,6 +160,14 @@ namespace NightlyCode.Database.Tests {
 
             updater.Update<TestView>(clientmock.Object);
         }
+
+        [Test, Parallelizable]
+        public void CreateTypeWithNullableProperty() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+
+            entitymanager.UpdateSchema<NullablePropertyType>();
+        }
     }
 
 }
