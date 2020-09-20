@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using NightlyCode.Database.Clients;
+﻿using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
 using NightlyCode.Database.Tests.Data;
 using NightlyCode.Database.Tests.Models;
@@ -26,7 +25,7 @@ namespace NightlyCode.Database.Tests {
                 .Set("string", "single", "double").Where("integer", "=", "7")
                 .Execute("hello", 5.0f, 10.0);
 
-            ValueModel result = entitymanager.LoadEntities<ValueModel>().Execute().FirstOrDefault();
+            ValueModel result = entitymanager.Load<ValueModel>().ExecuteEntity<ValueModel>();
 
             Assert.NotNull(result);
             Assert.AreEqual("hello", result.String);

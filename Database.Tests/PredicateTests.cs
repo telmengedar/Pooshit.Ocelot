@@ -28,7 +28,7 @@ namespace NightlyCode.Database.Tests {
             subquery |= t => t.IntegerValue == 2;
             testpredicate &= subquery;
 
-            Assert.AreEqual(2, entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Where(testpredicate).Execute().Count());
+            Assert.AreEqual(2, entitymanager.Load<TestEntityWithoutAnySpecifications>().Where(testpredicate).ExecuteEntities<TestEntityWithoutAnySpecifications>().Count());
         }
     }
 }

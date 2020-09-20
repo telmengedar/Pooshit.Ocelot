@@ -18,7 +18,7 @@ namespace NightlyCode.Database.Entities.Operations.Entities {
         readonly EntityDescriptor entitydescriptor;
         readonly EntityColumnDescriptor[] interestingcolumns;
         readonly PreparedOperation insertoperation;
-        readonly PreparedLoadValuesOperation loadreturnid;
+        readonly PreparedLoadOperation loadreturnid;
 
         /// <summary>
         /// creates a new <see cref="InsertEntitiesOperation{T}"/>

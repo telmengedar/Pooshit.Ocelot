@@ -122,7 +122,7 @@ namespace NightlyCode.Database.Tests {
                 new ValueModel(124)
             );
 
-            PreparedLoadValuesOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
+            PreparedLoadOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
             Tuple<int, string>[] result = loadvaluesoperation.ExecuteType(row => new Tuple<int, string>((int)(long)row[0], null), 50).ToArray();
             Assert.True(result.Select(r => r.Item1).SequenceEqual(new[] { 75, 234, 124 }));
         }
@@ -144,7 +144,7 @@ namespace NightlyCode.Database.Tests {
                 new ValueModel(124)
             );
 
-            PreparedLoadValuesOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
+            PreparedLoadOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
             Tuple<int, string>[] result = (await loadvaluesoperation.ExecuteTypeAsync(row => new Tuple<int, string>((int)(long)row[0], null), 50)).ToArray();
             Assert.True(result.Select(r => r.Item1).SequenceEqual(new[] { 75, 234, 124 }));
         }
@@ -167,7 +167,7 @@ namespace NightlyCode.Database.Tests {
                 new ValueModel(124)
             );
 
-            PreparedLoadValuesOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
+            PreparedLoadOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
             Tuple<int, string>[] result = loadvaluesoperation.ExecuteType(transaction, row => new Tuple<int, string>((int)(long)row[0], null), 50).ToArray();
             Assert.True(result.Select(r => r.Item1).SequenceEqual(new[] { 75, 234, 124 }));
         }
@@ -190,7 +190,7 @@ namespace NightlyCode.Database.Tests {
                 new ValueModel(124)
             );
 
-            PreparedLoadValuesOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
+            PreparedLoadOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
             Tuple<int, string>[] result = (await loadvaluesoperation.ExecuteTypeAsync(transaction, row => new Tuple<int, string>((int)(long)row[0], null), 50)).ToArray();
             Assert.True(result.Select(r => r.Item1).SequenceEqual(new[] { 75, 234, 124 }));
         }
@@ -319,7 +319,7 @@ namespace NightlyCode.Database.Tests {
                 new ValueModel(124)
             );
 
-            PreparedLoadValuesOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
+            PreparedLoadOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
             int result = loadvaluesoperation.ExecuteScalar<int>(50);
             Assert.AreEqual(75, result);
         }
@@ -341,7 +341,7 @@ namespace NightlyCode.Database.Tests {
                 new ValueModel(124)
             );
 
-            PreparedLoadValuesOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
+            PreparedLoadOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
             int result = await loadvaluesoperation.ExecuteScalarAsync<int>(50);
             Assert.AreEqual(75, result);
         }
@@ -364,7 +364,7 @@ namespace NightlyCode.Database.Tests {
                 new ValueModel(124)
             );
 
-            PreparedLoadValuesOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
+            PreparedLoadOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
             int result = loadvaluesoperation.ExecuteScalar<int>(transaction, 50);
             Assert.AreEqual(75, result);
         }
@@ -387,7 +387,7 @@ namespace NightlyCode.Database.Tests {
                 new ValueModel(124)
             );
 
-            PreparedLoadValuesOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
+            PreparedLoadOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
             int result = await loadvaluesoperation.ExecuteScalarAsync<int>(transaction, 50);
             Assert.AreEqual(75, result);
         }
@@ -495,7 +495,7 @@ namespace NightlyCode.Database.Tests {
                 new ValueModel(124)
             );
 
-            PreparedLoadValuesOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
+            PreparedLoadOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
             int[] result = loadvaluesoperation.ExecuteSet<int>(50).ToArray();
             Assert.True(result.SequenceEqual(new[] { 75, 234, 124 }));
         }
@@ -518,7 +518,7 @@ namespace NightlyCode.Database.Tests {
                 new ValueModel(124)
             );
 
-            PreparedLoadValuesOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
+            PreparedLoadOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
             int[] result = loadvaluesoperation.ExecuteSet<int>(transaction, 50).ToArray();
             Assert.True(result.SequenceEqual(new[] { 75, 234, 124 }));
         }
@@ -532,7 +532,7 @@ namespace NightlyCode.Database.Tests {
             entitymanager.UpdateSchema<ConstructOption>();
 
             Guid guid = new Guid();
-            entitymanager.LoadEntities<Option>()
+            entitymanager.Load<Option>()
                 .Join<ConstructOption>((o, co) => co.OptionId == o.Id)
                 .Where((o, co) => co.ConstructId == guid)
                 .Execute();
@@ -546,7 +546,7 @@ namespace NightlyCode.Database.Tests {
             entitymanager.UpdateSchema<Option>();
             entitymanager.UpdateSchema<ConstructOption>();
 
-            PreparedLoadValuesOperation operation = entitymanager.Load<Option>()
+            PreparedLoadOperation operation = entitymanager.Load<Option>()
                 .Where(o => o.Name == "Test")
                 .Join<ConstructOption>((o, co) => co.OptionId == o.Id)
                 .Prepare();
@@ -562,7 +562,7 @@ namespace NightlyCode.Database.Tests {
             entitymanager.UpdateSchema<Option>();
             entitymanager.UpdateSchema<ConstructOption>();
 
-            PreparedLoadValuesOperation operation = entitymanager.Load<Option>(o => o.Id)
+            PreparedLoadOperation operation = entitymanager.Load<Option>(o => o.Id)
                 .Where(o => o.Name == "Test")
                 .LeftJoin<ConstructOption>((o, co) => co.OptionId == o.Id, "test")
                 .Prepare();
@@ -578,7 +578,7 @@ namespace NightlyCode.Database.Tests {
             entitymanager.UpdateSchema<Option>();
             entitymanager.UpdateSchema<ConstructOption>();
 
-            PreparedLoadValuesOperation operation = entitymanager.Load<Option>(o => o.Id)
+            PreparedLoadOperation operation = entitymanager.Load<Option>(o => o.Id)
                 .LeftJoin<ConstructOption>((o, co) => co.OptionId == o.Id, "test")
                 .Where((o, co) => co.OptionId == Guid.Empty)
                 .Prepare();
@@ -591,7 +591,7 @@ namespace NightlyCode.Database.Tests {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
-            PreparedLoadValuesOperation operation = entitymanager.Load<Option>(o => o.Id)
+            PreparedLoadOperation operation = entitymanager.Load<Option>(o => o.Id)
                 .Alias("o666")
                 .Where((o) => o.Id == Guid.Empty)
                 .Prepare();

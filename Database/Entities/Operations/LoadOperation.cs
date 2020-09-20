@@ -17,9 +17,9 @@ namespace NightlyCode.Database.Entities.Operations {
     /// </summary>
     /// <typeparam name="TLoad">type of initially loaded entity</typeparam>
     /// <typeparam name="TJoin">type of joined entity</typeparam>
-    public class LoadValuesOperation<TLoad, TJoin> : LoadValuesOperation<TLoad> {
+    public class LoadOperation<TLoad, TJoin> : LoadOperation<TLoad> {
 
-        internal LoadValuesOperation(LoadValuesOperation<TLoad> origin)
+        internal LoadOperation(LoadOperation<TLoad> origin)
             : base(origin) {
         }
 
@@ -28,7 +28,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="criterias"></param>
         /// <returns></returns>
-        public LoadValuesOperation<TLoad, TJoin> Where(Expression<Func<TLoad, TJoin, bool>> criterias) {
+        public LoadOperation<TLoad, TJoin> Where(Expression<Func<TLoad, TJoin, bool>> criterias) {
             Criterias = criterias;
             return this;
         }
@@ -38,7 +38,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="fields"></param>
         /// <returns></returns>
-        public new LoadValuesOperation<TLoad, TJoin> OrderBy(params OrderByCriteria[] fields) {
+        public new LoadOperation<TLoad, TJoin> OrderBy(params OrderByCriteria[] fields) {
             base.OrderBy(fields);
             return this;
         }
@@ -48,7 +48,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="fields"></param>
         /// <returns></returns>
-        public new LoadValuesOperation<TLoad, TJoin> GroupBy(params IDBField[] fields) {
+        public new LoadOperation<TLoad, TJoin> GroupBy(params IDBField[] fields) {
             base.GroupBy(fields);
             return this;
         }
@@ -58,7 +58,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="limit"></param>
         /// <returns></returns>
-        public LoadValuesOperation<TLoad, TJoin> Limit(int limit) {
+        public LoadOperation<TLoad, TJoin> Limit(int limit) {
             base.Limit(limit);
             return this;
         }
@@ -68,7 +68,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="criterias"></param>
         /// <returns></returns>
-        public LoadValuesOperation<TLoad, TJoin> Having(Expression<Func<TLoad, TJoin, bool>> criterias) {
+        public LoadOperation<TLoad, TJoin> Having(Expression<Func<TLoad, TJoin, bool>> criterias) {
             Havings = criterias;
             return this;
         }
@@ -79,7 +79,7 @@ namespace NightlyCode.Database.Entities.Operations {
     /// operation used to load values of an entity
     /// </summary>
     /// <typeparam name="T">type of entity of which to load values</typeparam>
-    public class LoadValuesOperation<T> : IDatabaseOperation {
+    public class LoadOperation<T> : IDatabaseOperation {
         readonly IDBClient dbclient;
         readonly Func<Type, EntityDescriptor> descriptorgetter;
         readonly IDBField[] columns;
@@ -91,11 +91,11 @@ namespace NightlyCode.Database.Entities.Operations {
         readonly List<IDatabaseOperation> unions=new List<IDatabaseOperation>();
 
         /// <summary>
-        /// creates a new <see cref="LoadValuesOperation{T}"/>
+        /// creates a new <see cref="LoadOperation{T}"/>
         /// </summary>
         /// <param name="origin">operation of which to copy existing specifications</param>
-        internal LoadValuesOperation(LoadValuesOperation<T> origin)
-            : this(origin.dbclient, origin.columns, origin.descriptorgetter) {
+        internal LoadOperation(LoadOperation<T> origin)
+            : this(origin.dbclient, origin.descriptorgetter, origin.columns) {
             orderbycriterias = origin.orderbycriterias;
             groupbycriterias = origin.groupbycriterias;
             joinoperations = origin.joinoperations;
@@ -107,24 +107,24 @@ namespace NightlyCode.Database.Entities.Operations {
         }
 
         /// <summary>
-        /// creates a new <see cref="LoadValuesOperation{T}"/>
+        /// creates a new <see cref="LoadOperation{T}"/>
         /// </summary>
         /// <param name="dbclient"> </param>
         /// <param name="fields">fields to load</param>
         /// <param name="descriptorgetter"></param>
-        public LoadValuesOperation(IDBClient dbclient, Func<Type, EntityDescriptor> descriptorgetter, params Expression<Func<T, object>>[] fields) {
+        public LoadOperation(IDBClient dbclient, Func<Type, EntityDescriptor> descriptorgetter, params Expression<Func<T, object>>[] fields) {
             this.descriptorgetter = descriptorgetter;
             this.dbclient = dbclient;
             columns = fields.Select(EntityField.Create).Cast<IDBField>().ToArray();
         }
 
         /// <summary>
-        /// creates a new <see cref="LoadValuesOperation{T}"/>
+        /// creates a new <see cref="LoadOperation{T}"/>
         /// </summary>
         /// <param name="dbclient"> </param>
         /// <param name="fields">fields to load</param>
         /// <param name="descriptorgetter"></param>
-        public LoadValuesOperation(IDBClient dbclient, IDBField[] fields, Func<Type, EntityDescriptor> descriptorgetter) {
+        public LoadOperation(IDBClient dbclient, Func<Type, EntityDescriptor> descriptorgetter, params IDBField[] fields) {
             this.descriptorgetter = descriptorgetter;
             this.dbclient = dbclient;
             columns = fields;
@@ -229,13 +229,177 @@ namespace NightlyCode.Database.Entities.Operations {
         }
 
         /// <summary>
+        /// executes the operation and creates entities from the result
+        /// </summary>
+        /// <typeparam name="TEntity">type of entities to create</typeparam>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>created entities</returns>
+        public virtual IEnumerable<TEntity> ExecuteEntities<TEntity>(Transaction transaction, params object[] parameters) {
+            return Prepare().ExecuteEntities<TEntity>(transaction, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation and creates entities from the result
+        /// </summary>
+        /// <typeparam name="TEntity">type of entities to create</typeparam>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>created entities</returns>
+        public virtual TEntity ExecuteEntity<TEntity>(Transaction transaction, params object[] parameters) {
+            if (!(LimitStatement?.Limit.HasValue ?? false))
+                Limit(1);
+            return Prepare().ExecuteEntity<TEntity>(transaction, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation and creates entities from the result
+        /// </summary>
+        /// <typeparam name="TEntity">type of entities to create</typeparam>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>created entities</returns>
+        public virtual Task<TEntity> ExecuteEntityAsync<TEntity>(Transaction transaction, params object[] parameters) {
+            if(!(LimitStatement?.Limit.HasValue ?? false))
+                Limit(1);
+            return Prepare().ExecuteEntityAsync<TEntity>(transaction, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation and creates entities from the result
+        /// </summary>
+        /// <typeparam name="TEntity">type of entities to create</typeparam>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>created entities</returns>
+        public virtual Task<TEntity[]> ExecuteEntitiesAsync<TEntity>(Transaction transaction, params object[] parameters) {
+            return Prepare().ExecuteEntitiesAsync<TEntity>(transaction, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation and creates entities from the result
+        /// </summary>
+        /// <typeparam name="TEntity">type of entities to create</typeparam>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>created entities</returns>
+        public virtual Task<TEntity[]> ExecuteEntitiesAsync<TEntity>(params object[] parameters) {
+            return ExecuteEntitiesAsync<TEntity>(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation and creates entities from the result
+        /// </summary>
+        /// <typeparam name="TEntity">type of entities to create</typeparam>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>created entities</returns>
+        public virtual IEnumerable<TEntity> ExecuteEntities<TEntity>(params object[] parameters) {
+            return ExecuteEntities<TEntity>(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation and creates entities from the result
+        /// </summary>
+        /// <typeparam name="TEntity">type of entities to create</typeparam>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>created entities</returns>
+        public virtual Task<TEntity> ExecuteEntityAsync<TEntity>(params object[] parameters) {
+            return ExecuteEntityAsync<TEntity>(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation and creates entities from the result
+        /// </summary>
+        /// <typeparam name="T">type of entities to create</typeparam>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>created entities</returns>
+        public virtual TEntity ExecuteEntity<TEntity>(params object[] parameters) {
+            return ExecuteEntity<TEntity>(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation and creates entities from the result
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>created entities</returns>
+        public virtual IEnumerable<T> ExecuteEntities(Transaction transaction, params object[] parameters) {
+            return Prepare().ExecuteEntities<T>(transaction, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation and creates entities from the result
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>created entities</returns>
+        public virtual T ExecuteEntity(Transaction transaction, params object[] parameters) {
+            return Prepare().ExecuteEntity<T>(transaction, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation and creates entities from the result
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>created entities</returns>
+        public virtual Task<T> ExecuteEntityAsync(Transaction transaction, params object[] parameters) {
+            return Prepare().ExecuteEntityAsync<T>(transaction, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation and creates entities from the result
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>created entities</returns>
+        public virtual Task<T[]> ExecuteEntitiesAsync(Transaction transaction, params object[] parameters) {
+            return Prepare().ExecuteEntitiesAsync<T>(transaction, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation and creates entities from the result
+        /// </summary>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>created entities</returns>
+        public virtual Task<T[]> ExecuteEntitiesAsync(params object[] parameters) {
+            return ExecuteEntitiesAsync<T>(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation and creates entities from the result
+        /// </summary>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>created entities</returns>
+        public virtual IEnumerable<T> ExecuteEntities(params object[] parameters) {
+            return ExecuteEntities<T>(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation and creates entities from the result
+        /// </summary>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>created entities</returns>
+        public virtual Task<T> ExecuteEntityAsync(params object[] parameters) {
+            return ExecuteEntityAsync<T>(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation and creates entities from the result
+        /// </summary>
+        /// <param name="parameters">parameters for execution</param>
+        /// <returns>created entities</returns>
+        public virtual T ExecuteEntity(params object[] parameters) {
+            return ExecuteEntity<T>(null, parameters);
+        }
+
+        /// <summary>
         /// prepares the operation for execution
         /// </summary>
         /// <returns></returns>
-        public PreparedLoadValuesOperation Prepare() {
+        public PreparedLoadOperation<T> Prepare() {
             OperationPreparator preparator = new OperationPreparator();
             ((IDatabaseOperation)this).Prepare(preparator);
-            return preparator.GetLoadValuesOperation(dbclient);
+            return preparator.GetLoadValuesOperation<T>(dbclient, descriptorgetter);
         }
 
         /// <summary>
@@ -246,7 +410,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </remarks>
         /// <param name="tablealias">name of alias to use</param>
         /// <returns>this operation for fluent behavior</returns>
-        public LoadValuesOperation<T> Alias(string tablealias) {
+        public LoadOperation<T> Alias(string tablealias) {
             alias = tablealias;
             return this;
         }
@@ -256,7 +420,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="operation">operation to use as union</param>
         /// <returns>this operation for fluent behavior</returns>
-        public LoadValuesOperation<T> Union(IDatabaseOperation operation) {
+        public LoadOperation<T> Union(IDatabaseOperation operation) {
             unions.Add(operation);
             return this;
         }
@@ -265,7 +429,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// specifies to only load rows with distinct values
         /// </summary>
         /// <returns></returns>
-        public LoadValuesOperation<T> Distinct() {
+        public LoadOperation<T> Distinct() {
             distinct = true;
             return this;
         }
@@ -275,7 +439,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="criterias"></param>
         /// <returns></returns>
-        public LoadValuesOperation<T> Where(Expression<Func<T, bool>> criterias) {
+        public LoadOperation<T> Where(Expression<Func<T, bool>> criterias) {
             Criterias = criterias;
             return this;
         }
@@ -285,7 +449,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="criterias"></param>
         /// <returns></returns>
-        public LoadValuesOperation<T> Having(Expression<Func<T, bool>> criterias) {
+        public LoadOperation<T> Having(Expression<Func<T, bool>> criterias) {
             Havings = criterias;
             return this;
         }
@@ -295,7 +459,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="fields"></param>
         /// <returns></returns>
-        public LoadValuesOperation<T> OrderBy(params OrderByCriteria[] fields) {
+        public LoadOperation<T> OrderBy(params OrderByCriteria[] fields) {
             if(fields.Length == 0)
                 throw new InvalidOperationException("at least one criteria has to be specified");
 
@@ -308,7 +472,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="fields"></param>
         /// <returns></returns>
-        public LoadValuesOperation<T> GroupBy(params IDBField[] fields) {
+        public LoadOperation<T> GroupBy(params IDBField[] fields) {
             if(fields.Length == 0)
                 throw new InvalidOperationException("at least one group criteria has to be specified");
 
@@ -320,7 +484,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// specifies a limited number of rows to return
         /// </summary>
         /// <param name="limit">number of rows to return</param>
-        public LoadValuesOperation<T> Limit(long limit) {
+        public LoadOperation<T> Limit(long limit) {
             if(ReferenceEquals(LimitStatement, null))
                 LimitStatement = new LimitField();
             LimitStatement.Limit = limit;
@@ -331,7 +495,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// specifies an offset from which on to return result rows
         /// </summary>
         /// <param name="offset">number of rows to skip</param>
-        public LoadValuesOperation<T> Offset(long offset) {
+        public LoadOperation<T> Offset(long offset) {
             if(ReferenceEquals(LimitStatement, null))
                 LimitStatement = new LimitField();
             LimitStatement.Offset = offset;
@@ -345,9 +509,9 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="criteria">join criteria</param>
         /// <param name="alias">alias to use</param>
         /// <returns>this load operation for fluent behavior</returns>
-        public LoadValuesOperation<T, TJoin> Join<TJoin>(Expression<Func<T, TJoin, bool>> criteria, string alias = null) {
+        public LoadOperation<T, TJoin> Join<TJoin>(Expression<Func<T, TJoin, bool>> criteria, string alias = null) {
             joinoperations.Add(new JoinOperation(typeof(TJoin), criteria, JoinOp.Inner, null, alias));
-            return new LoadValuesOperation<T, TJoin>(this);
+            return new LoadOperation<T, TJoin>(this);
         }
 
         /// <summary>
@@ -357,9 +521,9 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="criteria">join criteria</param>
         /// <param name="alias">alias to use</param>
         /// <returns>this load operation for fluent behavior</returns>
-        public LoadValuesOperation<T, TJoin> LeftJoin<TJoin>(Expression<Func<T, TJoin, bool>> criteria, string alias = null) {
+        public LoadOperation<T, TJoin> LeftJoin<TJoin>(Expression<Func<T, TJoin, bool>> criteria, string alias = null) {
             joinoperations.Add(new JoinOperation(typeof(TJoin), criteria, JoinOp.Left, null, alias));
-            return new LoadValuesOperation<T, TJoin>(this);
+            return new LoadOperation<T, TJoin>(this);
         }
 
         /// <inheritdoc />
@@ -385,10 +549,9 @@ namespace NightlyCode.Database.Entities.Operations {
 
             bool flag = true;
             foreach(IDBField criteria in columns) {
-                if(flag)
+                if (flag)
                     flag = false;
-                else
-                    preparator.AppendText(",");
+                else preparator.AppendText(",");
                 preparator.AppendField(criteria, dbclient.DBInfo, descriptorgetter, tablealias);
             }
 
@@ -397,9 +560,9 @@ namespace NightlyCode.Database.Entities.Operations {
 
             if(!string.IsNullOrEmpty(tablealias))
                 preparator.AppendText("AS").AppendText(tablealias);
-
+            
             if(joinoperations.Count > 0) {
-                foreach(JoinOperation operation in joinoperations) {
+                foreach(JoinOperation operation in joinoperations) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
                     preparator.AppendText($"{operation.Operation.ToString().ToUpper()} JOIN")
                         .AppendText(descriptorgetter(operation.JoinType).TableName);
                     if(!string.IsNullOrEmpty(operation.Alias))

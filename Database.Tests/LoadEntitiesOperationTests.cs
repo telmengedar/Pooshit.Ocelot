@@ -19,12 +19,12 @@ namespace NightlyCode.Database.Tests {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
 
-            PreparedLoadEntitiesOperation<Option> operation = entitymanager.LoadEntities<Option>()
+            PreparedLoadOperation operation = entitymanager.Load<Option>()
                 .Alias("o666")
                 .Where((o) => o.Id == Guid.Empty)
                 .Prepare();
 
-            Assert.AreEqual("SELECT o666.[id], o666.[name], o666.[description], o666.[type], o666.[min], o666.[max], o666.[mandatory] FROM option AS o666 WHERE o666.[id] = @1", operation.CommandText);
+            Assert.AreEqual("SELECT o666.[id] , o666.[name] , o666.[description] , o666.[type] , o666.[min] , o666.[max] , o666.[mandatory] FROM option AS o666 WHERE o666.[id] = @1", operation.CommandText);
         }
 
         [Test, Parallelizable]
@@ -33,13 +33,13 @@ namespace NightlyCode.Database.Tests {
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.UpdateSchema<Option>();
 
-            LoadValuesOperation<Option> subquery1 = entitymanager.Load<Option>(o => o.Id).Alias("sq1");
-            LoadValuesOperation<Option> subquery2 = entitymanager.Load<Option>(o => o.Id).Alias("sq2").Where(o=>o.Id.In(subquery1));
-            LoadValuesOperation<Option> subquery3 = entitymanager.Load<Option>(o => o.Id).Alias("sq3").Where(o => o.Id.In(subquery2) || o.Id.In(subquery1));
+            LoadOperation<Option> subquery1 = entitymanager.Load<Option>(o => o.Id).Alias("sq1");
+            LoadOperation<Option> subquery2 = entitymanager.Load<Option>(o => o.Id).Alias("sq2").Where(o=>o.Id.In(subquery1));
+            LoadOperation<Option> subquery3 = entitymanager.Load<Option>(o => o.Id).Alias("sq3").Where(o => o.Id.In(subquery2) || o.Id.In(subquery1));
 
-            PreparedLoadEntitiesOperation<Option> operation = entitymanager.LoadEntities<Option>()
+            PreparedLoadOperation operation = entitymanager.Load<Option>()
                 .Alias("o666")
-                .Where((o) => o.Id.In(subquery3)&&o.Id.In(subquery2)&&o.Id.In(subquery3))
+                .Where((o) => o.Id.In(subquery3) && o.Id.In(subquery2) && o.Id.In(subquery3))
                 .Prepare();
 
             operation.Execute();
@@ -52,12 +52,12 @@ namespace NightlyCode.Database.Tests {
             entitymanager.UpdateSchema<Option>();
             entitymanager.UpdateSchema<GuidEntity>();
 
-            LoadValuesOperation<GuidEntity> subquery1 = entitymanager.Load<GuidEntity>(o => o.Guid)
+            LoadOperation<GuidEntity> subquery1 = entitymanager.Load<GuidEntity>(o => o.Guid)
                 .Alias("sq1")
                 .Join<Option>((o1, o2) => o1.Guid == o2.Id, "sq2")
                 .Join<Option>((o1, o2) => o1.Guid == o2.Id, "sq3");
 
-            LoadValuesOperation<GuidEntity> subquery2 = entitymanager.Load<GuidEntity>(o => o.Guid)
+            LoadOperation<GuidEntity> subquery2 = entitymanager.Load<GuidEntity>(o => o.Guid)
                 .Alias("sq4")
                 .Join<Option>((o1, o2) => o1.Guid == o2.Id, "sq5")
                 .Join<Option>((o1, o2) => o1.Guid == o2.Id, "sq6");
@@ -66,7 +66,7 @@ namespace NightlyCode.Database.Tests {
             predicate &= o => o.Id.In(subquery1);
             predicate &= o => o.Id.In(subquery2);
 
-            PreparedLoadEntitiesOperation<Option> operation = entitymanager.LoadEntities<Option>()
+            PreparedLoadOperation operation = entitymanager.Load<Option>()
                 .Alias("o666")
                 .Where(predicate?.Content)
                 .Prepare();

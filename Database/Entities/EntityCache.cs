@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace NightlyCode.Database.Entities {
@@ -11,7 +10,7 @@ namespace NightlyCode.Database.Entities {
     /// <typeparam name="TEntity"></typeparam>
     /// <typeparam name="TKey"></typeparam>
     public class EntityCache<TEntity, TKey> {
-        readonly Func<TKey, Expression<Predicate<TEntity>>> loader;
+        readonly Func<TKey, Expression<Func<TEntity, bool>>> loader;
         readonly EntityManager entitymanager;
         readonly Dictionary<TKey, TEntity> cache = new Dictionary<TKey, TEntity>();
 
@@ -20,7 +19,7 @@ namespace NightlyCode.Database.Entities {
         /// </summary>
         /// <param name="entitymanager"></param>
         /// <param name="loader"></param>
-        public EntityCache(EntityManager entitymanager, Func<TKey, Expression<Predicate<TEntity>>> loader) {
+        public EntityCache(EntityManager entitymanager, Func<TKey, Expression<Func<TEntity, bool>>> loader) {
             this.loader = loader;
             this.entitymanager = entitymanager;
         }
@@ -32,9 +31,8 @@ namespace NightlyCode.Database.Entities {
         /// <param name="customcreator">creator which is used when no entity is found in db</param>
         /// <returns>entity for the key</returns>
         public TEntity GetEntity(TKey key, Func<TEntity> customcreator=null) {
-            TEntity entity;
-            if(!cache.TryGetValue(key, out entity)) {
-                entity = entitymanager.LoadEntities<TEntity>().Where(loader(key)).Execute().FirstOrDefault();
+            if(!cache.TryGetValue(key, out TEntity entity)) {
+                entity = entitymanager.Load<TEntity>().Where(loader(key)).ExecuteEntity<TEntity>();
                 if(entity == null && customcreator != null)
                     entity = customcreator();
                 cache[key] = entity;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Fields;
@@ -10,6 +11,11 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
     /// prepares operations to be executed on database
     /// </summary>
     public interface IOperationPreparator {
+
+        /// <summary>
+        /// tokens in operation
+        /// </summary>
+        IEnumerable<IOperationToken> Tokens { get; }
 
         /// <summary>
         /// appends a custom array parameter to the command
@@ -61,15 +67,9 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// create prepared operation
         /// </summary>
         /// <param name="dbclient">client used to execute operation</param>
+        /// <param name="modelcache">cache for entity models</param>
         /// <returns>operation which can get executed</returns>
-        PreparedLoadValuesOperation GetLoadValuesOperation(IDBClient dbclient);
-
-        /// <summary>
-        /// create prepared operation
-        /// </summary>
-        /// <param name="dbclient">client used to execute operation</param>
-        /// <returns>operation which can get executed</returns>
-        PreparedLoadEntitiesOperation<T> GetLoadEntitiesOperation<T>(IDBClient dbclient, EntityDescriptor descriptor);
+        PreparedLoadOperation GetLoadValuesOperation(IDBClient dbclient, Func<Type, EntityDescriptor> modelcache);
 
         /// <summary>
         /// appends a field to this preparator

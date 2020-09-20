@@ -45,6 +45,16 @@ namespace NightlyCode.Database.Clients {
             return command;
         }
 
+        IConnection Connect(Transaction transaction) {
+            return transaction?.Connect() ?? Connection.Connect();
+        }
+
+        Task<IConnection> ConnectAsync(Transaction transaction) {
+            if (transaction != null)
+                return transaction.ConnectAsync();
+            return Connection.ConnectAsync();
+        }
+
         /// <summary>
         /// begins a transaction
         /// </summary>
@@ -149,7 +159,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public int NonQuery(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
-            using(IConnection connection = Connection.Connect())
+            using(IConnection connection = Connect(transaction))
             using(DbCommand command = PrepareCommand(connection, commandstring, parameters)) {
                 if(transaction != null)
                     command.Transaction = transaction.DbTransaction;
@@ -159,7 +169,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public async Task<int> NonQueryAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
-            using(IConnection connection = await Connection.ConnectAsync())
+            using(IConnection connection = await ConnectAsync(transaction))
             using(DbCommand command = PrepareCommand(connection, commandstring, parameters)) {
                 if(transaction != null)
                     command.Transaction = transaction.DbTransaction;
@@ -179,7 +189,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public Tables.DataTable Query(Transaction transaction, string query, IEnumerable<object> parameters) {
-            using(IConnection connection = Connection.Connect())
+            using(IConnection connection = Connect(transaction))
             using(IDbCommand command = PrepareCommand(connection, query, parameters)) {
                 if(transaction != null)
                     command.Transaction = transaction.DbTransaction;
@@ -190,7 +200,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public async Task<Tables.DataTable> QueryAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
-            using(IConnection connection = await Connection.ConnectAsync())
+            using(IConnection connection = await ConnectAsync(transaction))
             using(DbCommand command = PrepareCommand(connection, query, parameters)) {
                 if(transaction != null)
                     command.Transaction = transaction.DbTransaction;
@@ -211,7 +221,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public object Scalar(Transaction transaction, string query, IEnumerable<object> parameters) {
-            using(IConnection connection = Connection.Connect())
+            using(IConnection connection = Connect(transaction))
             using(IDbCommand command = PrepareCommand(connection, query, parameters)) {
                 if(transaction != null)
                     command.Transaction = transaction.DbTransaction;
@@ -221,7 +231,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public async Task<object> ScalarAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
-            using(IConnection connection = await Connection.ConnectAsync())
+            using(IConnection connection = await ConnectAsync(transaction))
             using(DbCommand command = PrepareCommand(connection, query, parameters)) {
                 if(transaction != null)
                     command.Transaction = transaction.DbTransaction;
@@ -241,7 +251,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public IEnumerable<object> Set(Transaction transaction, string query, IEnumerable<object> parameters) {
-            using(IConnection connection = Connection.Connect())
+            using(IConnection connection = Connect(transaction))
             using(IDbCommand command = PrepareCommand(connection, query, parameters)) {
                 if(transaction != null)
                     command.Transaction = transaction.DbTransaction;
@@ -255,7 +265,7 @@ namespace NightlyCode.Database.Clients {
 
         /// <inheritdoc />
         public async Task<object[]> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
-            using(IConnection connection = await Connection.ConnectAsync())
+            using(IConnection connection = await ConnectAsync(transaction))
             using(DbCommand command = PrepareCommand(connection, query, parameters)) {
                 if(transaction != null)
                     command.Transaction = transaction.DbTransaction;

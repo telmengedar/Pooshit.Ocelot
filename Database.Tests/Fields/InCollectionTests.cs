@@ -27,7 +27,7 @@ namespace NightlyCode.Database.Tests.Fields {
                 new ValueModel {Integer = 3},
                 new ValueModel {Integer = 7});
 
-            ValueModel[] values = entitymanager.LoadEntities<ValueModel>().Where(m => m.Integer.In(new long[] {0, 7, 11})).Execute().ToArray();
+            ValueModel[] values = entitymanager.Load<ValueModel>().Where(m => m.Integer.In(new long[] {0, 7, 11})).ExecuteEntities<ValueModel>().ToArray();
             Assert.AreEqual(3, values.Length);
         }
 
@@ -46,7 +46,7 @@ namespace NightlyCode.Database.Tests.Fields {
                 new ValueModel {Integer = 7});
 
             Array array = new long[] {0, 7, 11};
-            ValueModel[] values = entitymanager.LoadEntities<ValueModel>().Where(m => m.Integer.In(array)).Execute().ToArray();
+            ValueModel[] values = entitymanager.Load<ValueModel>().Where(m => m.Integer.In(array)).ExecuteEntities<ValueModel>().ToArray();
             Assert.AreEqual(3, values.Length);
         }
 
@@ -64,8 +64,8 @@ namespace NightlyCode.Database.Tests.Fields {
                 new ValueModel {Integer = 3},
                 new ValueModel {Integer = 7});
 
-            LoadValuesOperation<ValueModel> loadstatement=entitymanager.Load<ValueModel>(v => v.Integer).Where(v => v.Integer < 7);
-            ValueModel[] values = entitymanager.LoadEntities<ValueModel>().Where(m => m.Integer.In(loadstatement)).Execute().ToArray();
+            LoadOperation<ValueModel> loadstatement=entitymanager.Load<ValueModel>(v => v.Integer).Where(v => v.Integer < 7);
+            ValueModel[] values = entitymanager.Load<ValueModel>().Where(m => m.Integer.In(loadstatement)).ExecuteEntities<ValueModel>().ToArray();
             Assert.AreEqual(3, values.Length);
         }
 

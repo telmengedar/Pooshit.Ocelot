@@ -115,7 +115,7 @@ namespace NightlyCode.Database.Tests.Postgres {
             client.SetupGet(c => c.DBInfo).Returns(dbinfo);
 
 
-            PreparedLoadValuesOperation loadop = new LoadValuesOperation<PgView>(client.Object, type => new EntityDescriptor("test"), v=>DBFunction.Count()).Limit(7).Prepare();
+            PreparedLoadOperation loadop = new LoadOperation<PgView>(client.Object, type => new EntityDescriptor("test"), v=>DBFunction.Count()).Limit(7).Prepare();
 
             Assert.AreEqual("SELECT count( * ) FROM test LIMIT 7", loadop.CommandText);
         }
@@ -127,7 +127,7 @@ namespace NightlyCode.Database.Tests.Postgres {
             client.SetupGet(c => c.DBInfo).Returns(dbinfo);
 
 
-            PreparedLoadValuesOperation loadop = new LoadValuesOperation<PgView>(client.Object, type => new EntityDescriptor("test"), v=>DBFunction.Count()).Offset(3).Prepare();
+            PreparedLoadOperation loadop = new LoadOperation<PgView>(client.Object, type => new EntityDescriptor("test"), v=>DBFunction.Count()).Offset(3).Prepare();
 
             Assert.AreEqual("SELECT count( * ) FROM test OFFSET 3", loadop.CommandText);
         }
@@ -139,7 +139,7 @@ namespace NightlyCode.Database.Tests.Postgres {
             client.SetupGet(c => c.DBInfo).Returns(dbinfo);
 
 
-            PreparedLoadValuesOperation loadop = new LoadValuesOperation<PgView>(client.Object, type => new EntityDescriptor("test"), v=>DBFunction.Count()).Limit(7).Offset(3).Prepare();
+            PreparedLoadOperation loadop = new LoadOperation<PgView>(client.Object, type => new EntityDescriptor("test"), v=>DBFunction.Count()).Limit(7).Offset(3).Prepare();
 
             Assert.AreEqual("SELECT count( * ) FROM test LIMIT 7 OFFSET 3", loadop.CommandText);
         }

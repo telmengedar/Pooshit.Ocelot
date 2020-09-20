@@ -15,9 +15,9 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.UpdateSchema<ValueModel>();
             entitymanager.UpdateSchema<EntityWithLessFields>();
 
-            entitymanager.LoadEntities<ValueModel>()
-                .Join<EntityWithLessFields>((v, e) => v.Integer == e.Field1 && v.String == e.Field2)
-                .Join<EntityWithLessFields>((v, e) => v.Integer == e.Field1 && v.String == e.Field2)
+            entitymanager.Load<ValueModel>()
+                .Join<EntityWithLessFields>((v, e) => v.Integer == e.Field1 && v.String == e.Field2, "j0")
+                .Join<EntityWithLessFields>((v, e) => v.Integer == e.Field1 && v.String == e.Field2, "j1")
                 .Execute();
         }
 
@@ -28,9 +28,9 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.UpdateSchema<ValueModel>();
             entitymanager.UpdateSchema<EntityWithLessFields>();
 
-            LoadEntitiesOperation<ValueModel> query=entitymanager.LoadEntities<ValueModel>();
-            query.Join<EntityWithLessFields>((v, e) => v.Integer == e.Field1 && v.String == e.Field2);
-            query.Join<EntityWithLessFields>((v, e) => v.Integer == e.Field1 && v.String == e.Field2);
+            LoadOperation<ValueModel> query = entitymanager.Load<ValueModel>();
+            query.Join<EntityWithLessFields>((v, e) => v.Integer == e.Field1 && v.String == e.Field2, "j0");
+            query.Join<EntityWithLessFields>((v, e) => v.Integer == e.Field1 && v.String == e.Field2, "j1");
             query.Execute();
         }
 
@@ -42,9 +42,9 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.UpdateSchema<ObjectIndexDecimal>();
             entitymanager.UpdateSchema<ObjectIndexString>();
 
-            LoadEntitiesOperation<ActiveData> query = entitymanager.LoadEntities<ActiveData>();
-            query.Join<ObjectIndexDecimal>((v, e) => v.ID == e.Object && e.Value == 0.0m);
-            query.Join<ObjectIndexString>((v, e) => v.ID == e.Object && e.Value == "");
+            LoadOperation<ActiveData> query = entitymanager.Load<ActiveData>();
+            query.Join<ObjectIndexDecimal>((v, e) => v.ID == e.Object && e.Value == 0.0m, "j0");
+            query.Join<ObjectIndexString>((v, e) => v.ID == e.Object && e.Value == "", "j1");
             query.Execute();
         }
 
@@ -56,11 +56,11 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.UpdateSchema<ObjectIndexDecimal>();
             entitymanager.UpdateSchema<ObjectIndexString>();
 
-            LoadEntitiesOperation<ObjectIndexString> load = entitymanager.LoadEntities<ObjectIndexString>();
+            LoadOperation<ObjectIndexString> load = entitymanager.Load<ObjectIndexString>();
             load.Where(i => i.Key == "OrderId" && i.Value == "d1316bc9-0381-471d-908f-4459eca24b0c");
-            load.Join<ObjectIndexDecimal>((i1, i2) => i1.Object == i2.Object && i2.Key == "Deleted" && i2.Value == 0);
+            load.Join<ObjectIndexDecimal>((i1, i2) => i1.Object == i2.Object && i2.Key == "Deleted" && i2.Value == 0, "j0");
             load.Join<ActiveData>((i, d) => i.Object == d.ID && d.Class == "Position");
-            load.Execute<ActiveData>();
+            load.ExecuteEntity<ActiveData>();
         }
 
         [Test, Parallelizable]
@@ -70,10 +70,11 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.UpdateSchema<ObjectIndexDecimal>();
             entitymanager.UpdateSchema<ObjectIndexString>();
 
-            LoadEntitiesOperation<ObjectIndexDecimal> load = entitymanager.LoadEntities<ObjectIndexDecimal>();
+            LoadOperation<ObjectIndexDecimal> load = entitymanager.Load<ObjectIndexDecimal>();
             load.Where(i => i.Key == "Key" && i.Value == 42);
-            load.Join<ObjectIndexDecimal>((i1, i2) => i1.Object == i2.Object && i2.Key == "Kee" && i2.Value == 70);
-            Assert.That(load.Prepare().CommandText.Contains("ON t.[object] = j0.[object] AND j0.[key] = @1 AND j0.[value] = @2"));
+            load.Join<ObjectIndexDecimal>((i1, i2) => i1.Object == i2.Object && i2.Key == "Kee" && i2.Value == 70, "j0");
+            string commandtext = load.Prepare().CommandText;
+            Assert.That(commandtext.Contains("ON t.[object] = j0.[object] AND j0.[key] = @1 AND j0.[value] = @2"));
         }
     }
 }

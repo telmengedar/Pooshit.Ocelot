@@ -11,6 +11,7 @@ namespace NightlyCode.Database.Expressions
     public class WrappedExpression<T>
     {
         readonly Expression<T> expression;
+        bool needsblock;
 
         /// <summary>
         /// creates a new wrapped expression
@@ -19,6 +20,7 @@ namespace NightlyCode.Database.Expressions
         public WrappedExpression(Expression<T> expression)
         {
             this.expression = expression;
+            needsblock = expression.Body is BinaryExpression bin && bin.NodeType == ExpressionType.OrElse;
         }
 
         /// <summary>
@@ -40,7 +42,7 @@ namespace NightlyCode.Database.Expressions
                 return lhs.Content;
 
             ParameterExpression parameter = lhs.expression.Parameters.FirstOrDefault() ?? rhs.expression.Parameters.FirstOrDefault();
-            Expression expression = Expression.AndAlso(Expression.Block(lhs.Content.Body), Expression.Block(rhs.Content.Body));
+            Expression expression = Expression.AndAlso(lhs.needsblock ? Expression.Block(lhs.Content.Body) : lhs.Content.Body, rhs.needsblock ? Expression.Block(rhs.Content.Body) : rhs.Content.Body);
             return Expression.Lambda<T>(expression, parameter);
         }
 
@@ -58,7 +60,7 @@ namespace NightlyCode.Database.Expressions
                 return lhs.Content;
 
             ParameterExpression parameter = lhs.expression.Parameters.FirstOrDefault() ?? rhs.expression.Parameters.FirstOrDefault();
-            Expression expression = Expression.OrElse(Expression.Block(lhs.Content.Body), Expression.Block(rhs.Content.Body));
+            Expression expression = Expression.OrElse(lhs.Content.Body, rhs.Content.Body);
             return Expression.Lambda<T>(expression, parameter);
         }
 

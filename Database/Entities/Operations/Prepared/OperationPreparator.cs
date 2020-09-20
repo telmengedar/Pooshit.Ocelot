@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
-using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Fields.Sql;
 using NightlyCode.Database.Extern;
 using NightlyCode.Database.Fields;
@@ -15,6 +14,9 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
     /// </summary>
     public class OperationPreparator : IOperationPreparator {
         readonly List<IOperationToken> tokens = new List<IOperationToken>();
+
+        /// <inheritdoc />
+        public IEnumerable<IOperationToken> Tokens => tokens;
 
         /// <summary>
         /// appends a custom array parameter to the command
@@ -162,10 +164,11 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// create prepared operation
         /// </summary>
         /// <param name="dbclient">client used to execute operation</param>
+        /// <param name="modelcache">cached entity models</param>
         /// <returns>operation which can get executed</returns>
-        public PreparedLoadValuesOperation GetLoadValuesOperation(IDBClient dbclient) {
+        public PreparedLoadOperation GetLoadValuesOperation(IDBClient dbclient, Func<Type, EntityDescriptor> modelcache) {
             if(PrepareParameters())
-                return new PreparedArrayLoadValuesOperation(dbclient,
+                return new PreparedArrayLoadOperation(dbclient, modelcache,
                     GetCommandText(dbclient.DBInfo),
                     tokens.OfType<ParameterToken>()
                         .Where(p => p.IsConstant && !p.IsArray)
@@ -174,7 +177,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
                         .Where(p => p.IsConstant && p.IsArray)
                         .Select(GetParameterValue).Cast<Array>().ToArray());
 
-            return new PreparedLoadValuesOperation(dbclient,
+            return new PreparedLoadOperation(dbclient, modelcache,
                 GetCommandText(dbclient.DBInfo),
                 tokens.OfType<ParameterToken>()
                     .Where(p => p.IsConstant)
@@ -185,12 +188,11 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// create prepared operation
         /// </summary>
         /// <param name="dbclient">client used to execute operation</param>
-        /// <param name="descriptor">entity model of entities to load</param>
+        /// <param name="modelcache">cached entity models</param>
         /// <returns>operation which can get executed</returns>
-        public PreparedLoadEntitiesOperation<T> GetLoadEntitiesOperation<T>(IDBClient dbclient, EntityDescriptor descriptor) {
+        public PreparedLoadOperation<T> GetLoadValuesOperation<T>(IDBClient dbclient, Func<Type, EntityDescriptor> modelcache) {
             if(PrepareParameters())
-                return new PreparedArrayLoadEntitiesOperation<T>(dbclient,
-                    descriptor,
+                return new PreparedArrayLoadOperation<T>(dbclient, modelcache,
                     GetCommandText(dbclient.DBInfo),
                     tokens.OfType<ParameterToken>()
                         .Where(p => p.IsConstant && !p.IsArray)
@@ -199,8 +201,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
                         .Where(p => p.IsConstant && p.IsArray)
                         .Select(GetParameterValue).Cast<Array>().ToArray());
 
-            return new PreparedLoadEntitiesOperation<T>(dbclient,
-                descriptor,
+            return new PreparedLoadOperation<T>(dbclient, modelcache,
                 GetCommandText(dbclient.DBInfo),
                 tokens.OfType<ParameterToken>()
                     .Where(p => p.IsConstant)

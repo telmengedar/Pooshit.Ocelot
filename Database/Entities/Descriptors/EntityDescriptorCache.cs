@@ -8,7 +8,7 @@ namespace NightlyCode.Database.Entities.Descriptors {
     /// </summary>
     public class EntityDescriptorCache {
         readonly Dictionary<Type, EntityDescriptor> descriptors = new Dictionary<Type, EntityDescriptor>();
-        object modellock = new object();
+        readonly object modellock = new object();
 
         /// <summary>
         /// get entitydescriptor for the specified type

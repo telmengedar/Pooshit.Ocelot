@@ -11,7 +11,7 @@ namespace NightlyCode.Database.Fields {
         /// <summary>
         /// all fields
         /// </summary>
-        const string All = "*";
+        public static readonly IDBField All = new AllColumnsField();
         
         /// <summary>
         /// creates a new <see cref="PropName"/>
@@ -32,6 +32,16 @@ namespace NightlyCode.Database.Fields {
         /// <returns>field to use in an expression</returns>
         public static PropName<T> Property<T>(string property, bool ignorecase = false) {
             return new PropName<T>(property, ignorecase);
+        }
+
+        /// <summary>
+        /// creates a new <see cref="Column"/>
+        /// </summary>
+        /// <param name="table">name of table/view/alias of which to reference column</param>
+        /// <param name="column">name of column to reference</param>
+        /// <returns>field to be used in expressions</returns>
+        public static ColumnField Column(string table, string column) {
+            return new ColumnField(table, column);
         }
     }
 }

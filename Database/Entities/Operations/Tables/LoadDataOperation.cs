@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Clients.Tables;
+using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Prepared;
 
 namespace NightlyCode.Database.Entities.Operations.Tables {
@@ -12,6 +13,7 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
     /// </summary>
     public class LoadDataOperation {
         readonly IDBClient client;
+        readonly Func<Type, EntityDescriptor> modelcache;
         readonly string tablename;
         string[] columns;
         readonly List<LoadCriteria> criterias=new List<LoadCriteria>();
@@ -20,9 +22,11 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
         /// creates a new <see cref="LoadDataOperation"/>
         /// </summary>
         /// <param name="client">access to database</param>
+        /// <param name="modelcache">access to entity models</param>
         /// <param name="tablename">name of table to load data from</param>
-        public LoadDataOperation(IDBClient client, string tablename) {
+        public LoadDataOperation(IDBClient client, Func<Type, EntityDescriptor> modelcache, string tablename) {
             this.client = client;
+            this.modelcache = modelcache;
             this.tablename = tablename;
         }
 
@@ -111,7 +115,7 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
         /// prepares the operation for execution
         /// </summary>
         /// <returns>operation to be executed</returns>
-        public PreparedLoadValuesOperation Prepare() {
+        public PreparedLoadOperation Prepare() {
             OperationPreparator preparator = new OperationPreparator().AppendText("SELECT");
 
             bool flag = true;
@@ -137,7 +141,7 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
                 }
             }
 
-            return preparator.GetLoadValuesOperation(client);
+            return preparator.GetLoadValuesOperation(client, modelcache);
         }
     }
 }

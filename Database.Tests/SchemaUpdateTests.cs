@@ -86,7 +86,7 @@ namespace NightlyCode.Database.Tests {
             entitymanager.Model<ValueModel>().Column(c => c.Integer, "Gangolf");
             entitymanager.UpdateSchema<ValueModel>();
 
-            ValueModel[] data = entitymanager.LoadEntities<ValueModel>().Execute().ToArray();
+            ValueModel[] data = entitymanager.Load<ValueModel>().ExecuteEntities<ValueModel>().ToArray();
             Assert.AreEqual(50, data.Length);
             foreach(ValueModel value in data)
                 Assert.AreEqual(0, value.Integer);
@@ -141,7 +141,7 @@ namespace NightlyCode.Database.Tests {
             entitymanager.Model<GuidEntity>().AddColumn(e => e.Guid);
             entitymanager.UpdateSchema<GuidEntity>();
 
-            Assert.DoesNotThrow(() => entitymanager.LoadEntities<GuidEntity>().Execute().ToArray());
+            Assert.DoesNotThrow(() => entitymanager.Load<GuidEntity>().ExecuteEntities<GuidEntity>());
         }
 
         [Test, Parallelizable]

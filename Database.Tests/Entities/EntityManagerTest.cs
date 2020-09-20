@@ -106,7 +106,9 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(TestEntities);
 
             int[] array = {2, 3};
-            TestEntityWithoutAnySpecifications[] result = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Where(e => array.Contains(e.IntegerValue)).Execute().ToArray();
+            TestEntityWithoutAnySpecifications[] result = entitymanager.Load<TestEntityWithoutAnySpecifications>()
+                .Where(e => array.Contains(e.IntegerValue))
+                .ExecuteEntities<TestEntityWithoutAnySpecifications>().ToArray();
             Assert.AreEqual(2, result.Length);
         }
 
@@ -118,7 +120,9 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(TestEntities);
 
             int[] array = { 2, 3 };
-            TestEntityWithoutAnySpecifications[] result = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Where(e => !array.Contains(e.IntegerValue)).Execute().ToArray();
+            TestEntityWithoutAnySpecifications[] result = entitymanager.Load<TestEntityWithoutAnySpecifications>()
+                .Where(e => !array.Contains(e.IntegerValue))
+                .ExecuteEntities<TestEntityWithoutAnySpecifications>().ToArray();
             Assert.AreEqual(1, result.Length);
             Assert.AreEqual(1, result[0].IntegerValue);
         }
@@ -135,7 +139,7 @@ namespace NightlyCode.Database.Tests.Entities {
             foreach(TestEntityWithoutAnySpecifications entity in testentities)
                 Assert.AreNotEqual(0, entity.ThePrimaryKey);
 
-            foreach(TestEntityWithoutAnySpecifications loaded in entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Execute()) {
+            foreach(TestEntityWithoutAnySpecifications loaded in entitymanager.Load<TestEntityWithoutAnySpecifications>().ExecuteEntities<TestEntityWithoutAnySpecifications>()) {
                 TestEntityWithoutAnySpecifications original = testentities.FirstOrDefault(t => t.ThePrimaryKey == loaded.ThePrimaryKey);
                 Assert.NotNull(original);
 
@@ -155,7 +159,7 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(entities);
             entities[1].Column1 = "Changed";
             entitymanager.UpdateEntities<TestEntityWithoutAnySpecifications>().Execute(entities);
-            TestEntityWithoutAnySpecifications[] loaded = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Execute().ToArray();
+            TestEntityWithoutAnySpecifications[] loaded = entitymanager.Load<TestEntityWithoutAnySpecifications>().ExecuteEntities<TestEntityWithoutAnySpecifications>().ToArray();
             Assert.AreEqual(entities.Length, loaded.Length);
             for(int i=0;i<entities.Length;++i)
                 Assert.AreEqual(entities[i], loaded[i]);
@@ -171,7 +175,7 @@ namespace NightlyCode.Database.Tests.Entities {
             entities[1].Column1 = "Changed";
             entities.Add(new TestEntityWithoutAnySpecifications("added1", 1, 4.3));
             entitymanager.Save<TestEntityWithoutAnySpecifications>(entities);
-            TestEntityWithoutAnySpecifications[] loaded = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Execute().ToArray();
+            TestEntityWithoutAnySpecifications[] loaded = entitymanager.Load<TestEntityWithoutAnySpecifications>().ExecuteEntities<TestEntityWithoutAnySpecifications>().ToArray();
             Assert.AreEqual(entities.Count, loaded.Length);
             for(int i = 0; i < entities.Count; ++i)
                 Assert.AreEqual(entities[i], loaded[i]);            
@@ -194,7 +198,7 @@ namespace NightlyCode.Database.Tests.Entities {
 
             TestEntityWithoutAnySpecifications[] source = TestEntities.ToArray();
             entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(source);
-            TestEntityWithoutAnySpecifications[] loaded = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Execute().ToArray();
+            TestEntityWithoutAnySpecifications[] loaded = entitymanager.Load<TestEntityWithoutAnySpecifications>().ExecuteEntities<TestEntityWithoutAnySpecifications>().ToArray();
 
             Assert.AreEqual(source.Length, loaded.Length, "Sourcelength does not match loaded length");
             EntityDescriptor descriptor = entitymanager.Model<TestEntityWithoutAnySpecifications>().Descriptor;
@@ -216,7 +220,8 @@ namespace NightlyCode.Database.Tests.Entities {
 
             TestEntityWithoutAnySpecifications[] source = TestEntities.ToArray();
             entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(source);
-            TestEntityWithoutAnySpecifications[] loaded = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Where(t => t.Something < 8.0).Execute().ToArray();
+            TestEntityWithoutAnySpecifications[] loaded = entitymanager.Load<TestEntityWithoutAnySpecifications>()
+                .Where(t => t.Something < 8.0).ExecuteEntities<TestEntityWithoutAnySpecifications>().ToArray();
             foreach(TestEntityWithoutAnySpecifications entity in loaded)
                 Assert.Less(entity.Something, 8.0, "entity does not match criteria");
         }
@@ -229,7 +234,7 @@ namespace NightlyCode.Database.Tests.Entities {
 
             TestEntityWithoutAnySpecifications[] source = TestEntities.ToArray();
             entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(source);
-            entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().OrderBy(new OrderByCriteria(DBFunction.Random)).Execute();
+            entitymanager.Load<TestEntityWithoutAnySpecifications>().OrderBy(new OrderByCriteria(DBFunction.Random)).Execute();
         }
 
         [Test, Parallelizable]
@@ -240,7 +245,7 @@ namespace NightlyCode.Database.Tests.Entities {
 
             TestEntityWithoutAnySpecifications[] source = TestEntities.ToArray();
             entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(source);
-            TestEntityWithoutAnySpecifications[] loaded = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Limit(1).Execute().ToArray();
+            TestEntityWithoutAnySpecifications[] loaded = entitymanager.Load<TestEntityWithoutAnySpecifications>().Limit(1).ExecuteEntities<TestEntityWithoutAnySpecifications>().ToArray();
             Assert.AreEqual(1, loaded.Length, "only 1 entity should be loaded");
         }
 
@@ -253,7 +258,7 @@ namespace NightlyCode.Database.Tests.Entities {
 
             TestEntityWithoutAnySpecifications[] source = TestEntities.ToArray();
             entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(source);
-            TestEntityWithoutAnySpecifications[] loaded = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Offset(1).Execute().ToArray();
+            TestEntityWithoutAnySpecifications[] loaded = entitymanager.Load<TestEntityWithoutAnySpecifications>().Offset(1).ExecuteEntities<TestEntityWithoutAnySpecifications>().ToArray();
             Assert.AreEqual(source.Length - 1, loaded.Length, "only 1 entity should be loaded");
         }
 
@@ -266,7 +271,7 @@ namespace NightlyCode.Database.Tests.Entities {
 
             TestEntityWithoutAnySpecifications[] source = TestEntities.ToArray();
             entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(source);
-            TestEntityWithoutAnySpecifications[] loaded = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Limit(1).Offset(1).Execute().ToArray();
+            TestEntityWithoutAnySpecifications[] loaded = entitymanager.Load<TestEntityWithoutAnySpecifications>().Limit(1).Offset(1).ExecuteEntities<TestEntityWithoutAnySpecifications>().ToArray();
             Assert.AreEqual(1, loaded.Length, "only 1 entity should be loaded");
         }
 
@@ -279,7 +284,8 @@ namespace NightlyCode.Database.Tests.Entities {
 
             TestEntityWithoutAnySpecifications[] source = TestEntities.ToArray();
             entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(source);
-            TestEntityWithoutAnySpecifications[] loaded = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Where(t => t.Something < 8.0 && t.IntegerValue == boo).Execute().ToArray();
+            TestEntityWithoutAnySpecifications[] loaded = entitymanager.Load<TestEntityWithoutAnySpecifications>()
+                .Where(t => t.Something < 8.0 && t.IntegerValue == boo).ExecuteEntities<TestEntityWithoutAnySpecifications>().ToArray();
         }
 
         /*[Test]
@@ -305,7 +311,7 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(source);
             entitymanager.Update<TestEntityWithoutAnySpecifications>().Set(e => e.BooleanValue == !e.BooleanValue).Execute();
 
-            TestEntityWithoutAnySpecifications[] loaded = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Execute().ToArray();
+            TestEntityWithoutAnySpecifications[] loaded = entitymanager.Load<TestEntityWithoutAnySpecifications>().ExecuteEntities<TestEntityWithoutAnySpecifications>().ToArray();
             Assert.AreEqual(source.Length, loaded.Length);
 
             for(int i = 0; i < source.Length;++i) {
@@ -321,7 +327,8 @@ namespace NightlyCode.Database.Tests.Entities {
 
             TestEntityWithoutAnySpecifications[] source = TestEntities.ToArray();
             entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(source);
-            TestEntityWithoutAnySpecifications[] loaded = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Where(t => (t.IntegerValue & 1) > 0 && t.Something < 8.0).Execute().ToArray();
+            TestEntityWithoutAnySpecifications[] loaded = entitymanager.Load<TestEntityWithoutAnySpecifications>()
+                .Where(t => (t.IntegerValue & 1) > 0 && t.Something < 8.0).ExecuteEntities<TestEntityWithoutAnySpecifications>().ToArray();
             foreach(TestEntityWithoutAnySpecifications entity in loaded) {
                 Assert.That((entity.IntegerValue & 1) > 0, "Integer not matching bitwise operation");
                 Assert.That(entity.Something < 8.0, "something not less than 8.0");
@@ -335,10 +342,10 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
 
             entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(TestEntities);
-            PreparedLoadEntitiesOperation<TestEntityWithoutAnySpecifications> preparedstatement = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>()
-                                                                                                            .GroupBy(EntityField.Create<TestEntityWithoutAnySpecifications>(e => e.Column1))
-                                                                                                            .Having(t => DBFunction.Sum(t.IntegerValue) < 30)
-                                                                                                            .Prepare();
+            PreparedLoadOperation preparedstatement = entitymanager.Load<TestEntityWithoutAnySpecifications>()
+                .GroupBy(EntityField.Create<TestEntityWithoutAnySpecifications>(e => e.Column1))
+                .Having(t => DBFunction.Sum(t.IntegerValue) < 30)
+                .Prepare();
             Console.WriteLine(preparedstatement.ToString());
             preparedstatement.Execute();
         }
@@ -351,7 +358,9 @@ namespace NightlyCode.Database.Tests.Entities {
             entitymanager.Create<OtherTestEntity>();
 
             entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(TestEntities);
-            PreparedLoadEntitiesOperation<TestEntityWithoutAnySpecifications> preparedstatement = entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Join<OtherTestEntity>((s1, s2) => s1.Column1== s2.SomeColumn).Prepare();
+            PreparedLoadOperation preparedstatement = entitymanager.Load<TestEntityWithoutAnySpecifications>()
+                .Join<OtherTestEntity>((s1, s2) => s1.Column1 == s2.SomeColumn)
+                .Prepare();
             Console.WriteLine(preparedstatement.ToString());
             preparedstatement.Execute();            
         }
@@ -385,7 +394,7 @@ namespace NightlyCode.Database.Tests.Entities {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
-            entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Where(t => t.Column1.ToLower() == "123".ToLower()).Execute();
+            entitymanager.Load<TestEntityWithoutAnySpecifications>().Where(t => t.Column1.ToLower() == "123".ToLower()).Execute();
         }
 
         [Test, Parallelizable]
@@ -393,7 +402,7 @@ namespace NightlyCode.Database.Tests.Entities {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
-            entitymanager.LoadEntities<TestEntityWithoutAnySpecifications>().Where(t => t.Column1.ToLower() == "123".ToUpper()).Execute();
+            entitymanager.Load<TestEntityWithoutAnySpecifications>().Where(t => t.Column1.ToLower() == "123".ToUpper()).Execute();
         }
 
         [Test, Parallelizable]

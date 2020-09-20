@@ -56,13 +56,6 @@ namespace NightlyCode.Database.Entities {
         IEntityOperation<T> InsertEntities<T>();
 
         /// <summary>
-        /// get a load operation for the specified entity type
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        LoadEntitiesOperation<T> LoadEntities<T>();
-
-        /// <summary>
         /// updates entities in db
         /// </summary>
         /// <typeparam name="T">type of entities to update</typeparam>
@@ -105,7 +98,12 @@ namespace NightlyCode.Database.Entities {
         /// <summary>
         /// get a load operation to use to load values of an entity from the database
         /// </summary>
-        LoadValuesOperation<T> Load<T>(params Expression<Func<T, object>>[] fields);
+        LoadOperation<T> Load<T>();
+
+        /// <summary>
+        /// get a load operation to use to load values of an entity from the database
+        /// </summary>
+        LoadOperation<T> Load<T>(params Expression<Func<T, object>>[] fields);
 
         /// <summary>
         /// loads data from a table

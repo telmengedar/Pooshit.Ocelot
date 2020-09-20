@@ -355,14 +355,14 @@ namespace NightlyCode.Database.Info {
 
         /// <inheritdoc />
         public override SchemaDescriptor GetSchema(IDBClient client, string name) {
-            PgView view = new LoadEntitiesOperation<PgView>(client, EntityDescriptor.Create).Where(p => p.Name == name).Execute().FirstOrDefault();
+            PgView view = new LoadOperation<PgView>(client, EntityDescriptor.Create, Field.All).Where(p => p.Name == name).ExecuteEntity();
             if(view != null)
                 return new ViewDescriptor(name) {
                     SQL = view.Definition
                 };
 
             Dictionary<string, SchemaColumnDescriptor> columns = new Dictionary<string, SchemaColumnDescriptor>();
-            foreach(PgColumn column in new LoadEntitiesOperation<PgColumn>(client, EntityDescriptor.Create).Where(c => c.Table == name).Execute()) {
+            foreach(PgColumn column in new LoadOperation<PgColumn>(client, EntityDescriptor.Create, Field.All).Where(c => c.Table == name).ExecuteEntities()) {
                 columns[column.Column] = new SchemaColumnDescriptor(column.Column) {
                     Type = column.DataType,
                     NotNull = column.IsNullable == "NO",
@@ -372,7 +372,7 @@ namespace NightlyCode.Database.Info {
 
             List<UniqueDescriptor> uniques = new List<UniqueDescriptor>();
             List<IndexDescriptor> indices = new List<IndexDescriptor>();
-            foreach(PgIndex index in new LoadEntitiesOperation<PgIndex>(client, EntityDescriptor.Create).Where(i => i.Table == name).Execute()) {
+            foreach(PgIndex index in new LoadOperation<PgIndex>(client, EntityDescriptor.Create, Field.All).Where(i => i.Table == name).ExecuteEntities()) {
                 Match match = Regex.Match(index.Definition, "^CREATE (?<unique>UNIQUE )?INDEX (?<name>[^ ]+) ON (?<table>[^ ]+)( USING [a-zA-Z]+)? \\((?<columns>.+)\\)");
                 if(!match.Success)
                     continue;

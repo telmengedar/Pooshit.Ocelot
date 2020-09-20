@@ -24,7 +24,7 @@ namespace NightlyCode.Database.Tests {
 
             Assert.AreEqual(1, result);
 
-            ValueModel entity = entitymanager.LoadEntities<ValueModel>().Execute().FirstOrDefault();
+            ValueModel entity = entitymanager.Load<ValueModel>().ExecuteEntities<ValueModel>().FirstOrDefault();
             Assert.NotNull(entity);
             Assert.AreEqual(1, entity.Integer);
             Assert.AreEqual(3.0f, entity.Single);
@@ -46,7 +46,7 @@ namespace NightlyCode.Database.Tests {
 
             Assert.AreEqual(1, result);
 
-            ValueModel entity = entitymanager.LoadEntities<ValueModel>().Execute().FirstOrDefault();
+            ValueModel entity = entitymanager.Load<ValueModel>().ExecuteEntities<ValueModel>().FirstOrDefault();
             Assert.NotNull(entity);
             Assert.AreEqual(1, entity.Integer);
             Assert.AreEqual(3.0f, entity.Single);
@@ -68,7 +68,7 @@ namespace NightlyCode.Database.Tests {
 
             Assert.AreEqual(1, result);
 
-            ValueModel entity = entitymanager.LoadEntities<ValueModel>().Execute().FirstOrDefault();
+            ValueModel entity = entitymanager.Load<ValueModel>().ExecuteEntities<ValueModel>().FirstOrDefault();
             Assert.NotNull(entity);
             Assert.AreEqual(1, entity.Integer);
             Assert.AreEqual(3.0f, entity.Single);

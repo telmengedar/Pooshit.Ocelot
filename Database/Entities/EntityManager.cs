@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
@@ -19,7 +20,7 @@ namespace NightlyCode.Database.Entities {
     public class EntityManager : IEntityManager {
         readonly SchemaCreator creator;
         readonly SchemaUpdater updater;
-        readonly EntityDescriptorCache modelcache = new EntityDescriptorCache();
+        readonly EntityDescriptorCache modelcache=new EntityDescriptorCache();
 
         /// <summary>
         /// creates a new <see cref="EntityManager"/>
@@ -111,16 +112,6 @@ namespace NightlyCode.Database.Entities {
         }
 
         /// <summary>
-        /// get a load operation for the specified entity type
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public LoadEntitiesOperation<T> LoadEntities<T>()
-        {
-            return new LoadEntitiesOperation<T>(DBClient, modelcache.Get);
-        }
-
-        /// <summary>
         /// updates entities in db
         /// </summary>
         /// <typeparam name="T">type of entity to update</typeparam>
@@ -149,7 +140,7 @@ namespace NightlyCode.Database.Entities {
 
         /// <inheritdoc />
         public LoadDataOperation LoadData(string tablename) {
-            return new LoadDataOperation(DBClient, tablename);
+            return new LoadDataOperation(DBClient, modelcache.Get, tablename);
         }
 
         /// <summary>
@@ -222,10 +213,19 @@ namespace NightlyCode.Database.Entities {
         /// <summary>
         /// get a load operation to use to load values of an entity from the database
         /// </summary>
-        public LoadValuesOperation<T> Load<T>(params Expression<Func<T, object>>[] fields) {
-            if (fields.Length == 0)
-                return new LoadValuesOperation<T>(DBClient, new IDBField[] {DBFunction.All}, modelcache.Get);
-            return new LoadValuesOperation<T>(DBClient, fields.Select(EntityField.Create).Cast<IDBField>().ToArray(), modelcache.Get);
+        public LoadOperation<T> Load<T>() {
+            List<IDBField> columns=new List<IDBField>();
+            foreach (PropertyInfo property in typeof(T).GetProperties())
+                columns.Add(Field.Property<T>(property.Name));
+
+            return new LoadOperation<T>(DBClient, modelcache.Get, columns.ToArray());
+        }
+
+        /// <summary>
+        /// get a load operation to use to load values of an entity from the database
+        /// </summary>
+        public LoadOperation<T> Load<T>(params Expression<Func<T, object>>[] fields) {
+            return new LoadOperation<T>(DBClient, modelcache.Get, fields.Select(EntityField.Create).Cast<IDBField>().ToArray());
         }
 
         /// <summary>

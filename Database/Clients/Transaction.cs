@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Data;
 using System.Data.Common;
 using System.Threading;
+using System.Threading.Tasks;
 using NightlyCode.Database.Info;
 
 namespace NightlyCode.Database.Clients {
@@ -10,14 +12,14 @@ namespace NightlyCode.Database.Clients {
     /// </summary>
     public class Transaction : IDisposable {
         readonly IDBInfo dbinfo;
-        readonly IConnection connection;
+        readonly TransactionConnection connection;
         readonly SemaphoreSlim semaphore;
         bool commited;
 
 
         internal Transaction(IDBInfo dbinfo, IConnection connection, SemaphoreSlim semaphore) {
             this.dbinfo = dbinfo;
-            this.connection = connection;
+            this.connection = new TransactionConnection(connection);
             this.semaphore = semaphore;
             DbTransaction = dbinfo.BeginTransaction(connection.Connection, semaphore);
         }
@@ -26,6 +28,26 @@ namespace NightlyCode.Database.Clients {
         /// transaction object
         /// </summary>
         public DbTransaction DbTransaction { get; internal set; }
+
+        /// <summary>
+        /// get the associated connection and opens it if it is not open
+        /// </summary>
+        /// <returns>connection</returns>
+        public IConnection Connect() {
+            if(connection.Connection.State != ConnectionState.Open)
+                connection.Connection.Open();
+            return connection;
+        }
+
+        /// <summary>
+        /// get the associated connection and opens it if it is not open
+        /// </summary>
+        /// <returns>connection</returns>
+        public async Task<IConnection> ConnectAsync() {
+            if(connection.Connection.State != ConnectionState.Open)
+                await connection.Connection.OpenAsync();
+            return connection;
+        }
 
         /// <summary>
         /// commits the transaction
@@ -53,8 +75,9 @@ namespace NightlyCode.Database.Clients {
                     DbTransaction.Rollback();
                 DbTransaction.Dispose();
                 dbinfo.EndTransaction(semaphore);
-                connection.Dispose();
+                
             }
+            connection.InnerConnection.Dispose();
         }
 
         /// <summary>
