@@ -468,6 +468,26 @@ namespace NightlyCode.Database.Entities.Operations {
         }
 
         /// <summary>
+        /// specifies sort criterias
+        /// </summary>
+        /// <param name="fields">fields to order the result set by</param>
+        /// <returns>this operation for fluent behavior</returns>
+        public LoadOperation<T> OrderBy(params Expression<Func<T, object>>[] fields) {
+            OrderByCriteria[] criteriafields = fields.Select(f => new OrderByCriteria(Field.Property(f))).ToArray();
+            return OrderBy(criteriafields);
+        }
+
+        /// <summary>
+        /// specifies sort criterias
+        /// </summary>
+        /// <param name="fields">fields to order the result set by</param>
+        /// <returns>this operation for fluent behavior</returns>
+        public LoadOperation<T> OrderByDesc(params Expression<Func<T, object>>[] fields) {
+            OrderByCriteria[] criteriafields = fields.Select(f => new OrderByCriteria(Field.Property(f), false)).ToArray();
+            return OrderBy(criteriafields);
+        }
+
+        /// <summary>
         /// groups the results by the specified fields
         /// </summary>
         /// <param name="fields"></param>

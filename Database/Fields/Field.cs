@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq.Expressions;
+using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Fields.Sql;
 
 namespace NightlyCode.Database.Fields {
@@ -42,6 +44,16 @@ namespace NightlyCode.Database.Fields {
         /// <returns>field to be used in expressions</returns>
         public static ColumnField Column(string table, string column) {
             return new ColumnField(table, column);
+        }
+
+        /// <summary>
+        /// references a property of an entity using an expression
+        /// </summary>
+        /// <typeparam name="T">type of entity to reference</typeparam>
+        /// <param name="expression">expression pointing to property</param>
+        /// <returns>field to be used in statements</returns>
+        public static EntityField Property<T>(Expression<Func<T, object>> expression) {
+            return new EntityField(expression);
         }
     }
 }

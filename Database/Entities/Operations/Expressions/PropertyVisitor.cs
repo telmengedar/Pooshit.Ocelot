@@ -2,6 +2,10 @@
 using System.Reflection;
 
 namespace NightlyCode.Database.Entities.Operations.Expressions {
+
+    /// <summary>
+    /// get a property referenced by an expression
+    /// </summary>
     public class PropertyVisitor : ExpressionVisitor
     {
         PropertyInfo property;

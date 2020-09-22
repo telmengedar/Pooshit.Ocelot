@@ -75,14 +75,6 @@ namespace NightlyCode.Database.Tests.Entities {
         }
 
         [Test, Parallelizable]
-        public void InsertEntities() {
-            IDBClient dbclient = TestData.CreateDatabaseAccess();
-            EntityManager entitymanager = new EntityManager(dbclient);
-            entitymanager.Create<TestEntityWithoutAnySpecifications>();
-            entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(TestEntities.ToArray());
-        }
-
-        [Test, Parallelizable]
         public void InsertStatement() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);
