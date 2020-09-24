@@ -318,7 +318,9 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         protected T ToObject<T>(DataRow row, DataTableColumns columns, EntityDescriptor descriptor) {
             T obj = (T)Activator.CreateInstance(typeof(T), true);
             foreach(string column in columns.Names) {
-                EntityColumnDescriptor pi = descriptor.GetColumn(column);
+                EntityColumnDescriptor pi = descriptor.TryGetColumn(column);
+                if (pi == null)
+                    continue;
 
                 object dbvalue = row[column];
 
