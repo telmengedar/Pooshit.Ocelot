@@ -1,22 +1,30 @@
 ﻿using System;
 using NightlyCode.Database.Entities.Descriptors;
-using NightlyCode.Database.Entities.Operations.Fields.Sql;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Info;
 
-namespace NightlyCode.Database.Fields.Sql {
+namespace NightlyCode.Database.Tokens.Values {
 
     /// <summary>
     /// field which references a column directly
     /// </summary>
-    public class ColumnField : SqlField {
+    public class ColumnToken : SqlToken {
 
         /// <summary>
-        /// creates a new <see cref="ColumnField"/>
+        /// creates a new <see cref="ColumnToken"/>
+        /// </summary>
+        /// <param name="name">name of column</param>
+        public ColumnToken(string name)
+        : this(null, name)
+        {
+        }
+
+        /// <summary>
+        /// creates a new <see cref="ColumnToken"/>
         /// </summary>
         /// <param name="table">table/view/alias of which to reference column</param>
         /// <param name="name">name of column</param>
-        public ColumnField(string table, string name) {
+        public ColumnToken(string table, string name) {
             Table = table;
             Name = name;
         }
@@ -24,16 +32,18 @@ namespace NightlyCode.Database.Fields.Sql {
         /// <summary>
         /// name of table
         /// </summary>
-        public string Table { get; set; }
+        public string Table { get; }
 
         /// <summary>
         /// name of column
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; }
 
         /// <inheritdoc />
         public override void ToSql(IDBInfo dbinfo, IOperationPreparator preparator, Func<Type, EntityDescriptor> models, string tablealias) {
-            preparator.AppendText($"{Table}.{dbinfo.MaskColumn(Name)}");
+            if(!string.IsNullOrEmpty(Table))
+                preparator.AppendText($"{Table}.{dbinfo.MaskColumn(Name)}");
+            else preparator.AppendText(dbinfo.MaskColumn(Name));
         }
     }
 }

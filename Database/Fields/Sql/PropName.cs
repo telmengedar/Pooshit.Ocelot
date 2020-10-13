@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Linq;
 using NightlyCode.Database.Entities.Descriptors;
-using NightlyCode.Database.Entities.Operations.Fields.Sql;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Errors;
 using NightlyCode.Database.Info;
+using NightlyCode.Database.Tokens;
 
 namespace NightlyCode.Database.Fields.Sql {
 
     /// <summary>
     /// field referencing a property of an entity
     /// </summary>
-    public class PropName : SqlField {
+    public class PropName : SqlToken {
 
         /// <summary>
         /// creates a new <see cref="PropName"/>

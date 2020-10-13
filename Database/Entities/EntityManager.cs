@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
@@ -214,11 +213,14 @@ namespace NightlyCode.Database.Entities {
         /// get a load operation to use to load values of an entity from the database
         /// </summary>
         public LoadOperation<T> Load<T>() {
-            List<IDBField> columns=new List<IDBField>();
-            foreach (PropertyInfo property in typeof(T).GetProperties())
-                columns.Add(Field.Property<T>(property.Name));
+            return new LoadOperation<T>(DBClient, modelcache.Get, new IDBField[0]);
+        }
 
-            return new LoadOperation<T>(DBClient, modelcache.Get, columns.ToArray());
+        /// <summary>
+        /// get a load operation to use to load values of an entity from the database
+        /// </summary>
+        public LoadOperation<T> Load<T>(params IDBField[] fields) {
+            return new LoadOperation<T>(DBClient, modelcache.Get, fields);
         }
 
         /// <summary>

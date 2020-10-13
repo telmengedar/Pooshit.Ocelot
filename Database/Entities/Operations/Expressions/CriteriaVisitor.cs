@@ -5,10 +5,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using NightlyCode.Database.Entities.Descriptors;
-using NightlyCode.Database.Entities.Operations.Fields.Sql;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Fields;
 using NightlyCode.Database.Info;
+using NightlyCode.Database.Tokens;
 using Converter = NightlyCode.Database.Extern.Converter;
 
 namespace NightlyCode.Database.Entities.Operations.Expressions {
@@ -171,7 +171,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                         preparator.AppendParameter(Converter.Convert(avalue, dbinfo.GetDBRepresentation(avalue.GetType())));
                     }
                 }
-                else if(value is ISqlField sqlfield)
+                else if(value is ISqlToken sqlfield)
                     sqlfield.ToSql(dbinfo, preparator, descriptorgetter, null);
                 else if(value is IDBField field)
                     dbinfo.Append(field, preparator, descriptorgetter);
@@ -372,6 +372,10 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
         protected override Expression VisitMethodCall(MethodCallExpression node) {
             AppendValueRemainder();
 
+            if (node.Method.DeclaringType == typeof(Xpr)) {
+                return node;
+            }
+            
             if(node.Method.DeclaringType == typeof(DBOperators)) {
                 switch(node.Method.Name) {
                 case "Like":

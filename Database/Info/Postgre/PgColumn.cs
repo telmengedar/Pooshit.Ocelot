@@ -2,6 +2,9 @@
 
 namespace NightlyCode.Database.Info.Postgre {
 
+    /// <summary>
+    /// column information in postgres database
+    /// </summary>
     [Table("information_schema.columns")]
     public class PgColumn {
 

@@ -54,6 +54,11 @@ namespace NightlyCode.Database.Entities {
 #endif
         }
 
+        /// <summary>
+        /// get type to be used in database
+        /// </summary>
+        /// <param name="propertyType">type to be analysed</param>
+        /// <returns>type to be used when storing data in database</returns>
         public static Type GetDBType(Type propertyType) {
 #if UNITY
             return converters[propertyType].DBType;

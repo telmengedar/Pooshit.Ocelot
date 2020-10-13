@@ -11,6 +11,8 @@ using NightlyCode.Database.Entities.Operations.Expressions;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
 using NightlyCode.Database.Fields;
+using NightlyCode.Database.Tokens;
+using NightlyCode.Database.Tokens.Values;
 
 namespace NightlyCode.Database.Info {
 
@@ -24,7 +26,7 @@ namespace NightlyCode.Database.Info {
         /// creates a new <see cref="DBInfo"/>
         /// </summary>
         protected DBInfo() {
-            AddFieldLogic<Constant>(AppendConstant);
+            AddFieldLogic<ConstantValue>(AppendConstant);
             AddFieldLogic<EntityField>(AppendEntityField);
             AddFieldLogic<Aggregate>(AppendAggregate);
         }
@@ -51,14 +53,14 @@ namespace NightlyCode.Database.Info {
             preparator.AppendText(")");
         }
 
-        void AppendConstant(Constant constant, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
-            if(constant.Value == null)
+        void AppendConstant(ConstantValue constantValue, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
+            if(constantValue.Value == null)
                 preparator.AppendText("NULL");
             else {
-                if(constant.Value is Expression expression)
+                if(constantValue.Value is Expression expression)
                     CriteriaVisitor.GetCriteriaText(expression, descriptorgetter, this, preparator, tablealias);
                 else
-                    preparator.AppendParameter(constant.Value);
+                    preparator.AppendParameter(constantValue.Value);
             }
         }
 
@@ -200,6 +202,11 @@ namespace NightlyCode.Database.Info {
 
         /// <inheritdoc />
         public void Append(IDBField field, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias = null) {
+            if (field is ISqlToken sqltoken) {
+                sqltoken.ToSql(this, preparator, descriptorgetter, tablealias);
+                return;
+            }
+            
             if(!fieldlogic.TryGetValue(field.GetType(), out Action<IDBField, IOperationPreparator, Func<Type, EntityDescriptor>, string> logic))
                 throw new NotSupportedException($"{field.GetType()} not supported");
             logic(field, preparator, descriptorgetter, tablealias);

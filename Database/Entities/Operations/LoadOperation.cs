@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
@@ -82,9 +83,9 @@ namespace NightlyCode.Database.Entities.Operations {
     public class LoadOperation<T> : IDatabaseOperation {
         readonly IDBClient dbclient;
         readonly Func<Type, EntityDescriptor> descriptorgetter;
-        readonly IDBField[] columns;
+        IDBField[] columns;
         OrderByCriteria[] orderbycriterias;
-        IDBField[] groupbycriterias;
+        readonly List<IDBField> groupbycriterias=new List<IDBField>();
         readonly List<JoinOperation> joinoperations = new List<JoinOperation>();
         bool distinct;
         string alias;
@@ -235,7 +236,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="transaction">transaction to use</param>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual IEnumerable<TEntity> ExecuteEntities<TEntity>(Transaction transaction, params object[] parameters) {
+        public IEnumerable<TEntity> ExecuteEntities<TEntity>(Transaction transaction, params object[] parameters) {
             return Prepare().ExecuteEntities<TEntity>(transaction, parameters);
         }
 
@@ -246,7 +247,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="transaction">transaction to use</param>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual TEntity ExecuteEntity<TEntity>(Transaction transaction, params object[] parameters) {
+        public TEntity ExecuteEntity<TEntity>(Transaction transaction, params object[] parameters) {
             if (!(LimitStatement?.Limit.HasValue ?? false))
                 Limit(1);
             return Prepare().ExecuteEntity<TEntity>(transaction, parameters);
@@ -259,7 +260,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="transaction">transaction to use</param>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual Task<TEntity> ExecuteEntityAsync<TEntity>(Transaction transaction, params object[] parameters) {
+        public Task<TEntity> ExecuteEntityAsync<TEntity>(Transaction transaction, params object[] parameters) {
             if(!(LimitStatement?.Limit.HasValue ?? false))
                 Limit(1);
             return Prepare().ExecuteEntityAsync<TEntity>(transaction, parameters);
@@ -272,7 +273,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="transaction">transaction to use</param>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual Task<TEntity[]> ExecuteEntitiesAsync<TEntity>(Transaction transaction, params object[] parameters) {
+        public Task<TEntity[]> ExecuteEntitiesAsync<TEntity>(Transaction transaction, params object[] parameters) {
             return Prepare().ExecuteEntitiesAsync<TEntity>(transaction, parameters);
         }
 
@@ -282,7 +283,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <typeparam name="TEntity">type of entities to create</typeparam>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual Task<TEntity[]> ExecuteEntitiesAsync<TEntity>(params object[] parameters) {
+        public Task<TEntity[]> ExecuteEntitiesAsync<TEntity>(params object[] parameters) {
             return ExecuteEntitiesAsync<TEntity>(null, parameters);
         }
 
@@ -292,7 +293,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <typeparam name="TEntity">type of entities to create</typeparam>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual IEnumerable<TEntity> ExecuteEntities<TEntity>(params object[] parameters) {
+        public IEnumerable<TEntity> ExecuteEntities<TEntity>(params object[] parameters) {
             return ExecuteEntities<TEntity>(null, parameters);
         }
 
@@ -302,17 +303,17 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <typeparam name="TEntity">type of entities to create</typeparam>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual Task<TEntity> ExecuteEntityAsync<TEntity>(params object[] parameters) {
+        public Task<TEntity> ExecuteEntityAsync<TEntity>(params object[] parameters) {
             return ExecuteEntityAsync<TEntity>(null, parameters);
         }
 
         /// <summary>
         /// executes the operation and creates entities from the result
         /// </summary>
-        /// <typeparam name="T">type of entities to create</typeparam>
+        /// <typeparam name="TEntity">type of entities to create</typeparam>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual TEntity ExecuteEntity<TEntity>(params object[] parameters) {
+        public TEntity ExecuteEntity<TEntity>(params object[] parameters) {
             return ExecuteEntity<TEntity>(null, parameters);
         }
 
@@ -322,7 +323,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="transaction">transaction to use</param>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual IEnumerable<T> ExecuteEntities(Transaction transaction, params object[] parameters) {
+        public IEnumerable<T> ExecuteEntities(Transaction transaction, params object[] parameters) {
             return Prepare().ExecuteEntities<T>(transaction, parameters);
         }
 
@@ -332,7 +333,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="transaction">transaction to use</param>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual T ExecuteEntity(Transaction transaction, params object[] parameters) {
+        public T ExecuteEntity(Transaction transaction, params object[] parameters) {
             return Prepare().ExecuteEntity<T>(transaction, parameters);
         }
 
@@ -342,7 +343,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="transaction">transaction to use</param>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual Task<T> ExecuteEntityAsync(Transaction transaction, params object[] parameters) {
+        public Task<T> ExecuteEntityAsync(Transaction transaction, params object[] parameters) {
             return Prepare().ExecuteEntityAsync<T>(transaction, parameters);
         }
 
@@ -352,7 +353,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="transaction">transaction to use</param>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual Task<T[]> ExecuteEntitiesAsync(Transaction transaction, params object[] parameters) {
+        public Task<T[]> ExecuteEntitiesAsync(Transaction transaction, params object[] parameters) {
             return Prepare().ExecuteEntitiesAsync<T>(transaction, parameters);
         }
 
@@ -361,7 +362,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual Task<T[]> ExecuteEntitiesAsync(params object[] parameters) {
+        public Task<T[]> ExecuteEntitiesAsync(params object[] parameters) {
             return ExecuteEntitiesAsync<T>(null, parameters);
         }
 
@@ -370,7 +371,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual IEnumerable<T> ExecuteEntities(params object[] parameters) {
+        public IEnumerable<T> ExecuteEntities(params object[] parameters) {
             return ExecuteEntities<T>(null, parameters);
         }
 
@@ -379,7 +380,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual Task<T> ExecuteEntityAsync(params object[] parameters) {
+        public Task<T> ExecuteEntityAsync(params object[] parameters) {
             return ExecuteEntityAsync<T>(null, parameters);
         }
 
@@ -388,7 +389,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual T ExecuteEntity(params object[] parameters) {
+        public T ExecuteEntity(params object[] parameters) {
             return ExecuteEntity<T>(null, parameters);
         }
 
@@ -402,6 +403,16 @@ namespace NightlyCode.Database.Entities.Operations {
             return preparator.GetLoadValuesOperation<T>(dbclient, descriptorgetter);
         }
 
+        /// <summary>
+        /// specifies fields to be loaded
+        /// </summary>
+        /// <param name="fields">fields to be specified</param>
+        /// <returns>this operation for fluent behavior</returns>
+        public LoadOperation<T> Fields(params IDBField[] fields) {
+            columns = fields;
+            return this;
+        }
+        
         /// <summary>
         /// provides an alias to use for the operation
         /// </summary>
@@ -496,8 +507,17 @@ namespace NightlyCode.Database.Entities.Operations {
             if(fields.Length == 0)
                 throw new InvalidOperationException("at least one group criteria has to be specified");
 
-            groupbycriterias = fields;
+            groupbycriterias.AddRange(fields);
             return this;
+        }
+
+        /// <summary>
+        /// groups the results by the specified fields
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <returns></returns>
+        public LoadOperation<T> GroupBy(params Expression<Func<T, object>>[] fields) {
+            return GroupBy(fields.Select(Field.Property).Cast<IDBField>().ToArray());
         }
 
         /// <summary>
@@ -548,6 +568,13 @@ namespace NightlyCode.Database.Entities.Operations {
 
         /// <inheritdoc />
         void IDatabaseOperation.Prepare(IOperationPreparator preparator) {
+            if (columns.Length == 0) {
+                List<IDBField> entitycolumns=new List<IDBField>();
+                foreach (PropertyInfo property in typeof(T).GetProperties())
+                    entitycolumns.Add(Field.Property<T>(property.Name));
+                columns = entitycolumns.ToArray();
+            }
+
             List<string> aliases = new List<string>();
             string tablealias = null;
 
@@ -599,7 +626,7 @@ namespace NightlyCode.Database.Entities.Operations {
             }
 
             flag = true;
-            if(groupbycriterias != null) {
+            if(groupbycriterias.Count>0) {
                 preparator.AppendText("GROUP BY");
 
                 foreach(IDBField criteria in groupbycriterias) {

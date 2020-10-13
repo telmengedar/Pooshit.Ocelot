@@ -3,6 +3,10 @@ using System.Reflection;
 using NightlyCode.Database.Entities.Descriptors;
 
 namespace NightlyCode.Database.Entities.Operations.Expressions {
+    
+    /// <summary>
+    /// visits expressions to extract column names
+    /// </summary>
     public class ColumnVisitor : ExpressionVisitor
     {
         readonly EntityDescriptor descriptor;
@@ -31,6 +35,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             return column.Name;
         }
 
+        /// <inheritdoc />
         protected override Expression VisitMember(MemberExpression node) {
             if(node.Member is PropertyInfo && (node.Expression ?? node).NodeType == ExpressionType.Parameter)
                 columnname = GetColumnName((PropertyInfo)node.Member);

@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Fields.Sql;
+using NightlyCode.Database.Tokens.Values;
 
 namespace NightlyCode.Database.Fields {
 
@@ -10,11 +11,6 @@ namespace NightlyCode.Database.Fields {
     /// </summary>
     public static class Field {
 
-        /// <summary>
-        /// all fields
-        /// </summary>
-        public static readonly IDBField All = new AllColumnsField();
-        
         /// <summary>
         /// creates a new <see cref="PropName"/>
         /// </summary>
@@ -42,8 +38,8 @@ namespace NightlyCode.Database.Fields {
         /// <param name="table">name of table/view/alias of which to reference column</param>
         /// <param name="column">name of column to reference</param>
         /// <returns>field to be used in expressions</returns>
-        public static ColumnField Column(string table, string column) {
-            return new ColumnField(table, column);
+        public static ColumnToken Column(string table, string column) {
+            return new ColumnToken(table, column);
         }
 
         /// <summary>

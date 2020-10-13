@@ -136,9 +136,10 @@ namespace NightlyCode.Database.Info {
         /// <summary>
         /// command used to check whether a table exists
         /// </summary>
-        /// <param name="db"></param>
-        /// <param name="table"></param>
-        /// <returns></returns>
+        /// <param name="db">client to database</param>
+        /// <param name="table">name of table to check</param>
+        /// <param name="transaction">transaction to use</param>
+        /// <returns>true if table exists, false otherwise</returns>
         public override bool CheckIfTableExists(IDBClient db, string table, Transaction transaction = null) {
             return db.Query(transaction, "SELECT name FROM sqlite_master WHERE (type='table' OR type='view') AND name like @1", table).Rows.Length > 0;
         }

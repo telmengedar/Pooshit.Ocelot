@@ -5,7 +5,6 @@ using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Expressions;
 using NightlyCode.Database.Entities.Operations.Fields;
-using NightlyCode.Database.Entities.Operations.Fields.Sql;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Errors;
 using NightlyCode.Database.Fields;

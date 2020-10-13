@@ -136,6 +136,7 @@ namespace NightlyCode.Database.Entities.Descriptors {
         /// get the full column descriptor for the property
         /// </summary>
         /// <param name="property">name of property of which to return column model</param>
+        /// <param name="columnmodel">model of column</param>
         /// <returns>true if property was found, false otherwise</returns>
         public bool TryGetColumnByProperty(string property, out EntityColumnDescriptor columnmodel) {
             return properties.TryGetValue(property, out columnmodel);

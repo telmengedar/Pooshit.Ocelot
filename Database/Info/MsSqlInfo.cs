@@ -43,6 +43,7 @@ namespace NightlyCode.Database.Info {
         /// <param name="function">function to be executed</param>
         /// <param name="preparator">operation to append function to</param>
         /// <param name="descriptorgetter">function used to get <see cref="EntityDescriptor"/>s for types</param>
+        /// <param name="tablealias">alias for table to use</param>
         public void AppendFunction(DBFunction function, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
             switch(function.Type) {
             case DBFunctionType.Random:
@@ -95,38 +96,47 @@ namespace NightlyCode.Database.Info {
         public override void DropTable(IDBClient client, TableDescriptor entity) {
         }
 
+        /// <inheritdoc />
         public override void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column) {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public override void CreateColumn(OperationPreparator operation, SchemaColumnDescriptor column) {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public override SchemaDescriptor GetSchema(IDBClient client, string name) {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public override void DropColumn(OperationPreparator preparator, string column) {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public override void AlterColumn(OperationPreparator preparator, EntityColumnDescriptor column) {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public override void AddColumn(OperationPreparator preparator, EntityColumnDescriptor column) {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public override void Replace(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value, Expression src, Expression target) {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public override void ToUpper(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value) {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public override void ToLower(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value) {
             throw new NotImplementedException();
         }
@@ -142,6 +152,7 @@ namespace NightlyCode.Database.Info {
             return Converter.Convert<long>(db.Scalar(transaction, "SELECT count(*) FROM pg_class WHERE relname = @1", table)) > 0;
         }
 
+        /// <inheritdoc />
         public override string GetDBType(Type type) {
             throw new NotImplementedException();
         }

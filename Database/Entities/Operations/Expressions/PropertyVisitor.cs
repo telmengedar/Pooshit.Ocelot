@@ -20,6 +20,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             return property;
         }
 
+        /// <inheritdoc />
         protected override Expression VisitMember(MemberExpression node) {
             if (node.Member is PropertyInfo info && (node.Expression ?? node).NodeType == ExpressionType.Parameter)
                 property = info;

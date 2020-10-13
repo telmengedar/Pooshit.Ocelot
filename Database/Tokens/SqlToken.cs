@@ -3,12 +3,12 @@ using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Info;
 
-namespace NightlyCode.Database.Entities.Operations.Fields.Sql {
+namespace NightlyCode.Database.Tokens {
 
     /// <summary>
     /// base implementation for an sql field to make sure classes don't need to implement expression fields
     /// </summary>
-    public abstract class SqlField : ISqlField {
+    public abstract class SqlToken : ISqlToken {
 
         /// <inheritdoc />
         public object Value => throw new NotImplementedException("Only used for expressions");

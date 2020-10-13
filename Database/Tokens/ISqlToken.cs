@@ -4,12 +4,13 @@ using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Fields;
 using NightlyCode.Database.Info;
 
-namespace NightlyCode.Database.Entities.Operations.Fields.Sql {
+namespace NightlyCode.Database.Tokens {
 
     /// <summary>
     /// field which is used in expressions
     /// </summary>
-    public interface ISqlField : IDBField {
+    public interface ISqlToken : IDBField {
+        
         /// <summary>
         /// generates sql in <see cref="OperationPreparator"/>
         /// </summary>

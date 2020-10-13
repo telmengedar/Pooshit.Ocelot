@@ -6,6 +6,7 @@ using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Entities;
 using NightlyCode.Database.Entities.Operations.Tables;
+using NightlyCode.Database.Fields;
 
 namespace NightlyCode.Database.Entities {
 
@@ -99,6 +100,11 @@ namespace NightlyCode.Database.Entities {
         /// get a load operation to use to load values of an entity from the database
         /// </summary>
         LoadOperation<T> Load<T>();
+
+        /// <summary>
+        /// get a load operation to use to load values of an entity from the database
+        /// </summary>
+        LoadOperation<T> Load<T>(params IDBField[] fields);
 
         /// <summary>
         /// get a load operation to use to load values of an entity from the database

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
-using NightlyCode.Database.Entities.Operations.Fields.Sql;
 using NightlyCode.Database.Extern;
 using NightlyCode.Database.Fields;
 using NightlyCode.Database.Info;
+using NightlyCode.Database.Tokens;
 
 namespace NightlyCode.Database.Entities.Operations.Prepared {
     /// <summary>
@@ -81,7 +81,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="tablealias">alias to use when resolving properties</param>
         /// <returns>this preparator for fluent behavior</returns>
         public IOperationPreparator AppendField(IDBField field, IDBInfo dbinfo, Func<Type, EntityDescriptor> modelinfo, string tablealias = null) {
-            if(field is ISqlField sqlfield)
+            if(field is ISqlToken sqlfield)
                 sqlfield.ToSql(dbinfo, this, modelinfo, tablealias);
             else
                 dbinfo.Append(field, this, modelinfo, tablealias);

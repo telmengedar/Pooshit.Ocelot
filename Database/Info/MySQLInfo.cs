@@ -11,31 +11,39 @@ namespace NightlyCode.Database.Info {
     /// information for mysql db
     /// </summary>
     public class MySQLInfo : DBInfo {
+        /// <inheritdoc />
         public override string Parameter => "?";
 
-        public string LastValue => "LAST_INSERT_ID()";
-
+        /// <inheritdoc />
         public override string JoinHint => "STRAIGHT_JOIN";
 
+        /// <inheritdoc />
         public override string ColumnIndicator => "`";
 
+        /// <inheritdoc />
         public override string LikeTerm => "LIKE";
 
+        /// <inheritdoc />
         public override void Replace(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value, Expression src, Expression target) {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public override void ToUpper(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value) {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public override void ToLower(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value) {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public override bool CheckIfTableExists(IDBClient db, string table, Transaction transaction = null) {
             return db.Query(transaction, "SHOW TABLES like ?1", table).Rows.Length > 0;
         }
+
+        /// <inheritdoc />
         public override string GetDBType(Type type) {
             if(type.IsEnum)
                 return "INT";
@@ -72,20 +80,25 @@ namespace NightlyCode.Database.Info {
             }
         }
 
+        /// <inheritdoc />
         public override Type GetDBRepresentation(Type type) {
             return type;
         }
 
+        /// <inheritdoc />
         public override string MaskColumn(string column) {
             return $"`{column}`";
         }
 
+        /// <inheritdoc />
         public override string CreateSuffix => "ENGINE=InnoDB";
 
+        /// <inheritdoc />
         public override void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column) {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public override void CreateColumn(OperationPreparator operation, SchemaColumnDescriptor column) {
             throw new NotImplementedException();
         }
@@ -105,6 +118,7 @@ namespace NightlyCode.Database.Info {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public override void ReturnID(OperationPreparator preparator, ColumnDescriptor idcolumn) {
             throw new NotImplementedException();
         }
@@ -114,6 +128,7 @@ namespace NightlyCode.Database.Info {
             return true;
         }
 
+        /// <inheritdoc />
         public override SchemaDescriptor GetSchema(IDBClient client, string name) {
             throw new NotImplementedException();
         }

@@ -14,6 +14,7 @@ using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
 using NightlyCode.Database.Fields;
 using NightlyCode.Database.Info.Postgre;
+using NightlyCode.Database.Tokens;
 using Converter = NightlyCode.Database.Extern.Converter;
 
 namespace NightlyCode.Database.Info {
@@ -45,6 +46,7 @@ namespace NightlyCode.Database.Info {
         /// <param name="function">function to be executed</param>
         /// <param name="preparator">operation to append function to</param>
         /// <param name="descriptorgetter">function used to get <see cref="EntityDescriptor"/>s for types</param>
+        /// <param name="tablealias">alias to use when referencing tables</param>
         public void AppendFunction(DBFunction function, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
             switch(function.Type) {
             case DBFunctionType.Random:
@@ -118,10 +120,12 @@ namespace NightlyCode.Database.Info {
             client.NonQuery($"DROP TABLE IF EXISTS {entity.Name} CASCADE");
         }
 
+        /// <inheritdoc />
         public override void ToUpper(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value) {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public override void ToLower(ExpressionVisitor visitor, IOperationPreparator preparator, Expression value) {
             throw new NotImplementedException();
         }
@@ -355,14 +359,14 @@ namespace NightlyCode.Database.Info {
 
         /// <inheritdoc />
         public override SchemaDescriptor GetSchema(IDBClient client, string name) {
-            PgView view = new LoadOperation<PgView>(client, EntityDescriptor.Create, Field.All).Where(p => p.Name == name).ExecuteEntity();
+            PgView view = new LoadOperation<PgView>(client, EntityDescriptor.Create, DB.All).Where(p => p.Name == name).ExecuteEntity();
             if(view != null)
                 return new ViewDescriptor(name) {
                     SQL = view.Definition
                 };
 
             Dictionary<string, SchemaColumnDescriptor> columns = new Dictionary<string, SchemaColumnDescriptor>();
-            foreach(PgColumn column in new LoadOperation<PgColumn>(client, EntityDescriptor.Create, Field.All).Where(c => c.Table == name).ExecuteEntities()) {
+            foreach(PgColumn column in new LoadOperation<PgColumn>(client, EntityDescriptor.Create, DB.All).Where(c => c.Table == name).ExecuteEntities()) {
                 columns[column.Column] = new SchemaColumnDescriptor(column.Column) {
                     Type = column.DataType,
                     NotNull = column.IsNullable == "NO",
@@ -372,7 +376,7 @@ namespace NightlyCode.Database.Info {
 
             List<UniqueDescriptor> uniques = new List<UniqueDescriptor>();
             List<IndexDescriptor> indices = new List<IndexDescriptor>();
-            foreach(PgIndex index in new LoadOperation<PgIndex>(client, EntityDescriptor.Create, Field.All).Where(i => i.Table == name).ExecuteEntities()) {
+            foreach(PgIndex index in new LoadOperation<PgIndex>(client, EntityDescriptor.Create, DB.All).Where(i => i.Table == name).ExecuteEntities()) {
                 Match match = Regex.Match(index.Definition, "^CREATE (?<unique>UNIQUE )?INDEX (?<name>[^ ]+) ON (?<table>[^ ]+)( USING [a-zA-Z]+)? \\((?<columns>.+)\\)");
                 if(!match.Success)
                     continue;

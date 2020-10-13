@@ -446,7 +446,6 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <summary>
         /// executes the operation and creates entities from the result
         /// </summary>
-        /// <typeparam name="T">type of entities to create</typeparam>
         /// <param name="transaction">transaction to use</param>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
@@ -458,7 +457,6 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <summary>
         /// executes the operation and creates entities from the result
         /// </summary>
-        /// <typeparam name="T">type of entities to create</typeparam>
         /// <param name="transaction">transaction to use</param>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
@@ -473,7 +471,6 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <summary>
         /// executes the operation and creates entities from the result
         /// </summary>
-        /// <typeparam name="T">type of entities to create</typeparam>
         /// <param name="transaction">transaction to use</param>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
@@ -488,7 +485,6 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <summary>
         /// executes the operation and creates entities from the result
         /// </summary>
-        /// <typeparam name="T">type of entities to create</typeparam>
         /// <param name="transaction">transaction to use</param>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
@@ -500,7 +496,6 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <summary>
         /// executes the operation and creates entities from the result
         /// </summary>
-        /// <typeparam name="T">type of entities to create</typeparam>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
         public override Task<T[]> ExecuteEntitiesAsync(params object[] parameters) {
@@ -510,7 +505,6 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <summary>
         /// executes the operation and creates entities from the result
         /// </summary>
-        /// <typeparam name="T">type of entities to create</typeparam>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
         public override IEnumerable<T> ExecuteEntities(params object[] parameters) {
@@ -520,7 +514,6 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <summary>
         /// executes the operation and creates entities from the result
         /// </summary>
-        /// <typeparam name="T">type of entities to create</typeparam>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
         public override Task<T> ExecuteEntityAsync(params object[] parameters) {
@@ -530,12 +523,10 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <summary>
         /// executes the operation and creates entities from the result
         /// </summary>
-        /// <typeparam name="T">type of entities to create</typeparam>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
         public override T ExecuteEntity(params object[] parameters) {
             return ExecuteEntity<T>(null, parameters);
         }
-
     }
 }

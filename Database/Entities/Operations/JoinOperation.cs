@@ -7,12 +7,12 @@ namespace NightlyCode.Database.Entities.Operations {
     /// operation used to join tables
     /// </summary>
     public class JoinOperation {
-
         /// <summary>
         /// creates a new <see cref="JoinOperation"/>
         /// </summary>
         /// <param name="joinType">type of entity to join</param>
         /// <param name="criterias">join criterias</param>
+        /// <param name="additionalcriterias">additional criterias for join operation (optional)</param>
         /// <param name="alias">name of alias to use</param>
         /// <param name="joinop">join operation type</param>
         public JoinOperation(Type joinType, Expression criterias, JoinOp joinop = JoinOp.Inner, Expression additionalcriterias = null, string alias = null) {
