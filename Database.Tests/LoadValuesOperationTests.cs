@@ -32,7 +32,7 @@ namespace NightlyCode.Database.Tests {
                 new ValueModel(124)
             );
 
-            Tuple<int, string>[] result = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).ExecuteType(row => new Tuple<int, string>((int)(long)row[0], null)).ToArray();
+            Tuple<int, string>[] result = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).ExecuteTypes(row => new Tuple<int, string>((int)(long)row[0], null)).ToArray();
             Assert.True(result.Select(r => r.Item1).SequenceEqual(new[] { 1, 2, 5, 3, 75, 234, 124 }));
         }
 
@@ -54,7 +54,7 @@ namespace NightlyCode.Database.Tests {
             );
 
             Tuple<int, string>[] result = (await entitymanager.Load<ValueModel>(m => m.Integer, m => m.String)
-                    .ExecuteTypeAsync(row => new Tuple<int, string>((int)(long)row[0], null)))
+                    .ExecuteTypesAsync(row => new Tuple<int, string>((int)(long)row[0], null)))
                     .ToArray();
             Assert.True(result.Select(r => r.Item1).SequenceEqual(new[] { 1, 2, 5, 3, 75, 234, 124 }));
         }
@@ -77,7 +77,7 @@ namespace NightlyCode.Database.Tests {
                 new ValueModel(124)
             );
 
-            Tuple<int, string>[] result = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).ExecuteType(row => new Tuple<int, string>((int)(long)row[0], null), transaction).ToArray();
+            Tuple<int, string>[] result = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).ExecuteTypes(row => new Tuple<int, string>((int)(long)row[0], null), transaction).ToArray();
             Assert.True(result.Select(r => r.Item1).SequenceEqual(new[] { 1, 2, 5, 3, 75, 234, 124 }));
         }
 
@@ -100,7 +100,7 @@ namespace NightlyCode.Database.Tests {
             );
 
             Tuple<int, string>[] result = (await entitymanager.Load<ValueModel>(m => m.Integer, m => m.String)
-                    .ExecuteTypeAsync(row => new Tuple<int, string>((int)(long)row[0], null), transaction))
+                    .ExecuteTypesAsync(row => new Tuple<int, string>((int)(long)row[0], null), transaction))
                 .ToArray();
             Assert.True(result.Select(r => r.Item1).SequenceEqual(new[] { 1, 2, 5, 3, 75, 234, 124 }));
         }
@@ -123,7 +123,7 @@ namespace NightlyCode.Database.Tests {
             );
 
             PreparedLoadOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
-            Tuple<int, string>[] result = loadvaluesoperation.ExecuteType(row => new Tuple<int, string>((int)(long)row[0], null), 50).ToArray();
+            Tuple<int, string>[] result = loadvaluesoperation.ExecuteTypes(row => new Tuple<int, string>((int)(long)row[0], null), 50).ToArray();
             Assert.True(result.Select(r => r.Item1).SequenceEqual(new[] { 75, 234, 124 }));
         }
 
@@ -145,7 +145,7 @@ namespace NightlyCode.Database.Tests {
             );
 
             PreparedLoadOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
-            Tuple<int, string>[] result = (await loadvaluesoperation.ExecuteTypeAsync(row => new Tuple<int, string>((int)(long)row[0], null), 50)).ToArray();
+            Tuple<int, string>[] result = (await loadvaluesoperation.ExecuteTypesAsync(row => new Tuple<int, string>((int)(long)row[0], null), 50)).ToArray();
             Assert.True(result.Select(r => r.Item1).SequenceEqual(new[] { 75, 234, 124 }));
         }
 
@@ -168,7 +168,7 @@ namespace NightlyCode.Database.Tests {
             );
 
             PreparedLoadOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
-            Tuple<int, string>[] result = loadvaluesoperation.ExecuteType(transaction, row => new Tuple<int, string>((int)(long)row[0], null), 50).ToArray();
+            Tuple<int, string>[] result = loadvaluesoperation.ExecuteTypes(transaction, row => new Tuple<int, string>((int)(long)row[0], null), 50).ToArray();
             Assert.True(result.Select(r => r.Item1).SequenceEqual(new[] { 75, 234, 124 }));
         }
 
@@ -191,7 +191,7 @@ namespace NightlyCode.Database.Tests {
             );
 
             PreparedLoadOperation loadvaluesoperation = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String).Where(v => v.Integer > DBParameter.Int32).Prepare();
-            Tuple<int, string>[] result = (await loadvaluesoperation.ExecuteTypeAsync(transaction, row => new Tuple<int, string>((int)(long)row[0], null), 50)).ToArray();
+            Tuple<int, string>[] result = (await loadvaluesoperation.ExecuteTypesAsync(transaction, row => new Tuple<int, string>((int)(long)row[0], null), 50)).ToArray();
             Assert.True(result.Select(r => r.Item1).SequenceEqual(new[] { 75, 234, 124 }));
         }
 
@@ -610,7 +610,7 @@ namespace NightlyCode.Database.Tests {
             entitymanager.Insert<UnionB>().Columns(u => u.Name, u => u.NumberOfDoom).Execute("Hina", 12);
 
             UnionA[] result = entitymanager.Load<UnionA>(u => u.Id, u => u.Name, u => u.Number)
-                .Union(entitymanager.Load<UnionB>(u => u.CrazyId, u => u.Name, u => u.NumberOfDoom)).ExecuteType<UnionA>(
+                .Union(entitymanager.Load<UnionB>(u => u.CrazyId, u => u.Name, u => u.NumberOfDoom)).ExecuteTypes(
                 r => new UnionA {
                     Id = r.GetValue<long>(0),
                     Name = r.GetValue<string>(1),

@@ -15,6 +15,7 @@ using NightlyCode.Database.Entities.Schema;
 using NightlyCode.Database.Fields;
 using NightlyCode.Database.Info.Postgre;
 using NightlyCode.Database.Tokens;
+using NightlyCode.Database.Tokens.Values;
 using Converter = NightlyCode.Database.Extern.Converter;
 
 namespace NightlyCode.Database.Info {
@@ -30,6 +31,67 @@ namespace NightlyCode.Database.Info {
         public PostgreInfo() {
             AddFieldLogic<DBFunction>(AppendFunction);
             AddFieldLogic<LimitField>(AppendLimit);
+            AddFieldLogic<CastToken>(AppendCast);
+        }
+
+        void AppendCast(CastToken cast, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
+            switch (cast.Type) {
+            case CastType.Date:
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("::date");
+                break;
+            case CastType.DateTime:
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("::timestamp");
+                break;
+            case CastType.Year:
+                preparator.AppendText("EXTRACT(YEAR FROM ");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText(")");
+                break;
+            case CastType.Month:
+                preparator.AppendText("EXTRACT(MONTH FROM ");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText(")");
+                break;
+            case CastType.DayOfMonth:
+                preparator.AppendText("EXTRACT(DAY FROM ");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText(")");
+                break;
+            case CastType.Hour:
+                preparator.AppendText("EXTRACT(HOUR FROM ");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText(")");
+                break;
+            case CastType.Minute:
+                preparator.AppendText("EXTRACT(MINUTE FROM ");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText(")");
+                break;
+            case CastType.Second:
+                preparator.AppendText("EXTRACT(SECOND FROM ");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText(")");
+                break;
+            case CastType.DayOfYear:
+                preparator.AppendText("EXTRACT(DOY FROM ");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText(")");
+                break;
+            case CastType.DayOfWeek:
+                preparator.AppendText("EXTRACT(DOW FROM ");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText(")");
+                break;
+            case CastType.WeekOfYear:
+                preparator.AppendText("EXTRACT(WEEK FROM ");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText(")");
+                break;
+            default:
+                throw new ArgumentException("Invalid cast target type");
+            }
         }
 
         void AppendLimit(LimitField limit, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {

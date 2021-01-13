@@ -37,5 +37,20 @@ namespace NightlyCode.Database.Tests {
             long count = database.Load<ValueModel>(v=>Xpr.Count(Xpr.If(Xpr.Predicate(v.Integer > 3 && v.Integer < 8), Xpr.Constant(1)))).ExecuteScalar<long>();
             Assert.AreEqual(4, count);
         }
+        
+        [Test, Parallelizable]
+        public void CountSpecificValuesInSimplifiedExpression() {
+            IEntityManager database = TestData.CreateEntityManager();
+            database.UpdateSchema<ValueModel>();
+
+            PreparedOperation insert = database.Insert<ValueModel>().Columns(v => v.Integer, v => v.Single, v => v.Double).Prepare();
+
+            for (int i = 0; i < 16; ++i)
+                insert.Execute(i, 0.0f, 0.0);
+
+            long count = database.Load<ValueModel>(v=>Xpr.Count(Xpr.If(v.Integer > 3 && v.Integer < 8, 1))).ExecuteScalar<long>();
+            Assert.AreEqual(4, count);
+        }
+
     }
 }

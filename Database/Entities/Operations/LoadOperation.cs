@@ -214,8 +214,8 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="transaction">transaction to use for operation execution</param>
         /// <param name="assignments">action used to assign values</param>
         /// <returns>enumeration of result types</returns>
-        public IEnumerable<TType> ExecuteType<TType>(Func<Clients.Tables.DataRow, TType> assignments, Transaction transaction = null) {
-            return Prepare().ExecuteType(transaction, assignments);
+        public IEnumerable<TType> ExecuteTypes<TType>(Func<Clients.Tables.DataRow, TType> assignments, Transaction transaction = null) {
+            return Prepare().ExecuteTypes(transaction, assignments);
         }
 
         /// <summary>
@@ -225,8 +225,19 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="transaction">transaction to use for operation execution</param>
         /// <param name="assignments">action used to assign values</param>
         /// <returns>enumeration of result types</returns>
-        public Task<TType[]> ExecuteTypeAsync<TType>(Func<Clients.Tables.DataRow, TType> assignments, Transaction transaction = null) {
+        public Task<TType> ExecuteTypeAsync<TType>(Func<Clients.Tables.DataRow, TType> assignments, Transaction transaction = null) {
             return Prepare().ExecuteTypeAsync(transaction, assignments);
+        }
+
+        /// <summary>
+        /// executes a query and stores the result in a custom result type
+        /// </summary>
+        /// <typeparam name="TType">type of result</typeparam>
+        /// <param name="transaction">transaction to use for operation execution</param>
+        /// <param name="assignments">action used to assign values</param>
+        /// <returns>enumeration of result types</returns>
+        public Task<TType[]> ExecuteTypesAsync<TType>(Func<Clients.Tables.DataRow, TType> assignments, Transaction transaction = null) {
+            return Prepare().ExecuteTypesAsync(transaction, assignments);
         }
 
         /// <summary>

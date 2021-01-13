@@ -11,6 +11,7 @@ using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
 using NightlyCode.Database.Fields;
+using NightlyCode.Database.Tokens.Values;
 using Converter = NightlyCode.Database.Extern.Converter;
 
 namespace NightlyCode.Database.Info {
@@ -26,6 +27,69 @@ namespace NightlyCode.Database.Info {
         public SQLiteInfo() {
             AddFieldLogic<DBFunction>(AppendFunction);
             AddFieldLogic<LimitField>(AppendLimit);
+            AddFieldLogic<CastToken>(AppendCast);
+        }
+
+        void AppendCast(CastToken cast, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
+            switch (cast.Type) {
+            case CastType.Date:
+                preparator.AppendText("date(strftime('%Y-%m-%d',");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("/10000000 - 62135596800, 'unixepoch'))");
+                break;
+            case CastType.DateTime:
+                preparator.AppendText("datetime(strftime('%Y-%m-%d %H:%M:%S',");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("/10000000 - 62135596800, 'unixepoch'))");
+                break;
+            case CastType.Year:
+                preparator.AppendText("strftime('%Y',");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("/10000000 - 62135596800, 'unixepoch')");
+                break;
+            case CastType.Month:
+                preparator.AppendText("strftime('%m',");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("/10000000 - 62135596800, 'unixepoch')");
+                break;
+            case CastType.DayOfMonth:
+                preparator.AppendText("strftime('%d',");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("/10000000 - 62135596800, 'unixepoch')");
+                break;
+            case CastType.Hour:
+                preparator.AppendText("strftime('%H',");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("/10000000 - 62135596800, 'unixepoch')");
+                break;
+            case CastType.Minute:
+                preparator.AppendText("strftime('%M',");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("/10000000 - 62135596800, 'unixepoch')");
+                break;
+            case CastType.Second:
+                preparator.AppendText("strftime('%S',");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("/10000000 - 62135596800, 'unixepoch')");
+                break;
+            case CastType.DayOfYear:
+                preparator.AppendText("strftime('%j',");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("/10000000 - 62135596800, 'unixepoch')");
+                break;
+            case CastType.DayOfWeek:
+                preparator.AppendText("strftime('%w',");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("/10000000 - 62135596800, 'unixepoch')");
+                break;
+            case CastType.WeekOfYear:
+                preparator.AppendText("strftime('%W',");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("/10000000 - 62135596800, 'unixepoch')");
+                break;
+            default:
+                throw new ArgumentException("Invalid cast target type");
+            }
         }
 
         void AppendLimit(LimitField limit, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
@@ -165,7 +229,9 @@ namespace NightlyCode.Database.Info {
 
             switch(type.Name.ToLower()) {
             case "datetime":
-                return "TIMESTAMP";
+                //return "TIMESTAMP";
+                // still issues when comparing datetime in db if using timestamp format
+                return "INTEGER";
             case "guid":
                 return "TEXT";
             case "string":
@@ -211,6 +277,8 @@ namespace NightlyCode.Database.Info {
                 type = Nullable.GetUnderlyingType(type);
 
             // sqlite understands datetime but not timespan
+            if (type == typeof(DateTime))
+                return typeof(long);
             if(type == typeof(TimeSpan))
                 return typeof(long);
             if(type == typeof(Version))

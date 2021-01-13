@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using NightlyCode.Database.Fields;
 using NightlyCode.Database.Tokens.Control;
 using NightlyCode.Database.Tokens.Functions;
 using NightlyCode.Database.Tokens.Values;
@@ -130,6 +131,16 @@ namespace NightlyCode.Database.Tokens {
         /// <returns>token to be used in statements</returns>
         public static ISqlToken Column(string table, string name) {
             return new ColumnToken(table, name);
+        }
+
+        /// <summary>
+        /// casts data to another type
+        /// </summary>
+        /// <param name="token">value to cast</param>
+        /// <param name="type">type to cast value to</param>
+        /// <returns>token to be used in statements</returns>
+        public static IDBField Cast(ISqlToken token, CastType type) {
+            return new CastToken(token, type);
         }
     }
 }

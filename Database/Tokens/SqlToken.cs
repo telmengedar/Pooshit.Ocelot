@@ -20,6 +20,9 @@ namespace NightlyCode.Database.Tokens {
         public DateTime DateTime => throw new NotImplementedException("Only used for expressions");
 
         /// <inheritdoc />
+        public TimeSpan TimeSpan => throw new NotImplementedException("Only used for expressions");
+
+        /// <inheritdoc />
         public Guid Guid => throw new NotImplementedException("Only used for expressions");
 
         /// <inheritdoc />
@@ -33,6 +36,9 @@ namespace NightlyCode.Database.Tokens {
 
         /// <inheritdoc />
         public double Double => throw new NotImplementedException("Only used for expressions");
+
+        /// <inheritdoc />
+        public decimal Decimal => throw new NotImplementedException("Only used for expressions");
 
         /// <inheritdoc />
         public byte[] Blob => throw new NotImplementedException("Only used for expressions");

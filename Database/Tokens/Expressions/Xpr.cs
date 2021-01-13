@@ -5,6 +5,9 @@ namespace NightlyCode.Database.Tokens {
     /// <summary>
     /// provides functions and tokens to expressions
     /// </summary>
+    /// <remarks>
+    /// this represents the same functionality as <see cref="DB"/> but is only to be used in lambda expressions
+    /// </remarks>
     public static class Xpr {
     
         /// <summary>
@@ -41,7 +44,7 @@ namespace NightlyCode.Database.Tokens {
         /// <param name="value">value to use when condition evaluates to true</param>
         /// <param name="elsetoken">value to use when condition evaluates to false (optional)</param>
         /// <returns>token to be used in statements</returns>
-        public static ISqlToken If(ISqlToken condition, ISqlToken value, ISqlToken elsetoken) {
+        public static ISqlToken If(object condition, object value, object elsetoken) {
             throw new NotImplementedException("Only to be used in expression trees");
         }
 
@@ -51,7 +54,7 @@ namespace NightlyCode.Database.Tokens {
         /// <param name="condition">condition to evaluate</param>
         /// <param name="value">value to use when condition evaluates to true</param>
         /// <returns>token to be used in statements</returns>
-        public static ISqlToken If(ISqlToken condition, ISqlToken value) {
+        public static ISqlToken If(object condition, object value) {
             throw new NotImplementedException("Only to be used in expression trees");
         }
         

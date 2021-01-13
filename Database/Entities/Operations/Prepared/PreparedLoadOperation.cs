@@ -88,7 +88,31 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="assignments">action used to assign values</param>
         /// <param name="parameters">custom parameters for query execution</param>
         /// <returns>enumeration of result types</returns>
-        public virtual IEnumerable<TType> ExecuteType<TType>(Func<DataRow, TType> assignments, params object[] parameters) {
+        public virtual IEnumerable<TType> ExecuteTypes<TType>(Func<DataRow, TType> assignments, params object[] parameters) {
+            return ExecuteTypes(null, assignments, parameters);
+        }
+
+        /// <summary>
+        /// executes a query and stores the result in a custom result type
+        /// </summary>
+        /// <typeparam name="TType">type of result</typeparam>
+        /// <param name="assignments">action used to assign values</param>
+        /// <param name="transaction">transaction to use for execution</param>
+        /// <param name="parameters">custom parameters for query execution</param>
+        /// <returns>enumeration of result types</returns>
+        public virtual IEnumerable<TType> ExecuteTypes<TType>(Transaction transaction, Func<DataRow, TType> assignments, params object[] parameters) {
+            DataTable table = Execute(transaction, parameters);
+            return table.Rows.Select(assignments);
+        }
+
+        /// <summary>
+        /// executes a query and stores the result in a custom result type
+        /// </summary>
+        /// <typeparam name="TType">type of result</typeparam>
+        /// <param name="assignments">action used to assign values</param>
+        /// <param name="parameters">custom parameters for query execution</param>
+        /// <returns>enumeration of result types</returns>
+        public virtual TType ExecuteType<TType>(Func<DataRow, TType> assignments, params object[] parameters) {
             return ExecuteType(null, assignments, parameters);
         }
 
@@ -100,9 +124,9 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="transaction">transaction to use for execution</param>
         /// <param name="parameters">custom parameters for query execution</param>
         /// <returns>enumeration of result types</returns>
-        public virtual IEnumerable<TType> ExecuteType<TType>(Transaction transaction, Func<DataRow, TType> assignments, params object[] parameters) {
+        public virtual TType ExecuteType<TType>(Transaction transaction, Func<DataRow, TType> assignments, params object[] parameters) {
             DataTable table = Execute(transaction, parameters);
-            return table.Rows.Select(assignments);
+            return table.Rows.Length == 0 ? default : assignments(table.Rows[0]);
         }
 
         /// <summary>
@@ -170,7 +194,33 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="assignments">action used to assign values</param>
         /// <param name="parameters">custom parameters for query execution</param>
         /// <returns>enumeration of result types</returns>
-        public virtual Task<TType[]> ExecuteTypeAsync<TType>(Func<DataRow, TType> assignments, params object[] parameters)
+        public virtual Task<TType[]> ExecuteTypesAsync<TType>(Func<DataRow, TType> assignments, params object[] parameters)
+        {
+            return ExecuteTypesAsync(null, assignments, parameters);
+        }
+
+        /// <summary>
+        /// executes a query and stores the result in a custom result type
+        /// </summary>
+        /// <typeparam name="TType">type of result</typeparam>
+        /// <param name="assignments">action used to assign values</param>
+        /// <param name="transaction">transaction to use for execution</param>
+        /// <param name="parameters">custom parameters for query execution</param>
+        /// <returns>enumeration of result types</returns>
+        public virtual async Task<TType[]> ExecuteTypesAsync<TType>(Transaction transaction, Func<DataRow, TType> assignments, params object[] parameters)
+        {
+            DataTable table = await ExecuteAsync(transaction, parameters);
+            return table.Rows.Select(assignments).ToArray();
+        }
+
+        /// <summary>
+        /// executes a query and stores the result in a custom result type
+        /// </summary>
+        /// <typeparam name="TType">type of result</typeparam>
+        /// <param name="assignments">action used to assign values</param>
+        /// <param name="parameters">custom parameters for query execution</param>
+        /// <returns>enumeration of result types</returns>
+        public virtual Task<TType> ExecuteTypeAsync<TType>(Func<DataRow, TType> assignments, params object[] parameters)
         {
             return ExecuteTypeAsync(null, assignments, parameters);
         }
@@ -183,10 +233,10 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="transaction">transaction to use for execution</param>
         /// <param name="parameters">custom parameters for query execution</param>
         /// <returns>enumeration of result types</returns>
-        public virtual async Task<TType[]> ExecuteTypeAsync<TType>(Transaction transaction, Func<DataRow, TType> assignments, params object[] parameters)
+        public virtual async Task<TType> ExecuteTypeAsync<TType>(Transaction transaction, Func<DataRow, TType> assignments, params object[] parameters)
         {
             DataTable table = await ExecuteAsync(transaction, parameters);
-            return table.Rows.Select(assignments).ToArray();
+            return table.Rows.Length == 0 ? default : assignments(table.Rows[0]);
         }
 
         /// <summary>

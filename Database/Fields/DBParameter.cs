@@ -56,9 +56,24 @@ namespace NightlyCode.Database.Fields {
         public new static float Single => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
 
         /// <summary>
-        /// field to use in expressions when referencing a <see cref="string"/> parameter
+        /// field to use in expressions when referencing a <see cref="Double"/> parameter
         /// </summary>
         public new static double Double => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+
+        /// <summary>
+        /// field to use in expressions when referencing a <see cref="decimal"/> parameter
+        /// </summary>
+        public new static decimal Decimal => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+
+        /// <summary>
+        /// field to use in expressions when referencing a <see cref="DateTime"/> parameter
+        /// </summary>
+        public new static DateTime DateTime => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+
+        /// <summary>
+        /// field to use in expressions when referencing a <see cref="TimeSpan"/> parameter
+        /// </summary>
+        public new static TimeSpan TimeSpan => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
 
         /// <summary>
         /// field to use in expressions when referencing a <see cref="T:byte[]"/> parameter

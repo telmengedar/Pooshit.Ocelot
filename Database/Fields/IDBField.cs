@@ -29,6 +29,11 @@ namespace NightlyCode.Database.Fields {
         DateTime DateTime { get; }
 
         /// <summary>
+        /// field used for comparision
+        /// </summary>
+        TimeSpan TimeSpan { get; }
+
+        /// <summary>
         /// field to use in expressions when referencing a <see cref="Guid"/> parameter
         /// </summary>
         Guid Guid { get; }
@@ -49,9 +54,14 @@ namespace NightlyCode.Database.Fields {
         float Single { get; }
 
         /// <summary>
-        /// field to use in expressions when referencing a <see cref="string"/> parameter
+        /// field to use in expressions when referencing a <see cref="Double"/> parameter
         /// </summary>
         double Double { get; }
+
+        /// <summary>
+        /// field to use in expressions when referencing a <see cref="Decimal"/> parameter
+        /// </summary>
+        decimal Decimal { get; }
 
         /// <summary>
         /// field to use in expressions when referencing a <see cref="T:byte[]"/> parameter
@@ -250,6 +260,9 @@ namespace NightlyCode.Database.Fields {
         /// </summary>
         public DateTime DateTime => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
 
+        /// <inheritdoc />
+        public TimeSpan TimeSpan => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+
         /// <summary>
         /// field to use in expressions when referencing a <see cref="IDBField.Guid"/> parameter
         /// </summary>
@@ -274,6 +287,9 @@ namespace NightlyCode.Database.Fields {
         /// field to use in expressions when referencing a <see cref="string"/> parameter
         /// </summary>
         public double Double => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
+
+        /// <inheritdoc />
+        public decimal Decimal => throw new NotImplementedException("Field has no implementation since it is only used for typed expressions");
 
         /// <summary>
         /// field to use in expressions when referencing a <see cref="T:byte[]"/> parameter

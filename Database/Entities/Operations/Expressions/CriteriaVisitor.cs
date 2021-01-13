@@ -9,6 +9,7 @@ using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Fields;
 using NightlyCode.Database.Info;
 using NightlyCode.Database.Tokens;
+using NightlyCode.Database.Tokens.Expressions;
 using Converter = NightlyCode.Database.Extern.Converter;
 
 namespace NightlyCode.Database.Entities.Operations.Expressions {
@@ -24,6 +25,8 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
 
         ExpressionType remainder = ExpressionType.Default;
 
+        IXprTranslator xprtranslator;
+        
         /// <summary>
         /// creates a new <see cref="CriteriaVisitor"/>
         /// </summary>
@@ -32,6 +35,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
         /// <param name="dbinfo">database specific implementation info</param>
         /// <param name="aliases">known table aliases</param>
         public CriteriaVisitor(Func<Type, EntityDescriptor> descriptorgetter, IOperationPreparator preparator, IDBInfo dbinfo, params Tuple<string, string>[] aliases) {
+            xprtranslator = new XprTranslator(Visit);
             this.descriptorgetter = descriptorgetter;
             this.dbinfo = dbinfo;
             this.preparator = preparator;
@@ -286,6 +290,9 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
         /// <inheritdoc />
         protected override Expression VisitMember(MemberExpression node) {
             AppendValueRemainder();
+            if (node.Member.DeclaringType == typeof(Xpr))
+                return xprtranslator.TranslateProperty(node, preparator);
+            
             if(node.Member is PropertyInfo) {
                 Expression host = node.Expression ?? node;
                 if(host.NodeType == ExpressionType.Call) {
@@ -372,9 +379,8 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
         protected override Expression VisitMethodCall(MethodCallExpression node) {
             AppendValueRemainder();
 
-            if (node.Method.DeclaringType == typeof(Xpr)) {
-                return node;
-            }
+            if (node.Method.DeclaringType == typeof(Xpr))
+                return xprtranslator.TranslateMethodCall(node, preparator);
             
             if(node.Method.DeclaringType == typeof(DBOperators)) {
                 switch(node.Method.Name) {

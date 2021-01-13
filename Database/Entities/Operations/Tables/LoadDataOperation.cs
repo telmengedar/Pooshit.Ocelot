@@ -95,7 +95,7 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
         /// <param name="assignments">logic used to create entities</param>
         /// <param name="parameters">parameters to use</param>
         /// <returns>loaded entities</returns>
-        public IEnumerable<T> ExecuteType<T>(Transaction transaction, Func<DataRow, T> assignments, params object[] parameters)
+        public T ExecuteType<T>(Transaction transaction, Func<DataRow, T> assignments, params object[] parameters)
         {
             return Prepare().ExecuteType(transaction, assignments, parameters);
         }
@@ -106,9 +106,32 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
         /// <param name="assignments">logic used to create entities</param>
         /// <param name="parameters">parameters to use</param>
         /// <returns>loaded entities</returns>
-        public IEnumerable<T> ExecuteType<T>(Func<DataRow, T> assignments, params object[] parameters)
+        public T ExecuteType<T>(Func<DataRow, T> assignments, params object[] parameters)
         {
             return Prepare().ExecuteType(assignments, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation and loads a type as result
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="assignments">logic used to create entities</param>
+        /// <param name="parameters">parameters to use</param>
+        /// <returns>loaded entities</returns>
+        public IEnumerable<T> ExecuteTypes<T>(Transaction transaction, Func<DataRow, T> assignments, params object[] parameters)
+        {
+            return Prepare().ExecuteTypes(transaction, assignments, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation and loads a type as result
+        /// </summary>
+        /// <param name="assignments">logic used to create entities</param>
+        /// <param name="parameters">parameters to use</param>
+        /// <returns>loaded entities</returns>
+        public IEnumerable<T> ExecuteTypes<T>(Func<DataRow, T> assignments, params object[] parameters)
+        {
+            return Prepare().ExecuteTypes(assignments, parameters);
         }
 
         /// <summary>
