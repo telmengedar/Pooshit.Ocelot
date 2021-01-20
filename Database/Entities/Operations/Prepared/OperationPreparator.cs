@@ -207,5 +207,14 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
                     .Where(p => p.IsConstant)
                     .Select(GetParameterValue).ToArray());
         }
+
+        /// <summary>
+        /// create bulk insert operation from prepared data
+        /// </summary>
+        /// <param name="dbclient">client used to execute operation</param>
+        /// <returns>operation to use to insert bulk data</returns>
+        public PreparedBulkInsertOperation GetBulkInsertOperation(IDBClient dbclient) {
+            return new PreparedBulkInsertOperation(dbclient, GetCommandText(dbclient.DBInfo));
+        }
     }
 }

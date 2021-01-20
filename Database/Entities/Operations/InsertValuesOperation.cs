@@ -115,6 +115,35 @@ namespace NightlyCode.Database.Entities.Operations {
         }
 
         /// <summary>
+        /// prepares the insert command for a bulk data insert
+        /// </summary>
+        /// <returns>operation to be used for a bulk insert</returns>
+        public PreparedBulkInsertOperation PrepareBulk() {
+            OperationPreparator preparator = new OperationPreparator();
+            preparator.AppendText("INSERT INTO");
+
+            EntityDescriptor descriptor = descriptorgetter(typeof(T));
+
+            preparator.AppendText(descriptor.TableName);
+
+            bool first = true;
+            if(insertcolumns.Length > 0) {
+                preparator.AppendText(" (");
+                foreach(IDBField field in insertcolumns) {
+                    if(!first)
+                        preparator.AppendText(",");
+                    else
+                        first = false;
+                    dbclient.DBInfo.Append(field, preparator, descriptorgetter);
+                }
+                preparator.AppendText(")");
+            }
+            preparator.AppendText("VALUES");
+            
+            return preparator.GetBulkInsertOperation(dbclient);
+        }
+        
+        /// <summary>
         /// prepares operation for execution
         /// </summary>
         /// <returns>operation for execution</returns>

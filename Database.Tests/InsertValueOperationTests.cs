@@ -5,6 +5,7 @@ using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Tests.Data;
 using NightlyCode.Database.Tests.Models;
+using NightlyCode.Database.Tokens;
 using NUnit.Framework;
 
 namespace NightlyCode.Database.Tests {
@@ -48,6 +49,21 @@ namespace NightlyCode.Database.Tests {
 
             long id = insertop.Execute("lala");
             Assert.AreEqual(1, id);
+        }
+
+        [Test, Parallelizable]
+        public void InsertBulk() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+            entitymanager.UpdateSchema<ValueModel>();
+
+            PreparedBulkInsertOperation insertop = entitymanager.Insert<ValueModel>()
+                .Columns(c => c.String, c => c.Integer, c => c.Single)
+                .PrepareBulk();
+
+            insertop.Execute(new object[] {"Rolf", 32, 1.0f}, new object[] {"Ulf", 11, 0.5f}, new object[] {"Lutz", 25, 0.8f});
+
+            Assert.AreEqual(3, entitymanager.Load<ValueModel>(DB.Count(DB.All)).ExecuteScalar<int>());
         }
     }
 }

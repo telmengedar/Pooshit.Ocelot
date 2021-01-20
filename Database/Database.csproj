@@ -12,12 +12,12 @@
     <PackageId>NightlyCode.Database</PackageId>
     <PackageProjectUrl>https://github.com/telmengedar/NightlyCode.DB</PackageProjectUrl>
     <RepositoryUrl>https://github.com/telmengedar/NightlyCode.DB.git</RepositoryUrl>
-    <AssemblyVersion>0.11.18.0</AssemblyVersion>
+    <AssemblyVersion>0.11.19.0</AssemblyVersion>
     <FileVersion></FileVersion>
     <Version>0.11.5-preview</Version>
     <RootNamespace>NightlyCode.Database</RootNamespace>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageVersion>0.11.18-preview</PackageVersion>
+    <PackageVersion>0.11.19-preview</PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
