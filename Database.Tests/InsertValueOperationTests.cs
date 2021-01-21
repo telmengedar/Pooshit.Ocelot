@@ -61,7 +61,7 @@ namespace NightlyCode.Database.Tests {
                 .Columns(c => c.String, c => c.Integer, c => c.Single)
                 .PrepareBulk();
 
-            insertop.Execute(new object[] {"Rolf", 32, 1.0f}, new object[] {"Ulf", 11, 0.5f}, new object[] {"Lutz", 25, 0.8f});
+            insertop.Execute(new object[]{new object[] {"Rolf", 32, 1.0f}, new object[] {"Ulf", 11, 0.5f}, new object[] {"Lutz", 25, 0.8f}});
 
             Assert.AreEqual(3, entitymanager.Load<ValueModel>(DB.Count(DB.All)).ExecuteScalar<int>());
         }

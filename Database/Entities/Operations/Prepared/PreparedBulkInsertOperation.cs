@@ -64,7 +64,16 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <param name="parameters">parameters for operation</param>
         /// <returns>number of affected rows if applicable</returns>
-        public virtual long Execute(params IEnumerable[] parameters) {
+        public virtual long Execute(IEnumerable[] parameters) {
+            return Execute(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation using custom parameters
+        /// </summary>
+        /// <param name="parameters">parameters for operation</param>
+        /// <returns>number of affected rows if applicable</returns>
+        public virtual long Execute(IEnumerable parameters) {
             return Execute(null, parameters);
         }
 
@@ -74,7 +83,17 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="transaction">transaction used to execute operation</param>
         /// <param name="parameters">parameters for operation</param>
         /// <returns>number of affected rows if applicable</returns>
-        public virtual long Execute(Transaction transaction, params IEnumerable[] parameters) {
+        public virtual long Execute(Transaction transaction, IEnumerable[] parameters) {
+            return PrepareOperation(CommandText, parameters).Execute(transaction);
+        }
+
+        /// <summary>
+        /// executes the operation using custom parameters
+        /// </summary>
+        /// <param name="transaction">transaction used to execute operation</param>
+        /// <param name="parameters">parameters for operation</param>
+        /// <returns>number of affected rows if applicable</returns>
+        public virtual long Execute(Transaction transaction, IEnumerable parameters) {
             return PrepareOperation(CommandText, parameters).Execute(transaction);
         }
 
@@ -83,7 +102,16 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// </summary>
         /// <param name="parameters">parameters for operation</param>
         /// <returns>number of affected rows if applicable</returns>
-        public virtual Task<long> ExecuteAsync(params object[] parameters) {
+        public virtual Task<long> ExecuteAsync(IEnumerable[] parameters) {
+            return ExecuteAsync(null, parameters);
+        }
+
+        /// <summary>
+        /// executes the operation using custom parameters
+        /// </summary>
+        /// <param name="parameters">parameters for operation</param>
+        /// <returns>number of affected rows if applicable</returns>
+        public virtual Task<long> ExecuteAsync(IEnumerable parameters) {
             return ExecuteAsync(null, parameters);
         }
 
@@ -93,7 +121,17 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="transaction">transaction used to execute operation</param>
         /// <param name="parameters">parameters for operation</param>
         /// <returns>number of affected rows if applicable</returns>
-        public virtual Task<long> ExecuteAsync(Transaction transaction, params object[] parameters) {
+        public virtual Task<long> ExecuteAsync(Transaction transaction, IEnumerable[] parameters) {
+            return PrepareOperation(CommandText, parameters).ExecuteAsync(transaction);
+        }
+
+        /// <summary>
+        /// executes the operation using custom parameters
+        /// </summary>
+        /// <param name="transaction">transaction used to execute operation</param>
+        /// <param name="parameters">parameters for operation</param>
+        /// <returns>number of affected rows if applicable</returns>
+        public virtual Task<long> ExecuteAsync(Transaction transaction, IEnumerable parameters) {
             return PrepareOperation(CommandText, parameters).ExecuteAsync(transaction);
         }
 
