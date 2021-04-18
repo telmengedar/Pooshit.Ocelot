@@ -25,7 +25,8 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
 
         ExpressionType remainder = ExpressionType.Default;
 
-        IXprTranslator xprtranslator;
+        readonly IXprTranslator xprtranslator;
+        Stack<ExpressionType> binarystack=new Stack<ExpressionType>();
         
         /// <summary>
         /// creates a new <see cref="CriteriaVisitor"/>
@@ -116,6 +117,39 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             }
         }
 
+        int GetPriority(ExpressionType op) {
+            switch(op) {
+            case ExpressionType.NotEqual:
+            case ExpressionType.Equal:
+            case ExpressionType.LessThan:
+            case ExpressionType.LessThanOrEqual:
+            case ExpressionType.GreaterThan:
+            case ExpressionType.GreaterThanOrEqual:
+                return 3;
+            case ExpressionType.And:
+                return 4;
+            case ExpressionType.AndAlso:
+                return 7;
+            case ExpressionType.Or:
+                return 5;
+            case ExpressionType.OrElse:
+                return 8;
+            case ExpressionType.ExclusiveOr:
+                return 6;
+            case ExpressionType.Add:
+            case ExpressionType.Subtract:
+                return 1;
+            case ExpressionType.Multiply:
+            case ExpressionType.Divide:
+                return 0;
+            case ExpressionType.Negate:
+            case ExpressionType.Not:
+                return 2;
+            default:
+                throw new InvalidOperationException("Operant not supported");
+            }
+        }
+        
         void AddOperant(ExpressionType type) {
             switch(type) {
             case ExpressionType.Equal:
@@ -167,7 +201,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             }
             else {
                 AppendValueRemainder();
-                if (value is Array array) {
+                if (value is Array array && !(value is byte[])) {
                     for (int i = 0; i < array.Length; ++i) {
                         if(i>0)
                             preparator.AppendText(",");
@@ -342,9 +376,16 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 return node;
             }
 
+            bool paranthesis = binarystack.Count > 0 && GetPriority(binarystack.First()) < GetPriority(node.NodeType);
+            if(paranthesis)
+                preparator.AppendText("(");
+            binarystack.Push(node.NodeType);
             Visit(node.Left);
             AddOperant(node.NodeType);
             Visit(node.Right);
+            binarystack.Pop();
+            if(paranthesis)
+                preparator.AppendText(")");
             return node;
         }
 
@@ -369,9 +410,9 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
 
         /// <inheritdoc />
         protected override Expression VisitBlock(BlockExpression node) {
-            preparator.AppendText("(");
+            //preparator.AppendText("(");
             Expression result = base.VisitBlock(node);
-            preparator.AppendText(")");
+            //preparator.AppendText(")");
             return result;
         }
 

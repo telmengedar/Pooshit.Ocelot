@@ -16,10 +16,17 @@ namespace NightlyCode.Database.Tokens.Values {
         /// creates a new <see cref="PropertyToken"/>
         /// </summary>
         /// <param name="propertyExpression">expression pointing to property</param>
-        public PropertyToken(Expression propertyExpression) {
+        /// <param name="alias">alias to reference</param>
+        public PropertyToken(Expression propertyExpression, string alias=null) {
             PropertyExpression = propertyExpression;
+            Alias = alias;
         }
 
+        /// <summary>
+        /// alias to reference
+        /// </summary>
+        public string Alias { get; }
+        
         /// <summary>
         /// expression describing the field
         /// </summary>
@@ -28,7 +35,8 @@ namespace NightlyCode.Database.Tokens.Values {
 
         /// <inheritdoc />
         public override void ToSql(IDBInfo dbinfo, IOperationPreparator preparator, Func<Type, EntityDescriptor> models, string tablealias) {
-            CriteriaVisitor.GetCriteriaText(PropertyExpression, models, dbinfo, preparator, tablealias);
+            string alias = Alias ?? tablealias;
+            CriteriaVisitor.GetCriteriaText(PropertyExpression, models, dbinfo, preparator, alias);
         }
     }
 }

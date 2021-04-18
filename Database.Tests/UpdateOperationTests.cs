@@ -53,5 +53,17 @@ namespace NightlyCode.Database.Tests {
             Assert.AreEqual(2.0, value.Double);
             Assert.AreEqual(3.0f, value.Single);
         }
+
+        [Test, Parallelizable]
+        [Description("Updates a blob field without parameters")]
+        public async Task UpdateBlob() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+
+            entitymanager.UpdateSchema<ValueModel>();
+
+            byte[] blob = {1, 2, 3, 4, 5};
+            await entitymanager.Update<ValueModel>().Set(v => v.Blob == blob).ExecuteAsync();
+        }
     }
 }

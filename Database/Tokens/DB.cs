@@ -103,7 +103,7 @@ namespace NightlyCode.Database.Tokens {
         public static ISqlToken Predicate<T>(Expression<Func<T, bool>> predicate) {
             return new ExpressionToken(predicate);
         }
-        
+
         /// <summary>
         /// references a property of an entity using an expression
         /// </summary>
@@ -112,6 +112,17 @@ namespace NightlyCode.Database.Tokens {
         /// <returns>field to be used in statements</returns>
         public static ISqlToken Property<T>(Expression<Func<T, object>> expression) {
             return new PropertyToken(expression);
+        }
+
+        /// <summary>
+        /// references a property of an entity using an expression
+        /// </summary>
+        /// <typeparam name="T">type of entity to reference</typeparam>
+        /// <param name="expression">expression pointing to property</param>
+        /// <param name="alias">alias to use for property reference</param>
+        /// <returns>field to be used in statements</returns>
+        public static ISqlToken Property<T>(Expression<Func<T, object>> expression, string alias) {
+            return new PropertyToken(expression, alias);
         }
 
         /// <summary>

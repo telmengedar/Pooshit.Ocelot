@@ -83,5 +83,26 @@ namespace NightlyCode.Database.Tests.Fields {
             Assert.That(tuple.SequenceEqual(new[] {6, 3, 5}));
         }
 
+        [Test, Parallelizable]
+        public void ExtractDayOfWeekUsingAlias() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+
+            entitymanager.UpdateSchema<DateTimeValue>();
+
+            PreparedOperation operation = entitymanager.Insert<DateTimeValue>().Columns(m => m.Time, m => m.Value).Prepare();
+            operation.Execute(new DateTime(2020, 02, 01, 01, 00, 00), 2);
+            operation.Execute(new DateTime(2020, 07, 01, 05, 00, 00), 5);
+            operation.Execute(new DateTime(2020, 10, 02, 03, 00, 00), 8);
+            
+            int[] tuple =
+                entitymanager.Load<DateTimeValue>(v => DB.Cast(DB.Property<DateTimeValue>(m => m.Time, "dtv"), CastType.DayOfWeek))
+                    .Alias("dtv")
+                    .ExecuteSet<int>()
+                    .ToArray();
+
+            Assert.AreEqual(3, tuple.Length);
+            Assert.That(tuple.SequenceEqual(new[] {6, 3, 5}));
+        }
     }
 }

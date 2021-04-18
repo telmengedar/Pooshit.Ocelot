@@ -48,5 +48,6 @@ namespace NightlyCode.Database.Tests {
             PreparedOperation operation = preparator.GetOperation(client);
             Assert.AreEqual("( [integer] = @1 OR [integer] < @2 ) AND ( [integer] = @3 OR [integer] < @4 ) AND ( [integer] = @5 OR [integer] < @6 )", operation.CommandText);
         }
+
     }
 }

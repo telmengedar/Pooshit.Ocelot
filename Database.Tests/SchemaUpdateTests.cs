@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Microsoft.Data.Sqlite;
 using Moq;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
@@ -168,6 +169,22 @@ namespace NightlyCode.Database.Tests {
 
             entitymanager.UpdateSchema<NullablePropertyType>();
         }
+
+        [Test, Parallelizable]
+        public void CreateEntityWithIndices() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+            entitymanager.UpdateSchema<Channel>();
+        }
+        
+        [Test, Parallelizable]
+        public void CreateEntityWithIndicesInLockedClient() {
+            SqliteConnection connection = new SqliteConnection("Data Source=:memory:");
+            IDBClient dbclient = ClientFactory.Create(() => connection, new SQLiteInfo(), false, true);
+            EntityManager entitymanager = new EntityManager(dbclient);
+            entitymanager.UpdateSchema<Channel>();
+        }
+
     }
 
 }

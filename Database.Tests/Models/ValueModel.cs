@@ -25,5 +25,7 @@ namespace NightlyCode.Database.Tests.Models {
         public string String { get; set; }
 
         public DateTime? NDatetime { get; set; }
+        
+        public byte[] Blob { get; set; }
     }
 }
