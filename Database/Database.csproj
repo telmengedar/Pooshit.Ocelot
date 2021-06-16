@@ -7,7 +7,7 @@
     <Description>Simple type-safe ORM for access to database using fluent statements                                     </Description>
     <Company>NightlyCode</Company>
     <Authors>Toni Gottschall</Authors>
-    <PackageTags>Database, ORM, SQlite, Postgre, MySQL, fluent</PackageTags>
+    <PackageTags>Database, ORM, SQlite, Postgre, MySQL, fluent, Ocelot</PackageTags>
     <Product>NightlyCode.Database</Product>
     <PackageId>NightlyCode.Database</PackageId>
     <PackageProjectUrl>https://github.com/telmengedar/NightlyCode.DB</PackageProjectUrl>
@@ -17,7 +17,7 @@
     <Version>0.11.5-preview</Version>
     <RootNamespace>NightlyCode.Database</RootNamespace>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageVersion>0.11.25-preview</PackageVersion>
+    <PackageVersion>0.11.26-preview</PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

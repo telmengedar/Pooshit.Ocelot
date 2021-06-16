@@ -95,6 +95,26 @@ namespace NightlyCode.Database.Tokens {
         }
 
         /// <summary>
+        /// creates a case statement with multiple cases
+        /// </summary>
+        /// <param name="cases">cases to match</param>
+        /// <param name="elsetoken">value to use if no case matches</param>
+        /// <returns>case token</returns>
+        public static CaseControl Case(When[] cases, ISqlToken elsetoken = null) {
+            return new CaseControl(cases, elsetoken);
+        }
+
+        /// <summary>
+        /// creates a when token to be used in case statements
+        /// </summary>
+        /// <param name="condition">condition of case</param>
+        /// <param name="value">value to use if condition evaluates to true</param>
+        /// <returns>when token</returns>
+        public static When When(ISqlToken condition, ISqlToken value) {
+            return new When(condition, value);
+        }
+        
+        /// <summary>
         /// predicate used to generate sql
         /// </summary>
         /// <param name="predicate">predicate to translate</param>
