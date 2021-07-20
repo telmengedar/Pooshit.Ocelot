@@ -6,6 +6,7 @@ namespace NightlyCode.Database.Entities.Attributes
     /// <summary>
     /// specifies that the value of the column must be unique
     /// </summary>
+    [AttributeUsage(AttributeTargets.Property|AttributeTargets.Field, AllowMultiple = true)]
     public class UniqueAttribute : Attribute
     {
 
@@ -26,6 +27,6 @@ namespace NightlyCode.Database.Entities.Attributes
         /// <summary>
         /// name used to combine several properties to one unique statement
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; }
     }
 }
