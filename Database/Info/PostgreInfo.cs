@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
 using NightlyCode.Database.Entities.Descriptors;
@@ -14,6 +17,7 @@ using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
 using NightlyCode.Database.Fields;
 using NightlyCode.Database.Info.Postgre;
+using NightlyCode.Database.Statements;
 using NightlyCode.Database.Tokens;
 using NightlyCode.Database.Tokens.Values;
 using Converter = NightlyCode.Database.Extern.Converter;
@@ -33,6 +37,9 @@ namespace NightlyCode.Database.Info {
             AddFieldLogic<LimitField>(AppendLimit);
             AddFieldLogic<CastToken>(AppendCast);
         }
+
+        /// <inheritdoc />
+        public override bool SupportsArrayParameters => true;
 
         void AppendCast(CastToken cast, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
             switch (cast.Type) {
@@ -95,11 +102,10 @@ namespace NightlyCode.Database.Info {
         }
 
         void AppendLimit(LimitField limit, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
-
-            if(limit.Limit.HasValue)
-                preparator.AppendText("LIMIT").AppendText(limit.Limit.Value.ToString());
-            if(limit.Offset.HasValue)
-                preparator.AppendText("OFFSET").AppendText(limit.Offset.Value.ToString());
+            if(limit.Limit!=null)
+                preparator.AppendText("LIMIT").AppendField(limit.Limit, this, descriptorgetter, tablealias);
+            if(limit.Offset!=null)
+                preparator.AppendText("OFFSET").AppendField(limit.Offset, this, descriptorgetter, tablealias);
         }
 
         /// <summary>
@@ -420,6 +426,22 @@ namespace NightlyCode.Database.Info {
         }
 
         /// <inheritdoc />
+        public override async Task<string> GenerateCreateStatement(IDBClient client, string table) {
+            string template;
+            Stream templateStream = typeof(PostgreInfo).Assembly.GetManifestResourceStream("NightlyCode.Database.Info.Postgre.createstatement.sql");
+            if (templateStream == null)
+                throw new InvalidOperationException("Statement template resource not found");
+            
+            using (StreamReader reader = new StreamReader(templateStream))
+                template = await reader.ReadToEndAsync();
+
+            string statement = string.Format(template, table);
+
+            string createStatement = Converter.Convert<string>(await client.ScalarAsync(statement));
+            return createStatement.ProcessCreateStatement();
+        }
+
+        /// <inheritdoc />
         public override SchemaDescriptor GetSchema(IDBClient client, string name) {
             PgView view = new LoadOperation<PgView>(client, EntityDescriptor.Create, DB.All).Where(p => p.Name == name).ExecuteEntity();
             if(view != null)
@@ -475,5 +497,46 @@ namespace NightlyCode.Database.Info {
 
             return descriptor;
         }
+
+        /// <inheritdoc />
+        public override Task Truncate(IDBClient client, string table, TruncateOptions options = null) {
+            if (options?.ResetIdentity ?? false)
+                return client.NonQueryAsync($"TRUNCATE {MaskColumn(table)} RESTART IDENTITY");
+            return client.NonQueryAsync($"TRUNCATE {MaskColumn(table)}");
+        }
+        
+        /// <inheritdoc />
+        public override void CreateParameter(IDbCommand command, object parameterValue) {
+            IDbDataParameter parameter = command.CreateParameter();
+            parameter.ParameterName = Parameter + (command.Parameters.Count + 1);
+            if (parameterValue == null || parameterValue == DBNull.Value)
+                parameter.Value = DBNull.Value;
+            else if(parameterValue is Array array) {
+                Type elementType = array.GetType().GetElementType();
+                Type dbType = GetDBRepresentation(elementType);
+                if (dbType != elementType) {
+                    Array convertedArray = Array.CreateInstance(dbType, array.Length);
+                    for (int i = 0; i < array.Length; ++i)
+                        convertedArray.SetValue(Converter.Convert(array.GetValue(i), dbType), i);
+                    
+                    parameter.Value = convertedArray;
+                }
+                else parameter.Value =Converter.Convert(parameterValue, GetDBRepresentation(parameterValue.GetType()));
+            }
+            else parameter.Value = Converter.Convert(parameterValue, GetDBRepresentation(parameterValue.GetType())); 
+
+            command.Parameters.Add(parameter);
+        }
+
+        /// <inheritdoc />
+        public override void CreateInFragment(Expression lhs, Expression rhs, IOperationPreparator preparator, Func<Expression, Expression> visitor) {
+            visitor(lhs);
+            preparator.AppendText("= ANY(");
+            visitor(rhs);
+            preparator.AppendText(")");
+        }
+
+        /// <inheritdoc />
+        public override bool PreparationSupported => true;
     }
 }

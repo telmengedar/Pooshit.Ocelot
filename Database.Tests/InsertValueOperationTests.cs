@@ -65,5 +65,18 @@ namespace NightlyCode.Database.Tests {
 
             Assert.AreEqual(3, entitymanager.Load<ValueModel>(DB.Count(DB.All)).ExecuteScalar<int>());
         }
+        
+        [Test, Parallelizable]
+        public void InsertNullableDBNull() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+            entitymanager.UpdateSchema<ValueModel>();
+
+            InsertValuesOperation<ValueModel> insertop = entitymanager.Insert<ValueModel>().Columns(c => c.NDatetime);
+
+            long id = insertop.Execute(DBNull.Value);
+            Assert.AreEqual(1, id);
+        }
+
     }
 }

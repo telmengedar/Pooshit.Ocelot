@@ -95,7 +95,7 @@ namespace NightlyCode.Database.Tests.Postgres {
                         });
                 }
 
-                return new DataTable(null, new DataRow[0]);
+                return new DataTable(null, Array.Empty<DataRow>());
             });
 
             TableDescriptor descriptor = info.GetSchema(client.Object, "companyaddress") as TableDescriptor;
@@ -117,7 +117,7 @@ namespace NightlyCode.Database.Tests.Postgres {
 
             PreparedLoadOperation loadop = new LoadOperation<PgView>(client.Object, type => new EntityDescriptor("test"), v=>DBFunction.Count()).Limit(7).Prepare();
 
-            Assert.AreEqual("SELECT count( * ) FROM test LIMIT 7", loadop.CommandText);
+            Assert.AreEqual("SELECT count( * ) FROM test LIMIT @1", loadop.CommandText);
         }
 
         [Test, Parallelizable]
@@ -129,7 +129,7 @@ namespace NightlyCode.Database.Tests.Postgres {
 
             PreparedLoadOperation loadop = new LoadOperation<PgView>(client.Object, type => new EntityDescriptor("test"), v=>DBFunction.Count()).Offset(3).Prepare();
 
-            Assert.AreEqual("SELECT count( * ) FROM test OFFSET 3", loadop.CommandText);
+            Assert.AreEqual("SELECT count( * ) FROM test OFFSET @1", loadop.CommandText);
         }
 
         [Test, Parallelizable]
@@ -141,7 +141,7 @@ namespace NightlyCode.Database.Tests.Postgres {
 
             PreparedLoadOperation loadop = new LoadOperation<PgView>(client.Object, type => new EntityDescriptor("test"), v=>DBFunction.Count()).Limit(7).Offset(3).Prepare();
 
-            Assert.AreEqual("SELECT count( * ) FROM test LIMIT 7 OFFSET 3", loadop.CommandText);
+            Assert.AreEqual("SELECT count( * ) FROM test LIMIT @1 OFFSET @2", loadop.CommandText);
         }
 
         [Test, Parallelizable]

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Fields;
 using NightlyCode.Database.Tokens.Control;
 using NightlyCode.Database.Tokens.Functions;
@@ -17,6 +18,7 @@ namespace NightlyCode.Database.Tokens {
         /// </summary>
         public static readonly ISqlToken All = new AllColumnsToken(); 
 
+        
         /// <summary>
         /// coalesce function used to return the first token which evaluates in non null
         /// </summary>
@@ -69,6 +71,32 @@ namespace NightlyCode.Database.Tokens {
         /// <returns>token to be used in statements</returns>
         public static ISqlToken Max(ISqlToken token) {
             return new AggregateFunction("MAX", token);
+        }
+
+        /// <summary>
+        /// get a minimum of a series of values
+        /// </summary>
+        /// <param name="token">token identifying values of which to get maximum</param>
+        /// <returns>token to be used in statements</returns>
+        public static ISqlToken Floor(ISqlToken token) {
+            return new AggregateFunction("FLOOR", token);
+        }
+
+        /// <summary>
+        /// get a minimum of a series of values
+        /// </summary>
+        /// <param name="token">token identifying values of which to get maximum</param>
+        /// <returns>token to be used in statements</returns>
+        public static ISqlToken Ceiling(ISqlToken token) {
+            return new AggregateFunction("CEILING", token);
+        }
+
+        /// <summary>
+        /// counts values of a column which are not null
+        /// </summary>
+        /// <returns>token to be used in statements</returns>
+        public static ISqlToken Count() {
+            return Count(DB.All);
         }
 
         /// <summary>
@@ -125,6 +153,27 @@ namespace NightlyCode.Database.Tokens {
         }
 
         /// <summary>
+        /// predicate used to generate sql
+        /// </summary>
+        /// <param name="valueExpression">expression specifying value to extract</param>
+        /// <typeparam name="T">type to use as expression parameter</typeparam>
+        /// <returns>token to be used in statements</returns>
+        public static ISqlToken Value<T>(Expression<Func<T, object>> valueExpression) {
+            return new ExpressionToken(valueExpression);
+        }
+
+        /// <summary>
+        /// predicate used to generate sql
+        /// </summary>
+        /// <param name="valueExpression">expression specifying value to extract</param>
+        /// <param name="useBraces">determines whether to enclose expression in brackets</param>
+        /// <typeparam name="T">type to use as expression parameter</typeparam>
+        /// <returns>token to be used in statements</returns>
+        static ISqlToken Value<T>(Expression<Func<T, object>> valueExpression, bool useBraces) {
+            return new ExpressionToken(valueExpression, useBraces);
+        }
+
+        /// <summary>
         /// references a property of an entity using an expression
         /// </summary>
         /// <typeparam name="T">type of entity to reference</typeparam>
@@ -172,6 +221,15 @@ namespace NightlyCode.Database.Tokens {
         /// <returns>token to be used in statements</returns>
         public static IDBField Cast(ISqlToken token, CastType type) {
             return new CastToken(token, type);
+        }
+
+        /// <summary>
+        /// allows a db operation to be used as sql token
+        /// </summary>
+        /// <param name="operation">operation to wrap</param>
+        /// <returns>token to be used in statements</returns>
+        public static ISqlToken Operation(IDatabaseOperation operation) {
+            return Value<object>(o => operation, true);
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
@@ -10,6 +11,7 @@ using NightlyCode.Database.Entities.Operations.Tables;
 using NightlyCode.Database.Entities.Schema;
 using NightlyCode.Database.Extern;
 using NightlyCode.Database.Fields;
+using NightlyCode.Database.Statements;
 
 namespace NightlyCode.Database.Entities {
 
@@ -62,6 +64,12 @@ namespace NightlyCode.Database.Entities {
                 DBClient.DBInfo.DropTable(DBClient, tableDescriptor);
             else
                 throw new Exception("Invalid descriptor type");
+        }
+
+        /// <inheritdoc />
+        public Task Truncate<T>(TruncateOptions options=null) {
+            EntityDescriptor model=modelcache.Get<T>();
+            return DBClient.DBInfo.Truncate(DBClient, model.TableName, options);
         }
 
         /// <inheritdoc />

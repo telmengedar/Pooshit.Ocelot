@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
 using NightlyCode.Database.Entities.Descriptors;
@@ -11,6 +12,7 @@ using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
 using NightlyCode.Database.Fields;
+using NightlyCode.Database.Statements;
 using NightlyCode.Database.Tokens.Values;
 using Converter = NightlyCode.Database.Extern.Converter;
 
@@ -29,7 +31,7 @@ namespace NightlyCode.Database.Info {
             AddFieldLogic<LimitField>(AppendLimit);
             AddFieldLogic<CastToken>(AppendCast);
         }
-
+        
         void AppendCast(CastToken cast, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
             switch (cast.Type) {
             case CastType.Date:
@@ -94,16 +96,16 @@ namespace NightlyCode.Database.Info {
 
         void AppendLimit(LimitField limit, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
             preparator.AppendText("LIMIT");
-            if(limit.Offset.HasValue) {
-                preparator.AppendText(limit.Offset.Value.ToString()).AppendText(",");
-                if(limit.Limit.HasValue)
-                    preparator.AppendText(limit.Limit.Value.ToString());
+            if(limit.Offset!=null) {
+                preparator.AppendField(limit.Offset, this, descriptorgetter, tablealias).AppendText(",");
+                if(limit.Limit!=null)
+                    preparator.AppendField(limit.Limit, this, descriptorgetter, tablealias);
                 else
                     preparator.AppendText("-1");
             }
             // ReSharper disable once PossibleInvalidOperationException
             else
-                preparator.AppendText(limit.Limit.Value.ToString());
+                preparator.AppendField(limit.Limit, this, descriptorgetter, tablealias);
         }
 
         void AppendFunction(DBFunction function, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
@@ -479,6 +481,11 @@ namespace NightlyCode.Database.Info {
                    || !tableschema.Indices.Equals(entityschema.Indices);
         }
 
+        /// <inheritdoc />
+        public override async Task<string> GenerateCreateStatement(IDBClient client, string table) {
+            return Converter.Convert<string>(await client.ScalarAsync($"SELECT sql FROM sqlite_master WHERE tbl_name = '{table}'"));
+        }
+
         /// <summary>
         /// analyses the sql of a table creation and fills the table descriptor from the results
         /// </summary>
@@ -524,6 +531,15 @@ namespace NightlyCode.Database.Info {
                 IsUnique = match.Groups["uq"].Success
             };
             return descriptor;
+        }
+
+        /// <inheritdoc />
+        public override async Task Truncate(IDBClient client, string table, TruncateOptions options = null) {
+            using Transaction transaction = client.Transaction();
+            await client.NonQueryAsync(transaction, $"DELETE FROM {MaskColumn(table)}");
+            if(options?.ResetIdentity??false)
+                await client.NonQueryAsync(transaction, $"UPDATE {MaskColumn("sqlite_sequence")} SET {MaskColumn("seq")} = 0 WHERE {MaskColumn("name")} = '{table}'");
+            transaction.Commit();
         }
     }
 }

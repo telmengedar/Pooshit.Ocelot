@@ -4,7 +4,6 @@ using Moq;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Expressions;
-using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Errors;
 using NightlyCode.Database.Fields;
@@ -31,7 +30,7 @@ namespace NightlyCode.Database.Tests.Fields.Sql {
             EntityDescriptor model = EntityDescriptor.Create(typeof(Keywords));
 
             Expression<Func<Keywords, bool>> predicate = (k) => new PropName(typeof(Keywords), property, ignorecase) == new PropName<Keywords>(property, ignorecase);
-            new CriteriaVisitor(type => model, preparator, dbinfo.Object).Visit(predicate);
+            CriteriaVisitor.GetCriteriaText(predicate, type => model, dbinfo.Object, preparator);
 
             PreparedOperation operation = preparator.GetOperation(dbclient.Object);
             Assert.AreEqual("class = class", operation.CommandText);
@@ -50,7 +49,7 @@ namespace NightlyCode.Database.Tests.Fields.Sql {
             EntityDescriptor model = EntityDescriptor.Create(typeof(Keywords));
 
             Expression<Func<Keywords, bool>> predicate = (k) => new PropName(typeof(Keywords), property, ignorecase) == new PropName<Keywords>(property, ignorecase);
-            Assert.Throws<PropertyNotFoundException>(() => new CriteriaVisitor(type => model, preparator, dbinfo.Object).Visit(predicate));
+            Assert.Throws<PropertyNotFoundException>(() => CriteriaVisitor.GetCriteriaText(predicate, type => model, dbinfo.Object, preparator));
         }
 
         [Test, Parallelizable]
@@ -66,7 +65,7 @@ namespace NightlyCode.Database.Tests.Fields.Sql {
             EntityDescriptor model = EntityDescriptor.Create(typeof(Keywords));
 
             Expression<Func<Keywords, bool>> predicate = (k) => Field.Property(typeof(Keywords), property, ignorecase) == Field.Property<Keywords>(property, ignorecase);
-            new CriteriaVisitor(type => model, preparator, dbinfo.Object).Visit(predicate);
+            CriteriaVisitor.GetCriteriaText(predicate,type => model, dbinfo.Object, preparator);
 
             PreparedOperation operation = preparator.GetOperation(dbclient.Object);
             Assert.AreEqual("class = class", operation.CommandText);
@@ -85,7 +84,7 @@ namespace NightlyCode.Database.Tests.Fields.Sql {
             EntityDescriptor model = EntityDescriptor.Create(typeof(Keywords));
 
             Expression<Func<Keywords, bool>> predicate = (k) => Field.Property(typeof(Keywords), property, ignorecase) == Field.Property<Keywords>(property, ignorecase);
-            Assert.Throws<PropertyNotFoundException>(() => new CriteriaVisitor(type => model, preparator, dbinfo.Object).Visit(predicate));
+            Assert.Throws<PropertyNotFoundException>(() => CriteriaVisitor.GetCriteriaText(predicate,type => model, dbinfo.Object, preparator));
         }
     }
 }

@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Expressions;
-using NightlyCode.Database.Entities.Operations.Fields;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Fields;
+using NightlyCode.Database.Tokens;
+using NightlyCode.Database.Tokens.Values;
 
 namespace NightlyCode.Database.Entities.Operations {
     
@@ -155,16 +156,41 @@ namespace NightlyCode.Database.Entities.Operations {
         /// loads entities using the operation
         /// </summary>
         /// <returns></returns>
-        public Clients.Tables.DataTable Execute(Transaction transaction = null) {
-            return Prepare().Execute(transaction);
+        public Clients.Tables.DataTable Execute(params object[] parameters) {
+            return Prepare().Execute(parameters);
         }
 
         /// <summary>
         /// loads entities using the operation
         /// </summary>
         /// <returns></returns>
-        public Task<Clients.Tables.DataTable> ExecuteAsync(Transaction transaction = null) {
-            return Prepare().ExecuteAsync(transaction);
+        public Clients.Tables.DataTable Execute(Transaction transaction, params object[] parameters) {
+            return Prepare().Execute(transaction, parameters);
+        }
+
+        /// <summary>
+        /// loads entities using the operation
+        /// </summary>
+        /// <returns></returns>
+        public Task<Clients.Tables.DataTable> ExecuteAsync(params object[] parameters) {
+            return Prepare().ExecuteAsync(parameters);
+        }
+
+        /// <summary>
+        /// loads entities using the operation
+        /// </summary>
+        /// <returns></returns>
+        public Task<Clients.Tables.DataTable> ExecuteAsync(Transaction transaction, params object[] parameters) {
+            return Prepare().ExecuteAsync(transaction, parameters);
+        }
+
+        /// <summary>
+        /// loads a value using the operation
+        /// </summary>
+        /// <typeparam name="TScalar">type of scalar to return</typeparam>
+        /// <returns>resulting scalar of operation</returns>
+        public TScalar ExecuteScalar<TScalar>(params object[] parameters) {
+            return Prepare().ExecuteScalar<TScalar>(parameters);
         }
 
         /// <summary>
@@ -173,8 +199,8 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <typeparam name="TScalar">type of scalar to return</typeparam>
         /// <param name="transaction">transaction to use (optional)</param>
         /// <returns>resulting scalar of operation</returns>
-        public TScalar ExecuteScalar<TScalar>(Transaction transaction = null) {
-            return Prepare().ExecuteScalar<TScalar>(transaction);
+        public TScalar ExecuteScalar<TScalar>(Transaction transaction, params object[] parameters) {
+            return Prepare().ExecuteScalar<TScalar>(transaction, parameters);
         }
 
         /// <summary>
@@ -183,8 +209,18 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <typeparam name="TScalar">type of scalar to return</typeparam>
         /// <param name="transaction">transaction to use (optional)</param>
         /// <returns>resulting scalar of operation</returns>
-        public Task<TScalar> ExecuteScalarAsync<TScalar>(Transaction transaction = null) {
-            return Prepare().ExecuteScalarAsync<TScalar>(transaction);
+        public Task<TScalar> ExecuteScalarAsync<TScalar>(params object[] parameters) {
+            return Prepare().ExecuteScalarAsync<TScalar>(parameters);
+        }
+
+        /// <summary>
+        /// loads a value using the operation
+        /// </summary>
+        /// <typeparam name="TScalar">type of scalar to return</typeparam>
+        /// <param name="transaction">transaction to use (optional)</param>
+        /// <returns>resulting scalar of operation</returns>
+        public Task<TScalar> ExecuteScalarAsync<TScalar>(Transaction transaction, params object[] parameters) {
+            return Prepare().ExecuteScalarAsync<TScalar>(transaction, parameters);
         }
 
         /// <summary>
@@ -193,8 +229,8 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <typeparam name="TScalar">type of resulting set values</typeparam>
         /// <param name="transaction">transaction to use (optional)</param>
         /// <returns>resultset of operation</returns>
-        public IEnumerable<TScalar> ExecuteSet<TScalar>(Transaction transaction = null) {
-            return Prepare().ExecuteSet<TScalar>(transaction);
+        public IEnumerable<TScalar> ExecuteSet<TScalar>(params object[] parameters) {
+            return Prepare().ExecuteSet<TScalar>(parameters);
         }
 
         /// <summary>
@@ -203,8 +239,28 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <typeparam name="TScalar">type of resulting set values</typeparam>
         /// <param name="transaction">transaction to use (optional)</param>
         /// <returns>resultset of operation</returns>
-        public Task<TScalar[]> ExecuteSetAsync<TScalar>(Transaction transaction = null) {
-            return Prepare().ExecuteSetAsync<TScalar>(transaction);
+        public IEnumerable<TScalar> ExecuteSet<TScalar>(Transaction transaction, params object[] parameters) {
+            return Prepare().ExecuteSet<TScalar>(transaction, parameters);
+        }
+
+        /// <summary>
+        /// loads several values using the operation
+        /// </summary>
+        /// <typeparam name="TScalar">type of resulting set values</typeparam>
+        /// <param name="transaction">transaction to use (optional)</param>
+        /// <returns>resultset of operation</returns>
+        public Task<TScalar[]> ExecuteSetAsync<TScalar>(params object[] parameters) {
+            return Prepare().ExecuteSetAsync<TScalar>(parameters);
+        }
+
+        /// <summary>
+        /// loads several values using the operation
+        /// </summary>
+        /// <typeparam name="TScalar">type of resulting set values</typeparam>
+        /// <param name="transaction">transaction to use (optional)</param>
+        /// <returns>resultset of operation</returns>
+        public Task<TScalar[]> ExecuteSetAsync<TScalar>(Transaction transaction, params object[] parameters) {
+            return Prepare().ExecuteSetAsync<TScalar>(transaction, parameters);
         }
 
         /// <summary>
@@ -214,8 +270,8 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="transaction">transaction to use for operation execution</param>
         /// <param name="assignments">action used to assign values</param>
         /// <returns>enumeration of result types</returns>
-        public IEnumerable<TType> ExecuteTypes<TType>(Func<Clients.Tables.DataRow, TType> assignments, Transaction transaction = null) {
-            return Prepare().ExecuteTypes(transaction, assignments);
+        public IEnumerable<TType> ExecuteTypes<TType>(Func<Clients.Tables.DataRow, TType> assignments, params object[] parameters) {
+            return Prepare().ExecuteTypes(assignments, parameters);
         }
 
         /// <summary>
@@ -225,8 +281,8 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="transaction">transaction to use for operation execution</param>
         /// <param name="assignments">action used to assign values</param>
         /// <returns>enumeration of result types</returns>
-        public Task<TType> ExecuteTypeAsync<TType>(Func<Clients.Tables.DataRow, TType> assignments, Transaction transaction = null) {
-            return Prepare().ExecuteTypeAsync(transaction, assignments);
+        public IEnumerable<TType> ExecuteTypes<TType>(Func<Clients.Tables.DataRow, TType> assignments, Transaction transaction, params object[] parameters) {
+            return Prepare().ExecuteTypes(transaction, assignments, parameters);
         }
 
         /// <summary>
@@ -236,8 +292,41 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="transaction">transaction to use for operation execution</param>
         /// <param name="assignments">action used to assign values</param>
         /// <returns>enumeration of result types</returns>
-        public Task<TType[]> ExecuteTypesAsync<TType>(Func<Clients.Tables.DataRow, TType> assignments, Transaction transaction = null) {
-            return Prepare().ExecuteTypesAsync(transaction, assignments);
+        public Task<TType> ExecuteTypeAsync<TType>(Func<Clients.Tables.DataRow, TType> assignments, params object[] parameters) {
+            return Prepare().ExecuteTypeAsync(assignments, parameters);
+        }
+
+        /// <summary>
+        /// executes a query and stores the result in a custom result type
+        /// </summary>
+        /// <typeparam name="TType">type of result</typeparam>
+        /// <param name="transaction">transaction to use for operation execution</param>
+        /// <param name="assignments">action used to assign values</param>
+        /// <returns>enumeration of result types</returns>
+        public Task<TType> ExecuteTypeAsync<TType>(Func<Clients.Tables.DataRow, TType> assignments, Transaction transaction, params object[] parameters) {
+            return Prepare().ExecuteTypeAsync(transaction, assignments, parameters);
+        }
+
+        /// <summary>
+        /// executes a query and stores the result in a custom result type
+        /// </summary>
+        /// <typeparam name="TType">type of result</typeparam>
+        /// <param name="transaction">transaction to use for operation execution</param>
+        /// <param name="assignments">action used to assign values</param>
+        /// <returns>enumeration of result types</returns>
+        public Task<TType[]> ExecuteTypesAsync<TType>(Func<Clients.Tables.DataRow, TType> assignments, params object[] parameters) {
+            return Prepare().ExecuteTypesAsync(assignments, parameters);
+        }
+
+        /// <summary>
+        /// executes a query and stores the result in a custom result type
+        /// </summary>
+        /// <typeparam name="TType">type of result</typeparam>
+        /// <param name="transaction">transaction to use for operation execution</param>
+        /// <param name="assignments">action used to assign values</param>
+        /// <returns>enumeration of result types</returns>
+        public Task<TType[]> ExecuteTypesAsync<TType>(Func<Clients.Tables.DataRow, TType> assignments, Transaction transaction, params object[] parameters) {
+            return Prepare().ExecuteTypesAsync(transaction, assignments, parameters);
         }
 
         /// <summary>
@@ -259,7 +348,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
         public TEntity ExecuteEntity<TEntity>(Transaction transaction, params object[] parameters) {
-            if (!(LimitStatement?.Limit.HasValue ?? false))
+            if (LimitStatement?.Limit == null)
                 Limit(1);
             return Prepare().ExecuteEntity<TEntity>(transaction, parameters);
         }
@@ -272,7 +361,7 @@ namespace NightlyCode.Database.Entities.Operations {
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
         public Task<TEntity> ExecuteEntityAsync<TEntity>(Transaction transaction, params object[] parameters) {
-            if(!(LimitStatement?.Limit.HasValue ?? false))
+            if(LimitStatement?.Limit == null)
                 Limit(1);
             return Prepare().ExecuteEntityAsync<TEntity>(transaction, parameters);
         }
@@ -538,6 +627,17 @@ namespace NightlyCode.Database.Entities.Operations {
         public LoadOperation<T> Limit(long limit) {
             if(ReferenceEquals(LimitStatement, null))
                 LimitStatement = new LimitField();
+            LimitStatement.Limit = DB.Constant(limit);
+            return this;
+        }
+
+        /// <summary>
+        /// specifies a limited number of rows to return
+        /// </summary>
+        /// <param name="limit">number of rows to return</param>
+        public LoadOperation<T> Limit(ISqlToken limit) {
+            if(ReferenceEquals(LimitStatement, null))
+                LimitStatement = new LimitField();
             LimitStatement.Limit = limit;
             return this;
         }
@@ -547,6 +647,17 @@ namespace NightlyCode.Database.Entities.Operations {
         /// </summary>
         /// <param name="offset">number of rows to skip</param>
         public LoadOperation<T> Offset(long offset) {
+            if(ReferenceEquals(LimitStatement, null))
+                LimitStatement = new LimitField();
+            LimitStatement.Offset = new ConstantValue(offset);
+            return this;
+        }
+
+        /// <summary>
+        /// specifies an offset from which on to return result rows
+        /// </summary>
+        /// <param name="offset">number of rows to skip</param>
+        public LoadOperation<T> Offset(ISqlToken offset) {
             if(ReferenceEquals(LimitStatement, null))
                 LimitStatement = new LimitField();
             LimitStatement.Offset = offset;

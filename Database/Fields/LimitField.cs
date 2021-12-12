@@ -1,6 +1,6 @@
-﻿using NightlyCode.Database.Fields;
+﻿using NightlyCode.Database.Tokens;
 
-namespace NightlyCode.Database.Entities.Operations.Fields {
+namespace NightlyCode.Database.Fields {
 
     /// <summary>
     /// limits the number of result rows
@@ -10,11 +10,11 @@ namespace NightlyCode.Database.Entities.Operations.Fields {
         /// <summary>
         /// maximum number of rows to return
         /// </summary>
-        public long? Limit { get; set; }
+        public ISqlToken Limit { get; set; }
 
         /// <summary>
         /// number of rows to skip in returned result
         /// </summary>
-        public long? Offset { get; set; }
+        public ISqlToken Offset { get; set; }
     }
 }

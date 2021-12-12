@@ -37,6 +37,21 @@ namespace NightlyCode.Database.Tests.Fields {
             Assert.AreEqual(16, entitymanager.Load<SquareValue>(v => v.Square).ExecuteScalar<int>());
         }
 
+        [Test, Parallelizable]
+        public void IndexedParametersMixedWithNull() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+            entitymanager.UpdateSchema<ValueModel>();
+            entitymanager.Insert<ValueModel>().Columns(v => v.Integer, v => v.NDatetime, v=>v.Single).Values(0, null, 0.5f).Execute();
+            entitymanager.Update<ValueModel>()
+                .Set(v => v.Integer == DBParameter.Index(1), 
+                    v => v.Single == DBParameter.Index(2) * DBParameter.Index(2),
+                    v=>v.NDatetime==null)
+                .Where(v=>v.Integer==DBParameter.Index(1))
+                .Prepare().Execute(0,2);
+            Assert.AreEqual(4.0f, entitymanager.Load<ValueModel>(v => v.Single).ExecuteScalar<int>());
+        }
+
         [Test]
         public void ParameterArrayContains() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();

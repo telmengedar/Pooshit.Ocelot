@@ -186,57 +186,29 @@ namespace NightlyCode.Database.Fields {
         /// </summary>
         /// <param name="lhs">left hand side field</param>
         /// <param name="rhs">right hand side field</param>
-        public static bool operator ==(long lhs, DBField rhs) { throw new NotImplementedException("Method has no implementation since it is only used for typed expressions"); }
+        public static bool operator ==(object lhs, DBField rhs) { throw new NotImplementedException("Method has no implementation since it is only used for typed expressions"); }
 
         /// <summary>
         /// comparision operator used to compare <see cref="DBField"/>s
         /// </summary>
         /// <param name="lhs">left hand side field</param>
         /// <param name="rhs">right hand side field</param>
-        public static bool operator !=(long lhs, DBField rhs) { throw new NotImplementedException("Method has no implementation since it is only used for typed expressions"); }
+        public static bool operator !=(object lhs, DBField rhs) { throw new NotImplementedException("Method has no implementation since it is only used for typed expressions"); }
 
         /// <summary>
         /// comparision operator used to compare <see cref="DBField"/>s
         /// </summary>
         /// <param name="lhs">left hand side field</param>
         /// <param name="rhs">right hand side field</param>
-        public static bool operator ==(DBField lhs, long rhs) { throw new NotImplementedException("Method has no implementation since it is only used for typed expressions"); }
+        public static bool operator ==(DBField lhs, object rhs) { throw new NotImplementedException("Method has no implementation since it is only used for typed expressions"); }
 
         /// <summary>
         /// comparision operator used to compare <see cref="DBField"/>s
         /// </summary>
         /// <param name="lhs">left hand side field</param>
         /// <param name="rhs">right hand side field</param>
-        public static bool operator !=(DBField lhs, long rhs) { throw new NotImplementedException("Method has no implementation since it is only used for typed expressions"); }
-
-        /// <summary>
-        /// comparision operator used to compare <see cref="DBField"/>s
-        /// </summary>
-        /// <param name="lhs">left hand side field</param>
-        /// <param name="rhs">right hand side field</param>
-        public static bool operator ==(int lhs, DBField rhs) { throw new NotImplementedException("Method has no implementation since it is only used for typed expressions"); }
-
-        /// <summary>
-        /// comparision operator used to compare <see cref="DBField"/>s
-        /// </summary>
-        /// <param name="lhs">left hand side field</param>
-        /// <param name="rhs">right hand side field</param>
-        public static bool operator !=(int lhs, DBField rhs) { throw new NotImplementedException("Method has no implementation since it is only used for typed expressions"); }
-
-        /// <summary>
-        /// comparision operator used to compare <see cref="DBField"/>s
-        /// </summary>
-        /// <param name="lhs">left hand side field</param>
-        /// <param name="rhs">right hand side field</param>
-        public static bool operator ==(DBField lhs, int rhs) { throw new NotImplementedException("Method has no implementation since it is only used for typed expressions"); }
-
-        /// <summary>
-        /// comparision operator used to compare <see cref="DBField"/>s
-        /// </summary>
-        /// <param name="lhs">left hand side field</param>
-        /// <param name="rhs">right hand side field</param>
-        public static bool operator !=(DBField lhs, int rhs) { throw new NotImplementedException("Method has no implementation since it is only used for typed expressions"); }
-
+        public static bool operator !=(DBField lhs, object rhs) { throw new NotImplementedException("Method has no implementation since it is only used for typed expressions"); }
+        
         #endregion
 
         #region expression fields

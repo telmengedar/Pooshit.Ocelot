@@ -9,7 +9,7 @@ namespace NightlyCode.Database.Clients {
     /// <summary>
     /// db client which locks calls to db because connection does not support concurrency (SQLite)
     /// </summary>
-    public class LockedDBClient : IDBClient {
+    public class LockedDBClient : ADbClient {
         readonly IDBClient baseclient;
         readonly SemaphoreSlim connectionlock = new SemaphoreSlim(1, 1);
         readonly SemaphoreSlim transactionlock = new SemaphoreSlim(1, 1);
@@ -23,23 +23,13 @@ namespace NightlyCode.Database.Clients {
         }
 
         /// <inheritdoc />
-        public IDBInfo DBInfo => baseclient.DBInfo;
+        public override IDBInfo DBInfo => baseclient.DBInfo;
 
         /// <inheritdoc />
-        public IConnectionProvider Connection => baseclient.Connection;
-
+        public override IConnectionProvider Connection => baseclient.Connection;
+        
         /// <inheritdoc />
-        public int NonQuery(string commandstring, params object[] parameters) {
-            return NonQuery(null, commandstring, parameters);
-        }
-
-        /// <inheritdoc />
-        public int NonQuery(string commandstring, IEnumerable<object> parameters) {
-            return NonQuery(null, commandstring, parameters);
-        }
-
-        /// <inheritdoc />
-        public int NonQuery(Transaction transaction, string commandstring, params object[] parameters) {
+        public override int NonQuery(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
             if(transaction == null) {
                 connectionlock.Wait();
                 try {
@@ -54,32 +44,7 @@ namespace NightlyCode.Database.Clients {
         }
 
         /// <inheritdoc />
-        public int NonQuery(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
-            if(transaction == null) {
-                connectionlock.Wait();
-                try {
-                    return baseclient.NonQuery(null, commandstring, parameters);
-                }
-                finally {
-                    connectionlock.Release();
-                }
-            }
-
-            return baseclient.NonQuery(transaction, commandstring, parameters);
-        }
-
-        /// <inheritdoc />
-        public DataTable Query(string query, params object[] parameters) {
-            return Query(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public DataTable Query(string query, IEnumerable<object> parameters) {
-            return Query(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public DataTable Query(Transaction transaction, string query, params object[] parameters) {
+        public override DataTable Query(Transaction transaction, string query, IEnumerable<object> parameters) {
             if(transaction == null) {
                 connectionlock.Wait();
                 try {
@@ -92,34 +57,9 @@ namespace NightlyCode.Database.Clients {
 
             return baseclient.Query(transaction, query, parameters);
         }
-
+        
         /// <inheritdoc />
-        public DataTable Query(Transaction transaction, string query, IEnumerable<object> parameters) {
-            if(transaction == null) {
-                connectionlock.Wait();
-                try {
-                    return baseclient.Query(null, query, parameters);
-                }
-                finally {
-                    connectionlock.Release();
-                }
-            }
-
-            return baseclient.Query(transaction, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public object Scalar(string query, params object[] parameters) {
-            return Scalar(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public object Scalar(string query, IEnumerable<object> parameters) {
-            return Scalar(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public object Scalar(Transaction transaction, string query, params object[] parameters) {
+        public override object Scalar(Transaction transaction, string query, IEnumerable<object> parameters) {
             if(transaction == null) {
                 connectionlock.Wait();
                 try {
@@ -134,32 +74,7 @@ namespace NightlyCode.Database.Clients {
         }
 
         /// <inheritdoc />
-        public object Scalar(Transaction transaction, string query, IEnumerable<object> parameters) {
-            if(transaction == null) {
-                connectionlock.Wait();
-                try {
-                    return baseclient.Scalar(null, query, parameters);
-                }
-                finally {
-                    connectionlock.Release();
-                }
-            }
-
-            return baseclient.Scalar(transaction, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public IEnumerable<object> Set(string query, params object[] parameters) {
-            return Set(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public IEnumerable<object> Set(string query, IEnumerable<object> parameters) {
-            return Set(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public IEnumerable<object> Set(Transaction transaction, string query, params object[] parameters) {
+        public override IEnumerable<object> Set(Transaction transaction, string query, IEnumerable<object> parameters) {
             if(transaction == null) {
                 connectionlock.Wait();
                 try {
@@ -174,32 +89,7 @@ namespace NightlyCode.Database.Clients {
         }
 
         /// <inheritdoc />
-        public IEnumerable<object> Set(Transaction transaction, string query, IEnumerable<object> parameters) {
-            if(transaction == null) {
-                connectionlock.Wait();
-                try {
-                    return baseclient.Set(null, query, parameters);
-                }
-                finally {
-                    connectionlock.Release();
-                }
-            }
-
-            return baseclient.Set(transaction, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public Task<int> NonQueryAsync(string commandstring, params object[] parameters) {
-            return NonQueryAsync(null, commandstring, parameters);
-        }
-
-        /// <inheritdoc />
-        public Task<int> NonQueryAsync(string commandstring, IEnumerable<object> parameters) {
-            return NonQueryAsync(null, commandstring, parameters);
-        }
-
-        /// <inheritdoc />
-        public async Task<int> NonQueryAsync(Transaction transaction, string commandstring, params object[] parameters) {
+        public override async Task<int> NonQueryAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
             if(transaction == null) {
                 await connectionlock.WaitAsync();
                 try {
@@ -212,34 +102,9 @@ namespace NightlyCode.Database.Clients {
 
             return await baseclient.NonQueryAsync(transaction, commandstring, parameters);
         }
-
+        
         /// <inheritdoc />
-        public async Task<int> NonQueryAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
-            if(transaction == null) {
-                await connectionlock.WaitAsync();
-                try {
-                    return await baseclient.NonQueryAsync(null, commandstring, parameters);
-                }
-                finally {
-                    connectionlock.Release();
-                }
-            }
-
-            return await baseclient.NonQueryAsync(transaction, commandstring, parameters);
-        }
-
-        /// <inheritdoc />
-        public Task<DataTable> QueryAsync(string query, params object[] parameters) {
-            return QueryAsync(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public Task<DataTable> QueryAsync(string query, IEnumerable<object> parameters) {
-            return QueryAsync(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public async Task<DataTable> QueryAsync(Transaction transaction, string query, params object[] parameters) {
+        public override async Task<DataTable> QueryAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
             if(transaction == null) {
                 await connectionlock.WaitAsync();
                 try {
@@ -254,32 +119,7 @@ namespace NightlyCode.Database.Clients {
         }
 
         /// <inheritdoc />
-        public async Task<DataTable> QueryAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
-            if(transaction == null) {
-                await connectionlock.WaitAsync();
-                try {
-                    return await baseclient.QueryAsync(null, query, parameters);
-                }
-                finally {
-                    connectionlock.Release();
-                }
-            }
-
-            return await baseclient.QueryAsync(transaction, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public Task<object> ScalarAsync(string query, params object[] parameters) {
-            return ScalarAsync(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public Task<object> ScalarAsync(string query, IEnumerable<object> parameters) {
-            return ScalarAsync(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public async Task<object> ScalarAsync(Transaction transaction, string query, params object[] parameters) {
+        public override async Task<object> ScalarAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
             if(transaction == null) {
                 await connectionlock.WaitAsync();
                 try {
@@ -294,32 +134,7 @@ namespace NightlyCode.Database.Clients {
         }
 
         /// <inheritdoc />
-        public async Task<object> ScalarAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
-            if(transaction == null) {
-                await connectionlock.WaitAsync();
-                try {
-                    return await baseclient.ScalarAsync(null, query, parameters);
-                }
-                finally {
-                    connectionlock.Release();
-                }
-            }
-
-            return await baseclient.ScalarAsync(transaction, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public Task<object[]> SetAsync(string query, params object[] parameters) {
-            return SetAsync(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public Task<object[]> SetAsync(string query, IEnumerable<object> parameters) {
-            return SetAsync(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public async Task<object[]> SetAsync(Transaction transaction, string query, params object[] parameters) {
+        public override async Task<object[]> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
             if(transaction == null) {
                 await connectionlock.WaitAsync();
                 try {
@@ -334,23 +149,128 @@ namespace NightlyCode.Database.Clients {
         }
 
         /// <inheritdoc />
-        public async Task<object[]> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
-            if(transaction == null) {
-                await connectionlock.WaitAsync();
-                try {
-                    return await baseclient.SetAsync(null, query, parameters);
-                }
-                finally {
-                    connectionlock.Release();
-                }
-            }
-
-            return await baseclient.SetAsync(transaction, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public Transaction Transaction() {
+        public override Transaction Transaction() {
             return new Transaction(DBInfo, Connection.Connect(), transactionlock);
+        }
+
+        /// <inheritdoc />
+        public override int NonQueryPrepared(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
+            if(transaction == null) {
+                connectionlock.Wait();
+                try {
+                    return baseclient.NonQueryPrepared(null, commandstring, parameters);
+                }
+                finally {
+                    connectionlock.Release();
+                }
+            }
+
+            return baseclient.NonQueryPrepared(transaction, commandstring, parameters);
+        }
+
+        /// <inheritdoc />
+        public override DataTable QueryPrepared(Transaction transaction, string query, IEnumerable<object> parameters) {
+            if(transaction == null) {
+                connectionlock.Wait();
+                try {
+                    return baseclient.QueryPrepared(null, query, parameters);
+                }
+                finally {
+                    connectionlock.Release();
+                }
+            }
+
+            return baseclient.QueryPrepared(transaction, query, parameters);
+        }
+
+        /// <inheritdoc />
+        public override object ScalarPrepared(Transaction transaction, string query, IEnumerable<object> parameters) {
+            if(transaction == null) {
+                connectionlock.Wait();
+                try {
+                    return baseclient.ScalarPrepared(null, query, parameters);
+                }
+                finally {
+                    connectionlock.Release();
+                }
+            }
+
+            return baseclient.ScalarPrepared(transaction, query, parameters);
+        }
+
+        /// <inheritdoc />
+        public override IEnumerable<object> SetPrepared(Transaction transaction, string query, IEnumerable<object> parameters) {
+            if(transaction == null) {
+                connectionlock.Wait();
+                try {
+                    return baseclient.SetPrepared(null, query, parameters);
+                }
+                finally {
+                    connectionlock.Release();
+                }
+            }
+
+            return baseclient.SetPrepared(transaction, query, parameters);
+        }
+
+        /// <inheritdoc />
+        public override async Task<int> NonQueryPreparedAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
+            if(transaction == null) {
+                await connectionlock.WaitAsync();
+                try {
+                    return await baseclient.NonQueryPreparedAsync(null, commandstring, parameters);
+                }
+                finally {
+                    connectionlock.Release();
+                }
+            }
+
+            return await baseclient.NonQueryPreparedAsync(transaction, commandstring, parameters);
+        }
+
+        /// <inheritdoc />
+        public override async Task<DataTable> QueryPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+            if(transaction == null) {
+                await connectionlock.WaitAsync();
+                try {
+                    return await baseclient.QueryPreparedAsync(null, query, parameters);
+                }
+                finally {
+                    connectionlock.Release();
+                }
+            }
+
+            return await baseclient.QueryPreparedAsync(transaction, query, parameters);
+        }
+
+        /// <inheritdoc />
+        public override async Task<object> ScalarPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+            if(transaction == null) {
+                await connectionlock.WaitAsync();
+                try {
+                    return await baseclient.ScalarPreparedAsync(null, query, parameters);
+                }
+                finally {
+                    connectionlock.Release();
+                }
+            }
+
+            return await baseclient.ScalarPreparedAsync(transaction, query, parameters);
+        }
+
+        /// <inheritdoc />
+        public override async Task<object[]> SetPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+            if(transaction == null) {
+                await connectionlock.WaitAsync();
+                try {
+                    return await baseclient.SetPreparedAsync(null, query, parameters);
+                }
+                finally {
+                    connectionlock.Release();
+                }
+            }
+
+            return await baseclient.SetPreparedAsync(transaction, query, parameters);
         }
     }
 }

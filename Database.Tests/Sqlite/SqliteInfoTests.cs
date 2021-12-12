@@ -1,8 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using NightlyCode.Database.Clients;
+using NightlyCode.Database.Entities;
 using NightlyCode.Database.Entities.Schema;
 using NightlyCode.Database.Info;
+using NightlyCode.Database.Tests.Data;
+using NightlyCode.Database.Tests.Entities;
 using NUnit.Framework;
 
 namespace NightlyCode.Database.Tests.Sqlite {
@@ -44,5 +50,16 @@ namespace NightlyCode.Database.Tests.Sqlite {
             Assert.IsTrue(column.PrimaryKey);
             Assert.IsTrue(column.AutoIncrement);
         }
+
+        /*[Test]
+         // order of properties not always the same so test fails sometimes
+        public async Task GenerateCreateStatement() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+            entitymanager.UpdateSchema<Company>();
+
+            string statement=await entitymanager.DBClient.DBInfo.GenerateCreateStatement(entitymanager.DBClient, "company");
+            Assert.AreEqual("CREATE TABLE company ( [id] INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL , [name] TEXT UNIQUE , [url] TEXT UNIQUE )", statement);
+        }*/
     }
 }

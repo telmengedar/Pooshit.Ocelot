@@ -26,19 +26,22 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
         ExpressionType remainder = ExpressionType.Default;
 
         readonly IXprTranslator xprtranslator;
-        Stack<ExpressionType> binarystack=new Stack<ExpressionType>();
-        
+        readonly Stack<ExpressionType> binarystack=new Stack<ExpressionType>();
+        readonly bool isPredicateExpression;
+
         /// <summary>
         /// creates a new <see cref="CriteriaVisitor"/>
         /// </summary>
         /// <param name="descriptorgetter">func used to get entity models of types</param>
         /// <param name="preparator">preparator to fill with sql</param>
         /// <param name="dbinfo">database specific implementation info</param>
+        /// <param name="isPredicateExpression">determines whether to use IS instead of = for null assignments or comparisions</param>
         /// <param name="aliases">known table aliases</param>
-        public CriteriaVisitor(Func<Type, EntityDescriptor> descriptorgetter, IOperationPreparator preparator, IDBInfo dbinfo, params Tuple<string, string>[] aliases) {
+        public CriteriaVisitor(Func<Type, EntityDescriptor> descriptorgetter, IOperationPreparator preparator, IDBInfo dbinfo, bool isPredicateExpression, params Tuple<string, string>[] aliases) {
             xprtranslator = new XprTranslator(Visit);
             this.descriptorgetter = descriptorgetter;
             this.dbinfo = dbinfo;
+            this.isPredicateExpression = isPredicateExpression;
             this.preparator = preparator;
             foreach(Tuple<string, string> alias in aliases)
                 this.aliases[alias.Item1] = alias.Item2;
@@ -56,6 +59,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                     yield break;
             }
         }
+        
         /// <summary>
         /// appends the criteria text of the predicate to the operation
         /// </summary>
@@ -66,7 +70,21 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
         /// <param name="aliases">alias to use for properties</param>
         public static void GetCriteriaText(Expression expression, Func<Type, EntityDescriptor> descriptorgetter, IDBInfo dbinfo, IOperationPreparator preparator, params string[] aliases) {
 
-            CriteriaVisitor visitor = new CriteriaVisitor(descriptorgetter, preparator, dbinfo, GetParameterAliases(expression as LambdaExpression, aliases).ToArray());
+            CriteriaVisitor visitor = new CriteriaVisitor(descriptorgetter, preparator, dbinfo, true, GetParameterAliases(expression as LambdaExpression, aliases).ToArray());
+            visitor.Visit(expression);
+        }
+
+        /// <summary>
+        /// appends the criteria text of the predicate to the operation
+        /// </summary>
+        /// <param name="expression">expression containing predicate</param>
+        /// <param name="descriptorgetter">method used to get entity models</param>
+        /// <param name="dbinfo">db info</param>
+        /// <param name="preparator">operation to modify</param>
+        /// <param name="aliases">alias to use for properties</param>
+        public static void GetAssignmentText(Expression expression, Func<Type, EntityDescriptor> descriptorgetter, IDBInfo dbinfo, IOperationPreparator preparator, params string[] aliases) {
+
+            CriteriaVisitor visitor = new CriteriaVisitor(descriptorgetter, preparator, dbinfo, false, GetParameterAliases(expression as LambdaExpression, aliases).ToArray());
             visitor.Visit(expression);
         }
 
@@ -83,6 +101,8 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             switch(type) {
             case ExpressionType.Equal:
                 return "=";
+            case ExpressionType.NotEqual:
+                return "<>";
             case ExpressionType.LessThan:
                 return "<";
             case ExpressionType.LessThanOrEqual:
@@ -154,7 +174,9 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             switch(type) {
             case ExpressionType.Equal:
             case ExpressionType.NotEqual:
-                remainder = type;
+                if(isPredicateExpression)
+                    remainder = type;
+                else preparator.AppendText(GetOperant(type)); 
                 break;
             default:
                 preparator.AppendText(GetOperant(type));
@@ -202,11 +224,16 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             else {
                 AppendValueRemainder();
                 if (value is Array array && !(value is byte[])) {
-                    for (int i = 0; i < array.Length; ++i) {
-                        if(i>0)
-                            preparator.AppendText(",");
-                        object avalue = array.GetValue(i);
-                        preparator.AppendParameter(Converter.Convert(avalue, dbinfo.GetDBRepresentation(avalue.GetType())));
+                    if (dbinfo.SupportsArrayParameters) {
+                        preparator.AppendParameter(value);
+                    }
+                    else {
+                        for (int i = 0; i < array.Length; ++i) {
+                            if (i > 0)
+                                preparator.AppendText(",");
+                            object avalue = array.GetValue(i);
+                            preparator.AppendParameter(Converter.Convert(avalue, dbinfo.GetDBRepresentation(avalue.GetType())));
+                        }
                     }
                 }
                 else if(value is ISqlToken sqlfield)
@@ -297,10 +324,13 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 preparator.AppendText(GetColumnName((ParameterExpression)expression, (PropertyInfo)member));
             }
             else if(expression.NodeType == ExpressionType.MemberAccess) {
+                Type declaringType = ((PropertyInfo)member).DeclaringType;
                 // references a parameter to be specified later when executing the operation
-                if(((PropertyInfo)member).DeclaringType == typeof(DBParameter)
-                    || (((PropertyInfo)member).DeclaringType.IsGenericType && ((PropertyInfo)member).DeclaringType.GetGenericTypeDefinition() == typeof(DBParameter<>))) {
-                    preparator.AppendParameter();
+                if (declaringType != null && (declaringType == typeof(DBParameter)
+                    || declaringType.IsGenericType && declaringType.GetGenericTypeDefinition() == typeof(DBParameter<>))) {
+                    if (declaringType.GetGenericArguments().FirstOrDefault()?.IsArray ?? false)
+                        preparator.AppendArrayParameter();
+                    else preparator.AppendParameter();
                 }
                 else {
                     object host = GetHost(expression);
@@ -370,7 +400,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             remainder = ExpressionType.Default;
 
             if(node.NodeType == ExpressionType.ArrayIndex) {
-                if(!(GetValue(node.Left) is Array array))
+                if(GetValue(node.Left) is not Array array)
                     throw new NullReferenceException("ArrayIndex without array");
                 AppendConstantValue(array.GetValue((int)GetValue(node.Right)));
                 return node;
@@ -442,7 +472,8 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
             if(node.Method.DeclaringType == typeof(Enumerable)) {
                 switch(node.Method.Name) {
                 case "Contains":
-                    Visit(node.Arguments[1]);
+                    dbinfo.CreateInFragment(node.Arguments[1], node.Arguments[0], preparator, Visit);
+                    /*Visit(node.Arguments[1]);
                     preparator.AppendText("IN");
 
                     if(node.Arguments[0].NodeType == ExpressionType.MemberAccess
@@ -462,7 +493,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                         }
 
                         preparator.AppendText(")");
-                    }
+                    }*/
 
                     break;
                 default:
@@ -555,10 +586,7 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
                 case nameof(Function.In):
                     if (node.Arguments.Count != 2)
                         throw new ArgumentException("Invalid method call, expected 2 arguments. First being value to check, second being collection");
-                    Visit(node.Arguments[0]);
-                    preparator.AppendText("IN(");
-                    Visit(node.Arguments[1]);
-                    preparator.AppendText(")");
+                    dbinfo.CreateInFragment(node.Arguments[0], node.Arguments[1], preparator, Visit);
                     break;
                 default:
                     throw new ArgumentException("Unsupported db function call");

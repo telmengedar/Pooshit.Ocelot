@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Entities;
 using NightlyCode.Database.Entities.Operations.Tables;
 using NightlyCode.Database.Fields;
+using NightlyCode.Database.Statements;
 
 namespace NightlyCode.Database.Entities {
 
@@ -44,6 +46,12 @@ namespace NightlyCode.Database.Entities {
         /// <typeparam name="T">type of entity of which to drop table/view</typeparam>
         void Drop<T>();
 
+        /// <summary>
+        /// truncates data of a table
+        /// </summary>
+        /// <typeparam name="T">type to truncate</typeparam>
+        Task Truncate<T>(TruncateOptions options=null);
+        
         /// <summary>
         /// get an operation used to create tables
         /// </summary>

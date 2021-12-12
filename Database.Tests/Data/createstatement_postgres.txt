@@ -1,0 +1,15 @@
+CREATE TABLE public.feedsource(
+id bigint DEFAULT nextval('feedsource_id_seq'::regclass) NOT NULL,
+lastretrieval timestamp without time zone NULL,
+name character varying NULL,
+url character varying NULL,
+format integer NOT NULL,
+predicate character varying NULL,
+jobs integer DEFAULT 0 NOT NULL,
+failures integer DEFAULT 0 NOT NULL,
+error character varying NULL,
+description character varying NULL,
+updatefrequency integer DEFAULT 1 NOT NULL,
+status integer DEFAULT 1 NOT NULL,
+processtitle boolean DEFAULT false NOT NULL,
+CONSTRAINT feedsource_pkey PRIMARY KEY (id));

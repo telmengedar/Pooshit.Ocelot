@@ -37,8 +37,8 @@ namespace NightlyCode.Database.Entities.Operations.Expressions {
 
         /// <inheritdoc />
         protected override Expression VisitMember(MemberExpression node) {
-            if(node.Member is PropertyInfo && (node.Expression ?? node).NodeType == ExpressionType.Parameter)
-                columnname = GetColumnName((PropertyInfo)node.Member);
+            if(node.Member is PropertyInfo info && (node.Expression ?? node).NodeType == ExpressionType.Parameter)
+                columnname = GetColumnName(info);
             return base.VisitMember(node);
         }
     }

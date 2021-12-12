@@ -35,6 +35,16 @@ namespace NightlyCode.Database.Entities.Schema {
         /// <param name="datasource">table from which to update schema (optional)</param>
         public void Update<T>(IDBClient client, string datasource = null) {
             SchemaDescriptor schema = datasource == null ? client.DBInfo.GetSchema(client, modelcache.Get<T>().TableName) : client.DBInfo.GetSchema(client, datasource);
+            Update<T>(client, schema);
+        }
+
+        /// <summary>
+        /// updates the schema of the specified type
+        /// </summary>
+        /// <typeparam name="T">schema type to update</typeparam>
+        /// <param name="client">database connection</param>
+        /// <param name="schema">schema to use to update</param>
+        public void Update<T>(IDBClient client, SchemaDescriptor schema) {
             if(schema is ViewDescriptor descriptor)
                 UpdateView<T>(client, descriptor);
             else if(schema is TableDescriptor tableDescriptor)

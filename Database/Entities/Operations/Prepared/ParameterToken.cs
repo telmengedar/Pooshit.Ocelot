@@ -54,7 +54,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="dbinfo">database specific information</param>
         /// <returns>text representing this token</returns>
         public string GetText(IDBInfo dbinfo) {
-            if(IsArray)
+            if(IsArray && !dbinfo.SupportsArrayParameters)
                 return $"[{Index}]";
             return $"{dbinfo.Parameter}{Index}";
         }

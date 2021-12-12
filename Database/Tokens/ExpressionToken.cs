@@ -12,14 +12,20 @@ namespace NightlyCode.Database.Tokens {
     /// </summary>
     public class ExpressionToken : SqlToken {
         readonly Expression expression;
+        readonly bool useBraces;
 
-        internal ExpressionToken(Expression expression) {
+        internal ExpressionToken(Expression expression, bool useBraces=false) {
             this.expression = expression;
+            this.useBraces = useBraces;
         }
 
         /// <inheritdoc />
         public override void ToSql(IDBInfo dbinfo, IOperationPreparator preparator, Func<Type, EntityDescriptor> models, string tablealias) {
+            if (useBraces)
+                preparator.AppendText("(");
             CriteriaVisitor.GetCriteriaText(expression, models, dbinfo, preparator, tablealias);
+            if (useBraces)
+                preparator.AppendText(")");
         }
     }
 }

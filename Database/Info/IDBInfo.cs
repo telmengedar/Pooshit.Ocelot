@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Data;
 using System.Data.Common;
 using System.Linq.Expressions;
 using System.Threading;
+using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
 using NightlyCode.Database.Fields;
+using NightlyCode.Database.Statements;
 
 namespace NightlyCode.Database.Info {
 
@@ -35,6 +38,11 @@ namespace NightlyCode.Database.Info {
         /// </summary>
         string LikeTerm { get; }
 
+        /// <summary>
+        /// determines whether the provider supports prepared statements
+        /// </summary>
+        bool PreparationSupported { get; }
+        
         /// <summary>
         /// method used to create a replace function
         /// </summary>
@@ -104,6 +112,11 @@ namespace NightlyCode.Database.Info {
         /// suffix to use when creating tables
         /// </summary>
         string CreateSuffix { get; }
+
+        /// <summary>
+        /// determines whether array parameters are supported
+        /// </summary>
+        bool SupportsArrayParameters { get; }
 
         /// <summary>
         /// drops a view from database
@@ -199,5 +212,37 @@ namespace NightlyCode.Database.Info {
         /// <param name="entityschema">schema of entity which needs to get mapped to database</param>
         /// <returns>true when table has to get recreated, false otherwise</returns>
         bool MustRecreateTable(string[] obsolete, EntityColumnDescriptor[] altered, EntityColumnDescriptor[] missing, TableDescriptor tableschema, EntityDescriptor entityschema);
+
+        /// <summary>
+        /// generates a create statement which can be used to create the specified table in another database (of the same type)
+        /// </summary>
+        /// <param name="client">database connection</param>
+        /// <param name="table">table for which to generate statement</param>
+        /// <returns>statement data</returns>
+        Task<string> GenerateCreateStatement(IDBClient client, string table);
+
+        /// <summary>
+        /// truncates a table
+        /// </summary>
+        /// <param name="client">client used to send command to</param>
+        /// <param name="table">table to truncate</param>
+        /// <param name="options">options to apply</param>
+        Task Truncate(IDBClient client, string table, TruncateOptions options = null);
+
+        /// <summary>
+        /// creates a parameter 
+        /// </summary>
+        /// <param name="command">command for which to create parameter</param>
+        /// <param name="parameterValue">parameter value to add</param>
+        void CreateParameter(IDbCommand command, object parameterValue);
+
+        /// <summary>
+        /// creates fragment in statement used for IN function
+        /// </summary>
+        /// <param name="lhs">value to look for</param>
+        /// <param name="rhs">collection of values to check against</param>
+        /// <param name="preparator">statement text preparator</param>
+        /// <param name="visitor">visitor used for expressions</param>
+        void CreateInFragment(Expression lhs, Expression rhs, IOperationPreparator preparator, Func<Expression, Expression> visitor);
     }
 }

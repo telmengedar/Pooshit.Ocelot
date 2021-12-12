@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Fields;
@@ -80,5 +81,15 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="tablealias">alias to use when resolving properties</param>
         /// <returns>this preparator for fluent behavior</returns>
         IOperationPreparator AppendField(IDBField field, IDBInfo dbinfo, Func<Type, EntityDescriptor> modelinfo, string tablealias = null);
+
+        /// <summary>
+        /// appends an expression to the operation text
+        /// </summary>
+        /// <param name="expression">expression to append</param>
+        /// <param name="dbinfo">database specific info</param>
+        /// <param name="modelinfo">used to get model descriptors</param>
+        /// <param name="tablealias">alias to use for current table</param>
+        /// <returns>this preparator for fluent behavior</returns>
+        IOperationPreparator AppendExpression(Expression expression, IDBInfo dbinfo, Func<Type, EntityDescriptor> modelinfo, string tablealias = null);
     }
 }

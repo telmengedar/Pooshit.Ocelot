@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Prepared;
@@ -126,6 +127,11 @@ namespace NightlyCode.Database.Info {
         /// <inheritdoc />
         public override bool MustRecreateTable(string[] obsolete, EntityColumnDescriptor[] altered, EntityColumnDescriptor[] missing, TableDescriptor tableschema, EntityDescriptor entityschema) {
             return true;
+        }
+
+        /// <inheritdoc />
+        public override Task<string> GenerateCreateStatement(IDBClient client, string table) {
+            throw new NotImplementedException();
         }
 
         /// <inheritdoc />

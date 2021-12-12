@@ -32,6 +32,24 @@ namespace NightlyCode.Database.Tests.Fields {
         }
 
         [Test, Parallelizable]
+        public void ValueNotInArray() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+
+            entitymanager.UpdateSchema<ValueModel>();
+
+            entitymanager.InsertEntities<ValueModel>().Execute(
+                new ValueModel {Integer = 5},
+                new ValueModel(),
+                new ValueModel {Integer = 11},
+                new ValueModel {Integer = 3},
+                new ValueModel {Integer = 7});
+
+            ValueModel[] values = entitymanager.Load<ValueModel>().Where(m => !m.Integer.In(new long[] {2, 4, 11})).ExecuteEntities<ValueModel>().ToArray();
+            Assert.AreEqual(4, values.Length);
+        }
+        
+        [Test, Parallelizable]
         public void ValueInArrayVariable() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);

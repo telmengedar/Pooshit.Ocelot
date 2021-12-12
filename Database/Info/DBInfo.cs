@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
+using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations;
 using NightlyCode.Database.Entities.Operations.Expressions;
 using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Entities.Schema;
+using NightlyCode.Database.Extern;
 using NightlyCode.Database.Fields;
+using NightlyCode.Database.Statements;
 using NightlyCode.Database.Tokens;
 using NightlyCode.Database.Tokens.Values;
 
@@ -88,6 +92,9 @@ namespace NightlyCode.Database.Info {
         /// </summary>
         public abstract string LikeTerm { get; }
 
+        /// <inheritdoc />
+        public virtual bool PreparationSupported => false;
+
         /// <summary>
         /// method used to create a replace function
         /// </summary>
@@ -154,6 +161,9 @@ namespace NightlyCode.Database.Info {
         /// suffix to use when creating tables
         /// </summary>
         public abstract string CreateSuffix { get; }
+
+        /// <inheritdoc />
+        public virtual bool SupportsArrayParameters => false;
 
         /// <inheritdoc />
         public virtual void DropView(IDBClient client, ViewDescriptor view) {
@@ -234,5 +244,34 @@ namespace NightlyCode.Database.Info {
 
         /// <inheritdoc />
         public abstract bool MustRecreateTable(string[] obsolete, EntityColumnDescriptor[] altered, EntityColumnDescriptor[] missing, TableDescriptor tableschema, EntityDescriptor entityschema);
+
+        /// <inheritdoc />
+        public abstract Task<string> GenerateCreateStatement(IDBClient client, string table);
+
+        /// <inheritdoc />
+        public virtual Task Truncate(IDBClient client, string table, TruncateOptions options = null) {
+            if (options?.ResetIdentity ?? false)
+                throw new InvalidOperationException("Unsupported truncate option");
+            return client.NonQueryAsync($"TRUNCATE {table}");
+        }
+
+        /// <inheritdoc />
+        public virtual void CreateParameter(IDbCommand command, object parameterValue) {
+            IDbDataParameter parameter = command.CreateParameter();
+            parameter.ParameterName = Parameter + (command.Parameters.Count + 1);
+            parameter.Value = parameterValue == null || parameterValue == DBNull.Value ?
+                DBNull.Value :
+                Converter.Convert(parameterValue, GetDBRepresentation(parameterValue.GetType()));
+
+            command.Parameters.Add(parameter);
+        }
+
+        /// <inheritdoc />
+        public virtual void CreateInFragment(Expression lhs, Expression rhs, IOperationPreparator preparator, Func<Expression, Expression> visitor) {
+            visitor(lhs);
+            preparator.AppendText("IN(");
+            visitor(rhs);
+            preparator.AppendText(")");
+        }
     }
 }

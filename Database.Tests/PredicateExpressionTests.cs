@@ -16,7 +16,7 @@ namespace NightlyCode.Database.Tests {
         [Test, Parallelizable]
         public void ListOfOrs() {
             OperationPreparator preparator = new OperationPreparator();
-            CriteriaVisitor visitor = new CriteriaVisitor(EntityDescriptor.Create, preparator, new SQLiteInfo());
+            CriteriaVisitor visitor = new CriteriaVisitor(EntityDescriptor.Create, preparator, new SQLiteInfo(), true);
 
             PredicateExpression<ValueModel> predicate = null;
             for(int i = 0; i < 6; i += 2) {
@@ -34,7 +34,7 @@ namespace NightlyCode.Database.Tests {
         [Test, Parallelizable]
         public void ListOfAnds() {
             OperationPreparator preparator = new OperationPreparator();
-            CriteriaVisitor visitor = new CriteriaVisitor(EntityDescriptor.Create, preparator, new SQLiteInfo());
+            CriteriaVisitor visitor = new CriteriaVisitor(EntityDescriptor.Create, preparator, new SQLiteInfo(), true);
 
             PredicateExpression<ValueModel> predicate = null;
             for(int i = 0; i < 6; i += 2) {

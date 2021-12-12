@@ -1,6 +1,6 @@
-﻿using Microsoft.Data.Sqlite;
-using NightlyCode.Database.Clients;
+﻿using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities;
+using NightlyCode.Database.Errors;
 using NightlyCode.Database.Fields;
 using NightlyCode.Database.Tests.Data;
 using NightlyCode.Database.Tests.Models;
@@ -47,7 +47,7 @@ namespace NightlyCode.Database.Tests.Entities
             entitymanager.Insert<ValueModel>()
                 .Columns(u => u.Integer, u => u.String, u => u.Single, u => u.Double)
                 .Values(0, "String1", 0.0f, 0.0).Execute();
-            Assert.Throws<SqliteException>(() =>
+            Assert.Throws<StatementException>(() =>
             {
                 entitymanager.Insert<ValueModel>()
                     .Columns(u => u.Integer, u => u.String, u => u.Single, u => u.Double)

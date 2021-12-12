@@ -5,6 +5,9 @@ using NightlyCode.Database.Clients;
 using NightlyCode.Database.Clients.Tables;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Prepared;
+using NightlyCode.Database.Fields;
+using NightlyCode.Database.Tokens;
+using NightlyCode.Database.Tokens.Values;
 
 namespace NightlyCode.Database.Entities.Operations.Tables {
 
@@ -31,6 +34,11 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
         }
 
         /// <summary>
+        /// limit to use when loading
+        /// </summary>
+        protected LimitField LimitStatement { get; set; }
+
+        /// <summary>
         /// specifies columns to load from table
         /// </summary>
         /// <param name="columnnames">name of columns</param>
@@ -50,6 +58,50 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
         /// <returns>this operation for fluent behavior</returns>
         public LoadDataOperation Where(string column, string op, string value, CriteriaOperator type = CriteriaOperator.AND) {
             criterias.Add(new LoadCriteria(column, op, value, type));
+            return this;
+        }
+
+        /// <summary>
+        /// specifies a limited number of rows to return
+        /// </summary>
+        /// <param name="limit">number of rows to return</param>
+        public LoadDataOperation Limit(long limit) {
+            if(ReferenceEquals(LimitStatement, null))
+                LimitStatement = new LimitField();
+            LimitStatement.Limit = DB.Constant(limit);
+            return this;
+        }
+
+        /// <summary>
+        /// specifies a limited number of rows to return
+        /// </summary>
+        /// <param name="limit">number of rows to return</param>
+        public LoadDataOperation Limit(ISqlToken limit) {
+            if(ReferenceEquals(LimitStatement, null))
+                LimitStatement = new LimitField();
+            LimitStatement.Limit = limit;
+            return this;
+        }
+
+        /// <summary>
+        /// specifies an offset from which on to return result rows
+        /// </summary>
+        /// <param name="offset">number of rows to skip</param>
+        public LoadDataOperation Offset(long offset) {
+            if(ReferenceEquals(LimitStatement, null))
+                LimitStatement = new LimitField();
+            LimitStatement.Offset = new ConstantValue(offset);
+            return this;
+        }
+
+        /// <summary>
+        /// specifies an offset from which on to return result rows
+        /// </summary>
+        /// <param name="offset">number of rows to skip</param>
+        public LoadDataOperation Offset(ISqlToken offset) {
+            if(ReferenceEquals(LimitStatement, null))
+                LimitStatement = new LimitField();
+            LimitStatement.Offset = offset;
             return this;
         }
 
@@ -142,12 +194,14 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
             OperationPreparator preparator = new OperationPreparator().AppendText("SELECT");
 
             bool flag = true;
-            foreach (string column in columns)
-            {
-                if (flag) flag = false;
-                else preparator.AppendText(",");
-                preparator.AppendText(client.DBInfo.MaskColumn(column));
+            if (columns != null) {
+                foreach (string column in columns) {
+                    if (flag) flag = false;
+                    else preparator.AppendText(",");
+                    preparator.AppendText(client.DBInfo.MaskColumn(column));
+                }
             }
+            else preparator.AppendText("*");
 
             preparator.AppendText("FROM").AppendText(tablename);
 
@@ -163,6 +217,9 @@ namespace NightlyCode.Database.Entities.Operations.Tables {
                     preparator.AppendParameter(criteria.Value);
                 }
             }
+
+            if(!ReferenceEquals(LimitStatement, null))
+                preparator.AppendField(LimitStatement, client.DBInfo, null, null);
 
             return preparator.GetLoadValuesOperation(client, modelcache);
         }

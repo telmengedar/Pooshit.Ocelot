@@ -94,7 +94,7 @@ namespace NightlyCode.Database.Entities.Operations {
                 else
                     first = false;
 
-                CriteriaVisitor.GetCriteriaText(setter, descriptorgetter, dbclient.DBInfo, preparator);
+                CriteriaVisitor.GetAssignmentText(setter, descriptorgetter, dbclient.DBInfo, preparator);
             }
 
             if(Criterias != null) {

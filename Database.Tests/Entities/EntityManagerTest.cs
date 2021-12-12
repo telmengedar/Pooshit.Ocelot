@@ -9,6 +9,7 @@ using NightlyCode.Database.Entities.Operations.Prepared;
 using NightlyCode.Database.Fields;
 using NightlyCode.Database.Tests.Data;
 using NightlyCode.Database.Tests.Models;
+using NightlyCode.Database.Tokens;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
@@ -238,6 +239,23 @@ namespace NightlyCode.Database.Tests.Entities {
             TestEntityWithoutAnySpecifications[] source = TestEntities.ToArray();
             entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(source);
             TestEntityWithoutAnySpecifications[] loaded = entitymanager.Load<TestEntityWithoutAnySpecifications>().Limit(1).ExecuteEntities<TestEntityWithoutAnySpecifications>().ToArray();
+            Assert.AreEqual(1, loaded.Length, "only 1 entity should be loaded");
+        }
+
+        [Test, Parallelizable]
+        public void LimitExpression() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+            entitymanager.Create<TestEntityWithoutAnySpecifications>();
+
+            TestEntityWithoutAnySpecifications[] source = TestEntities.ToArray();
+            entitymanager.InsertEntities<TestEntityWithoutAnySpecifications>().Execute(source);
+
+            LoadOperation<TestEntityWithoutAnySpecifications> countoperation = entitymanager.Load<TestEntityWithoutAnySpecifications>(DB.Count());
+            TestEntityWithoutAnySpecifications[] loaded = entitymanager.Load<TestEntityWithoutAnySpecifications>()
+                .Limit(DB.Value<TestEntityWithoutAnySpecifications>(e=>DB.Operation(countoperation).Int64/2))
+                .ExecuteEntities<TestEntityWithoutAnySpecifications>()
+                .ToArray();
             Assert.AreEqual(1, loaded.Length, "only 1 entity should be loaded");
         }
 

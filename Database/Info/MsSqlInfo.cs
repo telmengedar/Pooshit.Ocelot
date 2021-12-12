@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
 using NightlyCode.Database.Entities.Operations.Expressions;
@@ -28,13 +29,13 @@ namespace NightlyCode.Database.Info {
         void AppendLimit(LimitField limit, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
             if (!preparator.Tokens.Any(t => t is CommandTextToken ctt && ctt.Text == "ORDER BY"))
                 preparator.AppendText("ORDER BY(SELECT NULL)");
-
-            if (limit.Offset.HasValue)
-                preparator.AppendText("OFFSET").AppendParameter(limit.Offset.Value).AppendText("ROWS");
+            
+            if (limit.Offset!=null)
+                preparator.AppendText("OFFSET").AppendField(limit.Offset, this, descriptorgetter, tablealias).AppendText("ROWS");
             else preparator.AppendText("OFFSET").AppendParameter(0).AppendText("ROWS");
 
-            if (limit.Limit.HasValue)
-                preparator.AppendText("FETCH NEXT").AppendParameter(limit.Limit.Value).AppendText("ROWS ONLY");
+            if (limit.Limit!=null)
+                preparator.AppendText("FETCH NEXT").AppendField(limit.Limit, this, descriptorgetter, tablealias).AppendText("ROWS ONLY");
         }
 
         /// <summary>
@@ -199,6 +200,11 @@ namespace NightlyCode.Database.Info {
         /// <inheritdoc />
         public override bool MustRecreateTable(string[] obsolete, EntityColumnDescriptor[] altered, EntityColumnDescriptor[] missing, TableDescriptor tableschema, EntityDescriptor entityschema) {
             return false;
+        }
+
+        /// <inheritdoc />
+        public override Task<string> GenerateCreateStatement(IDBClient client, string table) {
+            throw new NotImplementedException();
         }
     }
 }

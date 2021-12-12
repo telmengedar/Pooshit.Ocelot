@@ -4,15 +4,16 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
-using NightlyCode.Database.Extern;
+using NightlyCode.Database.Errors;
 using NightlyCode.Database.Info;
+using DataTable = NightlyCode.Database.Clients.Tables.DataTable;
 
 namespace NightlyCode.Database.Clients {
 
     /// <summary>
     /// client to execute database commands
     /// </summary>
-    public class DBClient : IDBClient {
+    public class DBClient : ADbClient {
 
         /// <summary>
         /// creates a new <see cref="DBClient"/>
@@ -25,22 +26,18 @@ namespace NightlyCode.Database.Clients {
         }
 
         /// <inheritdoc />
-        public IDBInfo DBInfo { get; }
+        public override IDBInfo DBInfo { get; }
 
         /// <inheritdoc />
-        public IConnectionProvider Connection { get; }
+        public override IConnectionProvider Connection { get; }
 
         DbCommand PrepareCommand(IConnection connection, string commandtext, IEnumerable<object> parameters) {
             DbCommand command = connection.Connection.CreateCommand();
             command.CommandText = commandtext;
             command.CommandTimeout = 0;
 
-            foreach(object value in parameters) {
-                DbParameter parameter = command.CreateParameter();
-                parameter.ParameterName = DBInfo.Parameter + (command.Parameters.Count + 1);
-                parameter.Value = value == null ? DBNull.Value : Converter.Convert(value, DBInfo.GetDBRepresentation(value.GetType()));
-                command.Parameters.Add(parameter);
-            }
+            foreach (object value in parameters)
+                DBInfo.CreateParameter(command, value);
 
             return command;
         }
@@ -50,228 +47,225 @@ namespace NightlyCode.Database.Clients {
         }
 
         Task<IConnection> ConnectAsync(Transaction transaction) {
-            if (transaction != null)
-                return transaction.ConnectAsync();
-            return Connection.ConnectAsync();
+            return transaction?.ConnectAsync() ?? Connection.ConnectAsync();
         }
 
-        /// <summary>
-        /// begins a transaction
-        /// </summary>
-        /// <returns>Transaction object to use</returns>
-        public Transaction Transaction() {
+        /// <inheritdoc />
+        public override Transaction Transaction() {
             return new Transaction(DBInfo, Connection.Connect(), null);
         }
-
-        Tables.DataTable CreateTable(IDataReader reader) {
-            return Tables.DataTable.FromReader(reader);
-        }
-
+        
         /// <inheritdoc />
-        public Tables.DataTable Query(string query, params object[] parameters) {
-            return Query(query, (IEnumerable<object>)parameters);
-        }
+        public override int NonQueryPrepared(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
+            using PreparedCommand command = PrepareCommand(transaction, commandstring, parameters, true);
 
-        /// <inheritdoc />
-        public Task<Tables.DataTable> QueryAsync(string query, params object[] parameters) {
-            return QueryAsync(query, (IEnumerable<object>)parameters);
-        }
-
-        /// <inheritdoc />
-        public Tables.DataTable Query(string query, IEnumerable<object> parameters) {
-            return Query(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public Task<Tables.DataTable> QueryAsync(string query, IEnumerable<object> parameters) {
-            return QueryAsync(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public int NonQuery(string commandstring, params object[] parameters) {
-            return NonQuery(commandstring, (IEnumerable<object>)parameters);
-        }
-
-        /// <inheritdoc />
-        public Task<int> NonQueryAsync(string commandstring, params object[] parameters) {
-            return NonQueryAsync(commandstring, (IEnumerable<object>)parameters);
-        }
-
-        /// <inheritdoc />
-        public int NonQuery(string commandstring, IEnumerable<object> parameters) {
-            return NonQuery(null, commandstring, parameters);
-        }
-
-        /// <inheritdoc />
-        public Task<int> NonQueryAsync(string commandstring, IEnumerable<object> parameters) {
-            return NonQueryAsync(null, commandstring, parameters);
-        }
-
-        /// <inheritdoc />
-        public object Scalar(string query, params object[] parameters) {
-            return Scalar(query, (IEnumerable<object>)parameters);
-        }
-
-        /// <inheritdoc />
-        public Task<object> ScalarAsync(string query, params object[] parameters) {
-            return ScalarAsync(query, (IEnumerable<object>)parameters);
-        }
-
-        /// <inheritdoc />
-        public object Scalar(string query, IEnumerable<object> parameters) {
-            return Scalar(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public Task<object> ScalarAsync(string query, IEnumerable<object> parameters) {
-            return ScalarAsync(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public IEnumerable<object> Set(string query, params object[] parameters) {
-            return Set(query, (IEnumerable<object>)parameters);
-        }
-
-        /// <inheritdoc />
-        public Task<object[]> SetAsync(string query, params object[] parameters) {
-            return SetAsync(query, (IEnumerable<object>)parameters);
-        }
-
-        /// <inheritdoc />
-        public IEnumerable<object> Set(string query, IEnumerable<object> parameters) {
-            return Set(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public Task<object[]> SetAsync(string query, IEnumerable<object> parameters) {
-            return SetAsync(null, query, parameters);
-        }
-
-        /// <inheritdoc />
-        public int NonQuery(Transaction transaction, string commandstring, params object[] parameters) {
-            return NonQuery(transaction, commandstring, (IEnumerable<object>)parameters);
-        }
-
-        /// <inheritdoc />
-        public Task<int> NonQueryAsync(Transaction transaction, string commandstring, params object[] parameters) {
-            return NonQueryAsync(transaction, commandstring, (IEnumerable<object>)parameters);
-        }
-
-        /// <inheritdoc />
-        public int NonQuery(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
-            using(IConnection connection = Connect(transaction))
-            using(DbCommand command = PrepareCommand(connection, commandstring, parameters)) {
-                if(transaction != null)
-                    command.Transaction = transaction.DbTransaction;
-                return command.ExecuteNonQuery();
+            try {
+                return command.Command.ExecuteNonQuery();
+            }
+            catch (Exception e) {
+                throw new StatementException(commandstring, parameters.ToArray(), e);
             }
         }
 
         /// <inheritdoc />
-        public async Task<int> NonQueryAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
-            using(IConnection connection = await ConnectAsync(transaction))
-            using(DbCommand command = PrepareCommand(connection, commandstring, parameters)) {
-                if(transaction != null)
-                    command.Transaction = transaction.DbTransaction;
-                return await command.ExecuteNonQueryAsync();
+        public override DataTable QueryPrepared(Transaction transaction, string query, IEnumerable<object> parameters) {
+            using PreparedCommand command = PrepareCommand(transaction, query, parameters, true);
+
+            try {
+                using IDataReader reader = command.Command.ExecuteReader();
+                return CreateTable(reader);
+            }
+            catch (Exception e) {
+                throw new StatementException(query, parameters.ToArray(), e);
             }
         }
 
         /// <inheritdoc />
-        public Tables.DataTable Query(Transaction transaction, string query, params object[] parameters) {
-            return Query(transaction, query, (IEnumerable<object>)parameters);
-        }
-
-        /// <inheritdoc />
-        public Task<Tables.DataTable> QueryAsync(Transaction transaction, string query, params object[] parameters) {
-            return QueryAsync(transaction, query, (IEnumerable<object>)parameters);
-        }
-
-        /// <inheritdoc />
-        public Tables.DataTable Query(Transaction transaction, string query, IEnumerable<object> parameters) {
-            using(IConnection connection = Connect(transaction))
-            using(IDbCommand command = PrepareCommand(connection, query, parameters)) {
-                if(transaction != null)
-                    command.Transaction = transaction.DbTransaction;
-                using(IDataReader reader = command.ExecuteReader())
-                    return CreateTable(reader);
+        public override object ScalarPrepared(Transaction transaction, string query, IEnumerable<object> parameters) {
+            using PreparedCommand command = PrepareCommand(transaction, query, parameters, true);
+            try {
+                return command.Command.ExecuteScalar();
+            }
+            catch (Exception e) {
+                throw new StatementException(query, parameters.ToArray(), e);
             }
         }
 
         /// <inheritdoc />
-        public async Task<Tables.DataTable> QueryAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
-            using(IConnection connection = await ConnectAsync(transaction))
-            using(DbCommand command = PrepareCommand(connection, query, parameters)) {
-                if(transaction != null)
-                    command.Transaction = transaction.DbTransaction;
-                using(IDataReader reader = await command.ExecuteReaderAsync())
-                    return CreateTable(reader);
+        public override IEnumerable<object> SetPrepared(Transaction transaction, string query, IEnumerable<object> parameters) {
+            using PreparedCommand command = PrepareCommand(transaction, query, parameters, true);
+            IDataReader reader;
+            try {
+                reader = command.Command.ExecuteReader();
+            }
+            catch (Exception e) {
+                throw new StatementException(query, parameters.ToArray(), e);
+            }
+
+            using (reader) {
+                while (reader.Read())
+                    yield return reader.GetValue(0);
+                reader.Close();
             }
         }
 
         /// <inheritdoc />
-        public object Scalar(Transaction transaction, string query, params object[] parameters) {
-            return Scalar(transaction, query, (IEnumerable<object>)parameters);
+        public override Task<int> NonQueryPreparedAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
+            using PreparedCommand command = PrepareCommand(transaction, commandstring, parameters, true);
+            try {
+                return command.Command.ExecuteNonQueryAsync();
+            }
+            catch (Exception e) {
+                throw new StatementException(commandstring, parameters.ToArray(), e);
+            }
         }
-
+        
         /// <inheritdoc />
-        public Task<object> ScalarAsync(Transaction transaction, string query, params object[] parameters) {
-            return ScalarAsync(transaction, query, (IEnumerable<object>)parameters);
-        }
+        public override async Task<DataTable> QueryPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+            using PreparedCommand command = PrepareCommand(transaction, query, parameters, true);
 
-        /// <inheritdoc />
-        public object Scalar(Transaction transaction, string query, IEnumerable<object> parameters) {
-            using(IConnection connection = Connect(transaction))
-            using(IDbCommand command = PrepareCommand(connection, query, parameters)) {
-                if(transaction != null)
-                    command.Transaction = transaction.DbTransaction;
-                return command.ExecuteScalar();
+            try {
+                using IDataReader reader = await command.Command.ExecuteReaderAsync();
+                return CreateTable(reader);
+            }
+            catch (Exception e) {
+                throw new StatementException(query, parameters.ToArray(), e);
             }
         }
 
         /// <inheritdoc />
-        public async Task<object> ScalarAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
-            using(IConnection connection = await ConnectAsync(transaction))
-            using(DbCommand command = PrepareCommand(connection, query, parameters)) {
-                if(transaction != null)
-                    command.Transaction = transaction.DbTransaction;
-                return await command.ExecuteScalarAsync();
+        public override async Task<object> ScalarPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+            using PreparedCommand command = PrepareCommand(transaction, query, parameters, true);
+            try {
+                return await command.Command.ExecuteScalarAsync();
+            }
+            catch (Exception e) {
+                throw new StatementException(query, parameters.ToArray(), e);
             }
         }
 
         /// <inheritdoc />
-        public IEnumerable<object> Set(Transaction transaction, string query, params object[] parameters) {
-            return Set(transaction, query, (IEnumerable<object>)parameters);
-        }
+        public override async Task<object[]> SetPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+            using PreparedCommand command = PrepareCommand(transaction, query, parameters, true);
 
-        /// <inheritdoc />
-        public Task<object[]> SetAsync(Transaction transaction, string query, params object[] parameters) {
-            return SetAsync(transaction, query, (IEnumerable<object>)parameters);
-        }
-
-        /// <inheritdoc />
-        public IEnumerable<object> Set(Transaction transaction, string query, IEnumerable<object> parameters) {
-            using(IConnection connection = Connect(transaction))
-            using(IDbCommand command = PrepareCommand(connection, query, parameters)) {
-                if(transaction != null)
-                    command.Transaction = transaction.DbTransaction;
-                using(IDataReader reader = command.ExecuteReader()) {
-                    while(reader.Read())
-                        yield return reader.GetValue(0);
-                    reader.Close();
-                }
-            }
-        }
-
-        /// <inheritdoc />
-        public async Task<object[]> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
-            using(IConnection connection = await ConnectAsync(transaction))
-            using(DbCommand command = PrepareCommand(connection, query, parameters)) {
-                if(transaction != null)
-                    command.Transaction = transaction.DbTransaction;
-
+            try {
                 // needs to be converted to array to allow accessing the reader while command is still opened
-                return ReadSet(await command.ExecuteReaderAsync()).ToArray();
+                return ReadSet(await command.Command.ExecuteReaderAsync()).ToArray();
+            }
+            catch (Exception e) {
+                throw new StatementException(query, parameters.ToArray(), e);
+            }
+        }
+
+        DataTable CreateTable(IDataReader reader) {
+            return DataTable.FromReader(reader);
+        }
+        
+        PreparedCommand PrepareCommand(Transaction transaction, string commandString, IEnumerable<object> parameters, bool prepare) {
+            IConnection connection = Connect(transaction);
+            DbCommand command = PrepareCommand(connection, commandString, parameters);
+            if (prepare)
+                command.Prepare();
+            if(transaction != null)
+                command.Transaction = transaction.DbTransaction;
+            return new PreparedCommand(connection, command);
+        }
+        
+        /// <inheritdoc />
+        public override int NonQuery(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
+            using PreparedCommand command = PrepareCommand(transaction, commandstring, parameters, false);
+            try {
+                return command.Command.ExecuteNonQuery();
+            }
+            catch (Exception e) {
+                throw new StatementException(commandstring, parameters.ToArray(), e);
+            }
+        }
+
+        /// <inheritdoc />
+        public override async Task<int> NonQueryAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
+            using PreparedCommand command = PrepareCommand(transaction, commandstring, parameters, false);
+            try {
+                return await command.Command.ExecuteNonQueryAsync();
+            }
+            catch (Exception e) {
+                throw new StatementException(commandstring, parameters.ToArray(), e);
+            }
+        }
+
+        /// <inheritdoc />
+        public override DataTable Query(Transaction transaction, string query, IEnumerable<object> parameters) {
+            using PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
+            try {
+                using IDataReader reader = command.Command.ExecuteReader();
+                return CreateTable(reader);
+            }
+            catch (Exception e) {
+                throw new StatementException(query, parameters.ToArray(), e);
+            }
+        }
+
+        /// <inheritdoc />
+        public override async Task<DataTable> QueryAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+            using PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
+            try {
+                using IDataReader reader = await command.Command.ExecuteReaderAsync();
+                return CreateTable(reader);
+            }
+            catch (Exception e) {
+                throw new StatementException(query, parameters.ToArray(), e);
+            }
+        }
+
+        /// <inheritdoc />
+        public override object Scalar(Transaction transaction, string query, IEnumerable<object> parameters) {
+            using PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
+            try {
+                return command.Command.ExecuteScalar();
+            }
+            catch (Exception e) {
+                throw new StatementException(query, parameters.ToArray(), e);
+            }
+        }
+
+        /// <inheritdoc />
+        public override async Task<object> ScalarAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+            using PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
+            try {
+                return await command.Command.ExecuteScalarAsync();
+            }
+            catch (Exception e) {
+                throw new StatementException(query, parameters.ToArray(), e);
+            }
+        }
+
+        /// <inheritdoc />
+        public override IEnumerable<object> Set(Transaction transaction, string query, IEnumerable<object> parameters) {
+            using PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
+            IDataReader reader;
+            try {
+                reader = command.Command.ExecuteReader();
+            }
+            catch (Exception e) {
+                throw new StatementException(query, parameters.ToArray(), e);
+            }
+
+            using (reader)
+                while (reader.Read())
+                    yield return reader.GetValue(0);
+            reader.Close();
+        }
+
+        /// <inheritdoc />
+        public override async Task<object[]> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+            using PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
+
+            try {
+                // needs to be converted to array to allow accessing the reader while command is still opened
+                return ReadSet(await command.Command.ExecuteReaderAsync()).ToArray();
+            }
+            catch (Exception e) {
+                throw new StatementException(query, parameters.ToArray(), e);
             }
         }
 

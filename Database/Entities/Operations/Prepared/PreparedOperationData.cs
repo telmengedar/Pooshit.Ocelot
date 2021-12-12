@@ -43,7 +43,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
                     parameterbuilder.Append($"{dbclient.DBInfo.Parameter}{constantparameters.Length + parameters.Length + arrayindex++ + 1}");
                 }
 
-                commandtext = commandtext.Replace($"[{i++}]", $"({parameterbuilder})");
+                commandtext = commandtext.Replace($"[{i++}]", $"{parameterbuilder}");
             }
 
             return new PreparedOperationData {

@@ -16,6 +16,31 @@ namespace NightlyCode.Database.Tests {
     public class LoadValuesOperationTests {
 
         [Test, Parallelizable]
+        public void LoadWithArrayParameter() {
+            IDBClient dbclient = TestData.CreateDatabaseAccess();
+            EntityManager entitymanager = new EntityManager(dbclient);
+
+            entitymanager.UpdateSchema<ValueModel>();
+
+            entitymanager.InsertEntities<ValueModel>().Execute(
+                new ValueModel(1),
+                new ValueModel(2),
+                new ValueModel(5),
+                new ValueModel(3),
+                new ValueModel(75),
+                new ValueModel(234),
+                new ValueModel(124)
+            );
+
+            
+            int[] result = entitymanager.Load<ValueModel>(m => m.Integer, m => m.String)
+                .Where(v => v.Integer.In(DBParameter<int[]>.Value))
+                .ExecuteSet<int>(new[] { 5, 75, 124 })
+                .ToArray();
+            Assert.True(result.SequenceEqual(new[] { 5, 75, 124 }));
+        }
+
+        [Test, Parallelizable]
         public void ExecuteType() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
             EntityManager entitymanager = new EntityManager(dbclient);

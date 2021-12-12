@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using NightlyCode.Database.Clients;
 using NightlyCode.Database.Entities.Descriptors;
+using NightlyCode.Database.Entities.Operations.Expressions;
 using NightlyCode.Database.Extern;
 using NightlyCode.Database.Fields;
 using NightlyCode.Database.Info;
@@ -88,11 +90,26 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
             return this;
         }
 
-        bool PrepareParameters() {
+        /// <inheritdoc />
+        public IOperationPreparator AppendExpression(Expression expression, IDBInfo dbinfo, Func<Type, EntityDescriptor> modelinfo, string tablealias = null) {
+            CriteriaVisitor.GetCriteriaText(expression, modelinfo, dbinfo, this, tablealias);
+            return this;
+        }
+
+        bool PrepareParameters(IDBClient client) {
+            
             int index = 1;
-            foreach(ParameterToken token in tokens.OfType<ParameterToken>().Where(o => !o.IsArray && o.IsConstant && o.Index == -1))
+            if (client.DBInfo.SupportsArrayParameters) {
+                foreach(ParameterToken token in tokens.OfType<ParameterToken>().Where(o => o.IsConstant && o.Index == -1))
+                    token.Index = index++;
+                foreach(ParameterToken token in tokens.OfType<ParameterToken>().Where(o => !o.IsConstant && o.Index == -1))
+                    token.Index = index++;
+                return false;
+            }
+
+            foreach (ParameterToken token in tokens.OfType<ParameterToken>().Where(o => !o.IsArray && o.IsConstant && o.Index == -1))
                 token.Index = index++;
-            foreach(ParameterToken token in tokens.OfType<ParameterToken>().Where(o => !o.IsArray && !o.IsConstant && o.Index == -1))
+            foreach (ParameterToken token in tokens.OfType<ParameterToken>().Where(o => !o.IsArray && !o.IsConstant && o.Index == -1))
                 token.Index = index++;
 
             index = 0;
@@ -100,7 +117,6 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
                 token.Index = index++;
             foreach(ParameterToken token in tokens.OfType<ParameterToken>().Where(o => o.IsArray && !o.IsConstant && o.Index == -1))
                 token.Index = index++;
-
             return index > 0;
         }
 
@@ -120,7 +136,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="dbclient">client used to execute operation</param>
         /// <returns>operation which can get executed</returns>
         public PreparedOperation GetOperation(IDBClient dbclient) {
-            if(PrepareParameters())
+            if(PrepareParameters(dbclient))
                 return new PreparedArrayOperation(dbclient,
                     GetCommandText(dbclient.DBInfo),
                     tokens.OfType<ParameterToken>()
@@ -143,7 +159,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="dbclient">client used to execute operation</param>
         /// <returns>operation which can get executed</returns>
         public PreparedOperation GetReturnIdOperation(IDBClient dbclient) {
-            if(PrepareParameters())
+            if(PrepareParameters(dbclient))
                 return new PreparedArrayOperation(dbclient,
                     GetCommandText(dbclient.DBInfo),
                     tokens.OfType<ParameterToken>()
@@ -167,7 +183,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="modelcache">cached entity models</param>
         /// <returns>operation which can get executed</returns>
         public PreparedLoadOperation GetLoadValuesOperation(IDBClient dbclient, Func<Type, EntityDescriptor> modelcache) {
-            if(PrepareParameters())
+            if(PrepareParameters(dbclient))
                 return new PreparedArrayLoadOperation(dbclient, modelcache,
                     GetCommandText(dbclient.DBInfo),
                     tokens.OfType<ParameterToken>()
@@ -191,7 +207,7 @@ namespace NightlyCode.Database.Entities.Operations.Prepared {
         /// <param name="modelcache">cached entity models</param>
         /// <returns>operation which can get executed</returns>
         public PreparedLoadOperation<T> GetLoadValuesOperation<T>(IDBClient dbclient, Func<Type, EntityDescriptor> modelcache) {
-            if(PrepareParameters())
+            if(PrepareParameters(dbclient))
                 return new PreparedArrayLoadOperation<T>(dbclient, modelcache,
                     GetCommandText(dbclient.DBInfo),
                     tokens.OfType<ParameterToken>()
