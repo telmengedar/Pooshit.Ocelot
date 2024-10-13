@@ -1,0 +1,60 @@
+{
+  "Columns": [
+    "schemaname",
+    "tablename",
+    "indexname",
+    "tablespace",
+    "indexdef"
+  ],
+  "Rows": [
+    [
+      "public",
+      "neuvooclick",
+      "idx_neuvooclick_jobid",
+      null,
+      "CREATE INDEX idx_neuvooclick_jobid ON public.neuvooclick USING btree (clientjobid)"
+    ],
+    [
+      "public",
+      "neuvooclick",
+      "idx_neuvooclick_campaign",
+      null,
+      "CREATE INDEX idx_neuvooclick_campaign ON public.neuvooclick USING btree (campaignid)"
+    ],
+    [
+      "public",
+      "neuvooclick",
+      "idx_neuvooclick_item",
+      null,
+      "CREATE INDEX idx_neuvooclick_item ON public.neuvooclick USING btree (itemid)"
+    ],
+    [
+      "public",
+      "neuvooclick",
+      "idx_neuvooclick_target",
+      null,
+      "CREATE INDEX idx_neuvooclick_target ON public.neuvooclick USING btree (targetid)"
+    ],
+    [
+      "public",
+      "neuvooclick",
+      "idx_neuvooclick_job",
+      null,
+      "CREATE INDEX idx_neuvooclick_job ON public.neuvooclick USING btree (mamgojobid)"
+    ],
+    [
+      "public",
+      "neuvooclick",
+      "neuvooclick_pkey",
+      null,
+      "CREATE UNIQUE INDEX neuvooclick_pkey ON public.neuvooclick USING btree (clickid)"
+    ],
+    [
+      "public",
+      "neuvooclick",
+      "idx_neuvooclick_timestamp",
+      null,
+      "CREATE INDEX idx_neuvooclick_timestamp ON public.neuvooclick USING btree (\"timestamp\")"
+    ]
+  ]
+}

@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>Pooshit.Ocelot</AssemblyName>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Description>Simple type-safe ORM for access to database using fluent statements</Description>
+        <Authors>Toni Gottschall</Authors>
+        <PackageTags>Database, ORM, SQlite, Postgre, MySQL, fluent, Ocelot</PackageTags>
+        <Product>Pooshit.Ocelot</Product>
+        <PackageId>Pooshit.Ocelot</PackageId>
+        <PackageProjectUrl>https://github.com/telmengedar/Pooshit.Ocelot</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/telmengedar/Pooshit.Ocelot.git</RepositoryUrl>
+        <AssemblyVersion>0.13.94</AssemblyVersion>
+        <RootNamespace>Pooshit.Ocelot</RootNamespace>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageVersion>0.13.94-preview</PackageVersion>
+        <LangVersion>default</LangVersion>
+        <Title>Ocelot</Title>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <None Remove="Nightlycode.Database.xml" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="LICENSE" Pack="true" PackagePath="" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="Info\Postgre\createstatement.sql" />
+        <EmbeddedResource Include="Info\Postgre\createstatement.sql" />
+    </ItemGroup>
+</Project>

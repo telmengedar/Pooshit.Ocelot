@@ -1,10 +1,10 @@
-﻿# NightlyCode.DB
+﻿# P00Sh:7 Ocelot Database Manager
 
 Simple nonintrusive entitymanager to access a database without the need to include sql strings into your project.
 
 ## Compatibility
 
-This library can interact with **Sqlite**, **PostgreSQL** and **MySQL**/**MariaDB**
+This library can interact with **Sqlite**, **PostgreSQL**, **MySQL**/**MariaDB** and **MSSql**
 
 ## Entities
 
