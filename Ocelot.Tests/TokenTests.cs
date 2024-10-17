@@ -1,12 +1,12 @@
-﻿using NightlyCode.Database.Tests.Data;
-using NightlyCode.Database.Tests.Models;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
+using Pooshit.Ocelot.Tests.Data;
+using Pooshit.Ocelot.Tests.Models;
 using Pooshit.Ocelot.Tokens;
 using Pooshit.Ocelot.Tokens.Expressions;
 
-namespace NightlyCode.Database.Tests;
+namespace Pooshit.Ocelot.Tests;
 
 [TestFixture, Parallelizable]
 public class TokenTests {

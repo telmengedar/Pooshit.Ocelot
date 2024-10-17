@@ -1,10 +1,10 @@
-﻿using NightlyCode.Database.Tests.Data;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Clients.Tables;
 using Pooshit.Ocelot.Entities;
+using Pooshit.Ocelot.Tests.Data;
 
-namespace NightlyCode.Database.Tests {
+namespace Pooshit.Ocelot.Tests {
 
     [TestFixture, Parallelizable]
     public class CreateTableOperationTests {

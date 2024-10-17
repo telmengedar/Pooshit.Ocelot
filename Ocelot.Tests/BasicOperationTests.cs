@@ -1,13 +1,13 @@
 using System.Threading.Tasks;
-using NightlyCode.Database.Tests.Data;
-using NightlyCode.Database.Tests.Entities;
 using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Statements;
+using Pooshit.Ocelot.Tests.Data;
+using Pooshit.Ocelot.Tests.Entities;
 using Pooshit.Ocelot.Tokens;
 
-namespace NightlyCode.Database.Tests {
+namespace Pooshit.Ocelot.Tests {
     
     [TestFixture, Parallelizable]
     public class BasicOperationTests {

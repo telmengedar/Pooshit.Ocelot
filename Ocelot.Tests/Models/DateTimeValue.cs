@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NightlyCode.Database.Tests.Models {
+namespace Pooshit.Ocelot.Tests.Models {
     public class DateTimeValue {
         public DateTime Time { get; set; }
         public int Value { get; set; }

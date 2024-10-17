@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Linq;
-using NightlyCode.Database.Tests.Data;
-using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
+using Pooshit.Ocelot.Tests.Data;
+using Pooshit.Ocelot.Tests.Models;
 using Pooshit.Ocelot.Tokens;
 using Pooshit.Ocelot.Tokens.Values;
 
-namespace NightlyCode.Database.Tests.Fields {
+namespace Pooshit.Ocelot.Tests.Fields {
     
     [TestFixture, Parallelizable]
     public class CastTests {

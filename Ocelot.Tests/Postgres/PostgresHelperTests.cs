@@ -2,7 +2,7 @@ using System.IO;
 using NUnit.Framework;
 using Pooshit.Ocelot.Info.Postgre;
 
-namespace NightlyCode.Database.Tests.Postgres {
+namespace Pooshit.Ocelot.Tests.Postgres {
     
     [TestFixture, Parallelizable]
     public class PostgresHelperTests {

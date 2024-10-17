@@ -1,6 +1,6 @@
 ﻿using Pooshit.Ocelot.Entities.Attributes;
 
-namespace NightlyCode.Database.Tests.Entities {
+namespace Pooshit.Ocelot.Tests.Entities {
 
     [View("NightlyCode.Ocelot.Tests.Entities.testview.sql")]
     public class TestView {

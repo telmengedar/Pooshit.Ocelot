@@ -5,7 +5,7 @@
 
         <IsPackable>false</IsPackable>
 
-        <RootNamespace>NightlyCode.Database.Tests</RootNamespace>
+        <RootNamespace>Pooshit.Ocelot.Tests</RootNamespace>
 
         <LangVersion>default</LangVersion>
     </PropertyGroup>
@@ -13,7 +13,6 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.10" />
         <PackageReference Include="Moq" Version="4.16.1" />
-        <PackageReference Include="NightlyCode.Json" Version="0.2.12-preview" />
         <PackageReference Include="Npgsql" Version="6.0.7" />
         <PackageReference Include="nunit" Version="3.13.2" />
         <PackageReference Include="NUnit3TestAdapter" Version="4.1.0">
@@ -21,6 +20,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+        <PackageReference Include="Pooshit.Json" Version="0.3.8-preview" />
     </ItemGroup>
 
     <ItemGroup>

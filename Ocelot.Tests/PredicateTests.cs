@@ -1,14 +1,12 @@
-﻿using System;
-using System.Linq;
-using NightlyCode.Database.Tests.Data;
-using NightlyCode.Database.Tests.Models;
-using NpgsqlTypes;
+﻿using System.Linq;
 using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Expressions;
+using Pooshit.Ocelot.Tests.Data;
+using Pooshit.Ocelot.Tests.Models;
 
-namespace NightlyCode.Database.Tests {
+namespace Pooshit.Ocelot.Tests {
     public class PredicateTests {
 
         [Test, Parallelizable]

@@ -1,4 +1,4 @@
-﻿namespace NightlyCode.Database.Tests.Models {
+﻿namespace Pooshit.Ocelot.Tests.Models {
 
     public enum TestEnum {
         Normal,

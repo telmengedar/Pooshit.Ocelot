@@ -1,13 +1,13 @@
 ﻿using Moq;
-using NightlyCode.Database.Tests.Entities;
 using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities.Descriptors;
 using Pooshit.Ocelot.Entities.Operations;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Info;
+using Pooshit.Ocelot.Tests.Entities;
 
-namespace NightlyCode.Database.Tests.Postgres {
+namespace Pooshit.Ocelot.Tests.Postgres {
 
     [TestFixture, Parallelizable]
     public class PostgresSchemaUpdateTests {

@@ -8,7 +8,7 @@ using Pooshit.Ocelot.Fields;
 using Pooshit.Ocelot.Info;
 using Pooshit.Ocelot.Info.Postgre;
 
-namespace NightlyCode.Database.Tests.MsSql {
+namespace Pooshit.Ocelot.Tests.MsSql {
 
     [TestFixture, Parallelizable]
     public class MsSqlInfoTests {

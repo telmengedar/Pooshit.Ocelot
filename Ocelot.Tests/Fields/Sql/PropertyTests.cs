@@ -2,16 +2,16 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using Moq;
-using NightlyCode.Database.Tests.Entities;
 using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities.Descriptors;
 using Pooshit.Ocelot.Entities.Operations.Expressions;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Info;
+using Pooshit.Ocelot.Tests.Entities;
 using Pooshit.Ocelot.Tokens;
 
-namespace NightlyCode.Database.Tests.Fields.Sql {
+namespace Pooshit.Ocelot.Tests.Fields.Sql {
     
     [TestFixture, Parallelizable]
     public class PropertyTests {

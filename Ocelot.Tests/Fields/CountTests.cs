@@ -1,12 +1,12 @@
-﻿using NightlyCode.Database.Tests.Data;
-using NightlyCode.Database.Tests.Models;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Entities.Operations;
 using Pooshit.Ocelot.Fields;
+using Pooshit.Ocelot.Tests.Data;
+using Pooshit.Ocelot.Tests.Models;
 
-namespace NightlyCode.Database.Tests.Fields {
+namespace Pooshit.Ocelot.Tests.Fields {
     
     [TestFixture, Parallelizable]
     public class CountTests {

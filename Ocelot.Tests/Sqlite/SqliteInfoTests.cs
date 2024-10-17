@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using NightlyCode.Database.Tests.Data;
-using NightlyCode.Database.Tests.Entities;
 using NUnit.Framework;
 using Pooshit.Ocelot.Entities.Schema;
 using Pooshit.Ocelot.Info;
 using Pooshit.Ocelot.Schemas;
 
-namespace NightlyCode.Database.Tests.Sqlite {
+namespace Pooshit.Ocelot.Tests.Sqlite {
 
     [TestFixture]
     public class SqliteInfoTests {

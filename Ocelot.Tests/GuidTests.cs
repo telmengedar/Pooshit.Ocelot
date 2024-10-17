@@ -1,13 +1,13 @@
 ﻿using System;
 using Microsoft.Data.Sqlite;
-using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Fields;
 using Pooshit.Ocelot.Info;
+using Pooshit.Ocelot.Tests.Models;
 
-namespace NightlyCode.Database.Tests {
+namespace Pooshit.Ocelot.Tests {
 
     [TestFixture, Parallelizable]
     public class GuidTests {

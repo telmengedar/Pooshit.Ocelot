@@ -2,12 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Net;
 using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
-using NightlyCode.Database.Tests.Entities;
-using NightlyCode.Database.Tests.Models;
 using Npgsql;
 using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
@@ -18,8 +15,10 @@ using Pooshit.Ocelot.Entities.Operations.Tables;
 using Pooshit.Ocelot.Fields;
 using Pooshit.Ocelot.Info;
 using Pooshit.Ocelot.Schemas;
+using Pooshit.Ocelot.Tests.Entities;
+using Pooshit.Ocelot.Tests.Models;
 
-namespace NightlyCode.Database.Tests.Postgres;
+namespace Pooshit.Ocelot.Tests.Postgres;
 
 /// <summary>
 /// only used for local tests to test against a real postgres

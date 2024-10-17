@@ -5,9 +5,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Moq;
-using NightlyCode.Database.Tests.Entities;
-using NightlyCode.Database.Tests.Mocks;
-using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Clients.Tables;
@@ -20,9 +17,12 @@ using Pooshit.Ocelot.Fields;
 using Pooshit.Ocelot.Info;
 using Pooshit.Ocelot.Info.Postgre;
 using Pooshit.Ocelot.Schemas;
+using Pooshit.Ocelot.Tests.Entities;
+using Pooshit.Ocelot.Tests.Mocks;
+using Pooshit.Ocelot.Tests.Models;
 using Pooshit.Ocelot.Tokens;
 
-namespace NightlyCode.Database.Tests.Postgres;
+namespace Pooshit.Ocelot.Tests.Postgres;
 
 [TestFixture, Parallelizable]
 public class PostgreInfoTests {

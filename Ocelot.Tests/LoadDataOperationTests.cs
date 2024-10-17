@@ -1,14 +1,14 @@
 ﻿using System.Linq;
-using NightlyCode.Database.Tests.Data;
 using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Clients.Tables;
 using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
+using Pooshit.Ocelot.Tests.Data;
 using Pooshit.Ocelot.Tokens;
 using Pooshit.Ocelot.Tokens.Operations;
 
-namespace NightlyCode.Database.Tests {
+namespace Pooshit.Ocelot.Tests {
 
     [TestFixture, Parallelizable]
     public class LoadDataOperationTests {

@@ -1,4 +1,4 @@
-﻿namespace NightlyCode.Database.Tests.Entities {
+﻿namespace Pooshit.Ocelot.Tests.Entities {
     public class NullablePropertyType {
         public long? SourceId { get; set; }
 

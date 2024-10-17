@@ -1,6 +1,6 @@
 using Pooshit.Ocelot.Entities.Attributes;
 
-namespace NightlyCode.Database.Tests.Entities {
+namespace Pooshit.Ocelot.Tests.Entities {
     
     /// <summary>
     /// word in a dictionary

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
-using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;
 using Pooshit.Ocelot.Entities.Descriptors;
+using Pooshit.Ocelot.Tests.Models;
 
-namespace NightlyCode.Database.Tests.Entities
+namespace Pooshit.Ocelot.Tests.Entities
 {
 
     [TestFixture]

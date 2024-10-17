@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using NightlyCode.Database.Tests.Data;
-using NightlyCode.Database.Tests.Entities;
-using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Fields;
+using Pooshit.Ocelot.Tests.Data;
+using Pooshit.Ocelot.Tests.Entities;
+using Pooshit.Ocelot.Tests.Models;
 
-namespace NightlyCode.Database.Tests {
+namespace Pooshit.Ocelot.Tests {
 
     [TestFixture, Parallelizable]
     public class LoadValuesOperationTests {
@@ -18,7 +18,7 @@ namespace NightlyCode.Database.Tests {
         [Test, Parallelizable]
         public void LoadWithArrayParameter() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
-            EntityManager entitymanager = new EntityManager(dbclient);
+            EntityManager entitymanager = new(dbclient);
 
             entitymanager.UpdateSchema<ValueModel>();
 

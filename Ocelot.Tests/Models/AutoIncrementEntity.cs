@@ -1,6 +1,6 @@
 ﻿using Pooshit.Ocelot.Entities.Attributes;
 
-namespace NightlyCode.Database.Tests.Models {
+namespace Pooshit.Ocelot.Tests.Models {
     public class AutoIncrementEntity {
 
         [PrimaryKey, AutoIncrement]

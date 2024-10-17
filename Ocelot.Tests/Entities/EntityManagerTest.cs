@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NightlyCode.Database.Tests.Data;
-using NightlyCode.Database.Tests.Models;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using Pooshit.Ocelot.Clients;
@@ -12,9 +10,11 @@ using Pooshit.Ocelot.Entities.Operations;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Expressions;
 using Pooshit.Ocelot.Fields;
+using Pooshit.Ocelot.Tests.Data;
+using Pooshit.Ocelot.Tests.Models;
 using Pooshit.Ocelot.Tokens;
 
-namespace NightlyCode.Database.Tests.Entities {
+namespace Pooshit.Ocelot.Tests.Entities {
 
     [TestFixture, Parallelizable]
     public class EntityManagerTest {

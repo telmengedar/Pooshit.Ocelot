@@ -3,7 +3,7 @@ using System.Collections;
 using System.Data;
 using System.Data.Common;
 
-namespace NightlyCode.Database.Tests.Mocks {
+namespace Pooshit.Ocelot.Tests.Mocks {
     public class FakeReader : DbDataReader {
         int currentRow = -1;
         string[] names;

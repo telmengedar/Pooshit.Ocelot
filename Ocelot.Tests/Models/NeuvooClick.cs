@@ -2,7 +2,7 @@ using System;
 using System.Runtime.Serialization;
 using Pooshit.Ocelot.Entities.Attributes;
 
-namespace NightlyCode.Database.Tests.Models {
+namespace Pooshit.Ocelot.Tests.Models {
     
     /// <summary>
     /// click data of neuvoo

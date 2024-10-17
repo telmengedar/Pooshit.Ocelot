@@ -1,7 +1,7 @@
 using System.Numerics;
 using Pooshit.Ocelot.CustomTypes;
 
-namespace NightlyCode.Database.Tests.Entities; 
+namespace Pooshit.Ocelot.Tests.Entities; 
 
 public class BigIntData {
     public BigInteger Data { get; set; }

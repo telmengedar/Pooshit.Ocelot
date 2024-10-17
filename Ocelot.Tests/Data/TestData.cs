@@ -3,7 +3,7 @@ using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Info;
 
-namespace NightlyCode.Database.Tests.Data {
+namespace Pooshit.Ocelot.Tests.Data {
     public static class TestData {
 
         public static IDBClient CreateDatabaseAccess() {

@@ -1,10 +1,10 @@
-﻿using NightlyCode.Database.Tests.Data;
-using NightlyCode.Database.Tests.Models;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Entities.Operations;
+using Pooshit.Ocelot.Tests.Data;
+using Pooshit.Ocelot.Tests.Models;
 
-namespace NightlyCode.Database.Tests.Entities {
+namespace Pooshit.Ocelot.Tests.Entities {
 
     [TestFixture, Parallelizable]
     public class LoadTests {
