@@ -16,25 +16,32 @@ public class FieldMapper<TEntity> {
     /// creates a new <see cref="FieldMapper{TEntity}"/>
     /// </summary>
     /// <param name="mappings">mappings to initialize mapper with</param>
-    public FieldMapper(params FieldMapping<TEntity>[] mappings) {
-        this.mappings.AddRange(mappings);
-        BuildFieldLookup();
+    public FieldMapper(params FieldMapping<TEntity>[] mappings) 
+    : this((IEnumerable<FieldMapping<TEntity>>)mappings)
+    {
     }
 
     /// <summary>
     /// creates a new <see cref="FieldMapper{TEntity}"/>
     /// </summary>
     /// <param name="mappings">mappings to initialize mapper with</param>
-    public FieldMapper(IEnumerable<FieldMapping<TEntity>> mappings) {
-        this.mappings.AddRange(mappings);
-        BuildFieldLookup();
+    /// <param name="initializer">initializer used to initialize entities before processing mappings</param>
+    public FieldMapper(FieldMapping<TEntity>[] mappings, Action<TEntity, string[]> initializer=null) 
+    : this((IEnumerable<FieldMapping<TEntity>>)mappings, initializer)
+    {
     }
 
-    void BuildFieldLookup() {
-        fieldLookup = new();
-        foreach (FieldMapping<TEntity> field in mappings)
-            fieldLookup[field.Name] = field;
+    /// <summary>
+    /// creates a new <see cref="FieldMapper{TEntity}"/>
+    /// </summary>
+    /// <param name="initializer">initializer used to initialize entities before processing mappings</param>
+    /// <param name="mappings">mappings to initialize mapper with</param>
+    public FieldMapper(IEnumerable<FieldMapping<TEntity>> mappings, Action<TEntity, string[]> initializer=null) {
+        this.mappings.AddRange(mappings);
+        InitializeEntity = initializer;
+        BuildFieldLookup();
     }
+    
     /// <summary>
     /// access to fields by name
     /// </summary>
@@ -45,6 +52,14 @@ public class FieldMapper<TEntity> {
     /// referenced db fields of contained field mappings
     /// </summary>
     public IEnumerable<IDBField> DbFields => mappings.Select(m => m.Field);
+
+    Action<TEntity, string[]> InitializeEntity { get; }
+    
+    void BuildFieldLookup() {
+        fieldLookup = new();
+        foreach (FieldMapping<TEntity> field in mappings)
+            fieldLookup[field.Name] = field;
+    }
 
     /// <summary>
     /// get fields from names
@@ -72,6 +87,7 @@ public class FieldMapper<TEntity> {
     /// <returns>created entity</returns>
     public TEntity EntityFromRow(DataRow row, params string[] fields) {
         TEntity entity = Activator.CreateInstance<TEntity>();
+        InitializeEntity?.Invoke(entity, fields);
         int index = 0;
         if (fields.Length == 0) {
             foreach (FieldMapping<TEntity> field in mappings)
