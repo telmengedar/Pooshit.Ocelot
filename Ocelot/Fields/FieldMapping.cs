@@ -50,13 +50,10 @@ public class FieldMapping<TEntity, TValue> : FieldMapping<TEntity> {
     public FieldMapping(string name, IDBField field, Action<TEntity, TValue> setter) 
         : base(name, field) => Setter = setter;
 
-    /// <summary>
-    /// field setter
-    /// </summary>
-    public Action<TEntity, TValue> Setter { get; }
+    Action<TEntity, TValue> Setter { get; }
 
     /// <inheritdoc />
     public override void SetValue(TEntity entity, object value) {
-        Setter(entity, Converter.Convert<TValue>(value));
+        Setter(entity, Converter.Convert<TValue>(value, true));
     }
 }
