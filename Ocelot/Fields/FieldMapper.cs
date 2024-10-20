@@ -89,7 +89,7 @@ public class FieldMapper<TEntity> {
             }
         }
         else {
-            foreach (FieldMapping<TEntity> field in fieldLookup.Values) {
+            foreach (FieldMapping<TEntity> field in mappings) {
                 if (field.Name == fieldName)
                     return index;
                 ++index;
