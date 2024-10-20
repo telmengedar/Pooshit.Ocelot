@@ -81,10 +81,19 @@ public class FieldMapper<TEntity> {
 
     int IndexOf(string[] fields, string fieldName) {
         int index = 0;
-        foreach (string field in fields) {
-            if (field == fieldName)
-                return index;
-            ++index;
+        if (fields?.Length > 0) {
+            foreach (string field in fields) {
+                if (field == fieldName)
+                    return index;
+                ++index;
+            }
+        }
+        else {
+            foreach (FieldMapping<TEntity> field in fieldLookup.Values) {
+                if (field.Name == fieldName)
+                    return index;
+                ++index;
+            }
         }
 
         return -1;
