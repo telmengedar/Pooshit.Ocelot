@@ -107,7 +107,10 @@ public class FieldMapper<TEntity> {
     /// <returns>created entity</returns>
     public TEntity EntityFromRow(DataRow row, params string[] fields) {
         TEntity entity = Activator.CreateInstance<TEntity>();
-        InitializeEntity?.Invoke(entity, fields, fieldName => row.GetValue<object>(IndexOf(fields, fieldName)));
+        InitializeEntity?.Invoke(entity, fields, fieldName => {
+                                                     int index = IndexOf(fields, fieldName);
+                                                     return index < 0 ? null : row.GetValue<object>(index);
+                                                 });
         int index = 0;
         if (fields.Length == 0) {
             foreach (FieldMapping<TEntity> field in mappings)
