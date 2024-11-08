@@ -7,15 +7,16 @@ namespace Pooshit.Ocelot.Fields;
 /// mapping for a field to load
 /// </summary>
 public abstract class FieldMapping<TEntity> {
-    
     /// <summary>
     /// creates a new <see cref="FieldMapping{TEntity,TValue}"/>
     /// </summary>
     /// <param name="name">name of field</param>
     /// <param name="field">mapped field</param>
-    protected FieldMapping(string name, IDBField field) {
+    /// <param name="fieldType">data type of referenced field</param>
+    protected FieldMapping(string name, IDBField field, Type fieldType) {
         Name = name;
         Field = field;
+        FieldType = fieldType;
     }
 
     /// <summary>
@@ -29,6 +30,11 @@ public abstract class FieldMapping<TEntity> {
     public IDBField Field { get; }
 
     /// <summary>
+    /// data type of field
+    /// </summary>
+    public Type FieldType { get; }
+    
+    /// <summary>
     /// set value to entity
     /// </summary>
     /// <param name="entity">entity to assign value to</param>
@@ -40,7 +46,6 @@ public abstract class FieldMapping<TEntity> {
 /// mapping for a field to load
 /// </summary>
 public class FieldMapping<TEntity, TValue> : FieldMapping<TEntity> {
-    
     /// <summary>
     /// creates a new <see cref="FieldMapping{TEntity,TValue}"/>
     /// </summary>
@@ -48,7 +53,7 @@ public class FieldMapping<TEntity, TValue> : FieldMapping<TEntity> {
     /// <param name="field">field to map</param>
     /// <param name="setter">setter used to set field values to entities</param>
     public FieldMapping(string name, IDBField field, Action<TEntity, TValue> setter) 
-        : base(name, field) => Setter = setter;
+        : base(name, field, typeof(TValue)) => Setter = setter;
 
     Action<TEntity, TValue> Setter { get; }
 
