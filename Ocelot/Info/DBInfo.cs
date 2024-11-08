@@ -369,6 +369,106 @@ public abstract class DBInfo : IDBInfo {
 
                 return node;
             }
+
+            if (methodCall.Method.DeclaringType == typeof(Math)) {
+                switch (methodCall.Method.Name) {
+                    case nameof(Math.Acos):
+                        operation.AppendText("ACOS(");
+                        visitor.Visit(methodCall.Arguments[0]);
+                        operation.AppendText(")");
+                        break;
+                    case nameof(Math.Sin):
+                        operation.AppendText("SIN(");
+                        visitor.Visit(methodCall.Arguments[0]);
+                        operation.AppendText(")");
+                        break;
+                    case nameof(Math.Cos):
+                        operation.AppendText("COS(");
+                        visitor.Visit(methodCall.Arguments[0]);
+                        operation.AppendText(")");
+                        break;
+                    case nameof(Math.Tan):
+                        operation.AppendText("TAN(");
+                        visitor.Visit(methodCall.Arguments[0]);
+                        operation.AppendText(")");
+                        break;
+                    case nameof(Math.Asin):
+                        operation.AppendText("ASIN(");
+                        visitor.Visit(methodCall.Arguments[0]);
+                        operation.AppendText(")");
+                        break;
+                    case nameof(Math.Atan):
+                        operation.AppendText("ATAN(");
+                        visitor.Visit(methodCall.Arguments[0]);
+                        operation.AppendText(")");
+                        break;
+                    case nameof(Math.Atan2):
+                        operation.AppendText("ATAN2(");
+                        visitor.Visit(methodCall.Arguments[0]);
+                        operation.AppendText(")");
+                        break;
+                    case nameof(Math.Abs):
+                        operation.AppendText("ABS(");
+                        visitor.Visit(methodCall.Arguments[0]);
+                        operation.AppendText(")");
+                        break;
+                    case nameof(Math.Ceiling):
+                        operation.AppendText("CEIL(");
+                        visitor.Visit(methodCall.Arguments[0]);
+                        operation.AppendText(")");
+                        break;
+                    case nameof(Math.Floor):
+                        operation.AppendText("FLOOR(");
+                        visitor.Visit(methodCall.Arguments[0]);
+                        operation.AppendText(")");
+                        break;
+                    case nameof(Math.Log):
+                        if (methodCall.Arguments.Count > 1) {
+                            operation.AppendText("LOG(");
+                            visitor.Visit(methodCall.Arguments[0]);
+                            operation.AppendText(",");
+                            visitor.Visit(methodCall.Arguments[1]);
+                            operation.AppendText(")");
+                        }
+                        else {
+                            operation.AppendText("LN(");
+                            visitor.Visit(methodCall.Arguments[0]);
+                            operation.AppendText(")");
+                        }
+                        break;
+                    case nameof(Math.Log10):
+                        operation.AppendText("LOG(");
+                        visitor.Visit(methodCall.Arguments[0]);
+                        operation.AppendText(")");
+                        break;
+                    case nameof(Math.Pow):
+                        operation.AppendText("POWER(");
+                        visitor.Visit(methodCall.Arguments[0]);
+                        operation.AppendText(",");
+                        visitor.Visit(methodCall.Arguments[1]);
+                        operation.AppendText(")");
+                        break;
+                    case nameof(Math.Round):
+                        operation.AppendText("ROUND(");
+                        visitor.Visit(methodCall.Arguments[0]);
+                        if (methodCall.Arguments.Count > 1) {
+                            operation.AppendText(",");
+                            visitor.Visit(methodCall.Arguments[1]);
+                        }
+                        operation.AppendText(")");
+                        break;
+                    case nameof(Math.Sqrt):
+                        operation.AppendText("SQRT(");
+                        visitor.Visit(methodCall.Arguments[0]);
+                        operation.AppendText(")");
+                        break;
+                    default:
+                        throw new ArgumentException("Unsupported math function");
+                }
+                return node;
+            }
+
+            throw new ArgumentException("Unsupported method");
         }
 
         return null;

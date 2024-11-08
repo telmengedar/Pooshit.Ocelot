@@ -91,5 +91,27 @@ namespace Pooshit.Ocelot.Tests {
             Assert.AreEqual("NOT \"integer\" = ANY( @1 )", operation.CommandText);
         }
 
+        [Test, Parallelizable]
+        public void TestPerimeter() {
+            IDBInfo dbInfo = new PostgreInfo();
+
+            OperationPreparator preparator=new();
+            CriteriaVisitor visitor = new(EntityDescriptor.Create, preparator, dbInfo, true);
+
+            double lat1=0.0;
+            double lat2=0.0;
+            double lon1=1.0;
+            double lon2=1.0;
+            double pi = Math.PI;
+            double perimeter = 50;
+            Expression<Func<ValueModel, bool>> predicate = m => Math.Acos(Math.Sin(pi * lat1 / 180.0) * Math.Sin(pi * lat2 / 180.0) + Math.Cos(pi * lat1 / 180.0) * Math.Cos(pi * lat2 / 180.0) * Math.Cos(pi * lon2 / 180.0 - pi * lon1 / 180.0)) * 6371 > perimeter;
+            visitor.Visit(predicate);
+
+            Mock<IDBClient> client = new();
+            client.SetupGet(s => s.DBInfo).Returns(dbInfo);
+            
+            PreparedOperation operation = preparator.GetOperation(client.Object, false);
+            Assert.AreEqual("ACOS( ( SIN( @1 * @2 / @3 ) * SIN( @4 * @5 / @6 ) + COS( @7 * @8 / @9 ) * COS( @10 * @11 / @12 ) * COS( ( @13 * @14 / @15 - @16 * @17 / @18 ) ) ) ) * @19 > @20", operation.CommandText);
+        }
     }
 }
