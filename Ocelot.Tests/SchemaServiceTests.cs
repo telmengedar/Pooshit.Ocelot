@@ -252,10 +252,10 @@ public class SchemaServiceTests {
                                                                      }
 
                                                                      if (command.StartsWith("SELECT * FROM information_schema.columns")) {
-                                                                         data = Json.Json.Read(typeof(SchemaServiceTests).Assembly.GetManifestResourceStream("NightlyCode.Ocelot.Tests.Resources.neuvooclick_pgcolumn.json"));
+                                                                         data = Json.Json.Read(typeof(SchemaServiceTests).Assembly.GetManifestResourceStream("Pooshit.Ocelot.Tests.Resources.neuvooclick_pgcolumn.json"));
                                                                      }
                                                                      else if (command.StartsWith("SELECT * FROM pg_indexes")) {
-                                                                         data = Json.Json.Read(typeof(SchemaServiceTests).Assembly.GetManifestResourceStream("NightlyCode.Ocelot.Tests.Resources.neuvooclick_pgindexes.json"));
+                                                                         data = Json.Json.Read(typeof(SchemaServiceTests).Assembly.GetManifestResourceStream("Pooshit.Ocelot.Tests.Resources.neuvooclick_pgindexes.json"));
                                                                      }
                                                                      else throw new InvalidOperationException();
 

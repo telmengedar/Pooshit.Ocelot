@@ -267,7 +267,7 @@ public class PostgreInfoTests {
     public void ExtractViewSql() {
 
         string sql;
-        using(StreamReader reader = new(typeof(PostgreInfoTests).Assembly.GetManifestResourceStream("NightlyCode.Ocelot.Tests.Resources.postgresview.sql")))
+        using(StreamReader reader = new(typeof(PostgreInfoTests).Assembly.GetManifestResourceStream("Pooshit.Ocelot.Tests.Resources.postgresview.sql")))
             sql = reader.ReadToEnd();
 
         string viewsql = new SchemaUpdater(null).GetViewCreationSql(sql);

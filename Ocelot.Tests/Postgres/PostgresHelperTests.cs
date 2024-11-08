@@ -9,9 +9,9 @@ namespace Pooshit.Ocelot.Tests.Postgres {
 
         [Test, Parallelizable]
         public void TestCreateStatementProcessing() {
-            using StreamReader statementReader=new StreamReader(typeof(PostgresHelperTests).Assembly.GetManifestResourceStream("NightlyCode.Ocelot.Tests.Data.createstatement_postgres.txt"));
+            using StreamReader statementReader=new StreamReader(typeof(PostgresHelperTests).Assembly.GetManifestResourceStream("Pooshit.Ocelot.Tests.Data.createstatement_postgres.txt"));
             string statement = statementReader.ReadToEnd();
-            using StreamReader expectedReader=new StreamReader(typeof(PostgresHelperTests).Assembly.GetManifestResourceStream("NightlyCode.Ocelot.Tests.Data.createstatement_postgres_processed.txt"));
+            using StreamReader expectedReader=new StreamReader(typeof(PostgresHelperTests).Assembly.GetManifestResourceStream("Pooshit.Ocelot.Tests.Data.createstatement_postgres_processed.txt"));
             string expected = expectedReader.ReadToEnd();
 
             Assert.AreEqual(expected, statement.ProcessCreateStatement().Replace("\r", ""));

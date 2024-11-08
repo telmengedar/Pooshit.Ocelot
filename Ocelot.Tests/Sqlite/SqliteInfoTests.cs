@@ -34,7 +34,7 @@ namespace Pooshit.Ocelot.Tests.Sqlite {
         [Test]
         public void AnalyzeGeneratedPrimaryKey() {
             string sql;
-            using (StreamReader reader = new StreamReader(GetType().Assembly.GetManifestResourceStream("NightlyCode.Ocelot.Tests.Resources.GeneratedPrimaryKey.txt")))
+            using (StreamReader reader = new StreamReader(GetType().Assembly.GetManifestResourceStream("Pooshit.Ocelot.Tests.Resources.GeneratedPrimaryKey.txt")))
                 sql = reader.ReadToEnd();
 
             TableDescriptor descriptor = new TableDescriptor("video");
