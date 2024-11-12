@@ -48,6 +48,6 @@ public class DataTable {
         for (int i = 0; i < reader.FieldCount; ++i)
             columns[reader.GetName(i)] = i;
 
-        return new DataTable(columns, ReadRows(reader, columns).ToArray());
+        return new(columns, ReadRows(reader, columns).ToArray());
     }
 }

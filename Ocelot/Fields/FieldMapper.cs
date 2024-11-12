@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Clients.Tables;
+using Pooshit.Ocelot.Entities.Operations;
 
 namespace Pooshit.Ocelot.Fields;
 
@@ -125,6 +127,31 @@ public class FieldMapper<TEntity> {
     }
 
     /// <summary>
+    /// creates an entity from a loaded row
+    /// </summary>
+    /// <param name="reader">database result reader</param>
+    /// <param name="fields">expected fields in row</param>
+    /// <returns>created entity</returns>
+    TEntity EntityFromReader(Reader reader, params string[] fields) {
+        TEntity entity = Activator.CreateInstance<TEntity>();
+        InitializeEntity?.Invoke(entity, fields, fieldName => {
+                                                     int index = IndexOf(fields, fieldName);
+                                                     return index < 0 ? null : reader.GetValue<object>(index);
+                                                 });
+        int index = 0;
+        if (fields.Length == 0) {
+            foreach (FieldMapping<TEntity> field in mappings)
+                field.SetValue(entity, reader.GetValue<object>(index++));
+        }
+        else {
+            foreach(string field in fields)
+                this[field].SetValue(entity, reader.GetValue<object>(index++));
+        }
+
+        return entity;
+    }
+
+    /// <summary>
     /// create entities from table
     /// </summary>
     /// <param name="table">table from which to create entities</param>
@@ -132,6 +159,41 @@ public class FieldMapper<TEntity> {
     /// <returns>enumeration of entities</returns>
     public IEnumerable<TEntity> EntitiesFromTable(DataTable table, params string[] fields) {
         return table.Rows.Select(r=>EntityFromRow(r, fields));
+    }
+
+    /// <summary>
+    /// creates entities from an operation
+    /// </summary>
+    /// <param name="operation">operation of which to create entities</param>
+    /// <param name="fields">expected fields in rows (optional)</param>
+    /// <returns>enumeration of entities</returns>
+    public async IAsyncEnumerable<TEntity> EntitiesFromOperation(LoadOperation<TEntity> operation, params string[] fields) {
+        using Reader reader = await operation.ExecuteReaderAsync();
+        await foreach (TEntity item in EntitiesFromReader(reader, fields))
+            yield return item;
+    }
+
+    /// <summary>
+    /// creates entities from an operation
+    /// </summary>
+    /// <param name="operation">operation of which to create entities</param>
+    /// <param name="fields">expected fields in rows (optional)</param>
+    /// <returns>enumeration of entities</returns>
+    public async IAsyncEnumerable<TEntity> EntitiesFromOperation<TLoad>(LoadOperation<TLoad> operation, params string[] fields) {
+        using Reader reader = await operation.ExecuteReaderAsync();
+        await foreach (TEntity item in EntitiesFromReader(reader, fields))
+            yield return item;
+    }
+
+    /// <summary>
+    /// creates entities from an operation
+    /// </summary>
+    /// <param name="reader">dataset result reader</param>
+    /// <param name="fields">expected fields in rows (optional)</param>
+    /// <returns>enumeration of entities</returns>
+    public async IAsyncEnumerable<TEntity> EntitiesFromReader(Reader reader, params string[] fields) {
+        while (await reader.ReadAsync())
+            yield return EntityFromReader(reader, fields);
     }
 
     /// <summary>
