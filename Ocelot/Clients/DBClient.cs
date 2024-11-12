@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using Pooshit.Ocelot.Errors;
+using Pooshit.Ocelot.Extensions;
 using Pooshit.Ocelot.Info;
 using DataTable = Pooshit.Ocelot.Clients.Tables.DataTable;
 
@@ -138,17 +139,26 @@ public class DBClient : ADbClient {
     }
 
     /// <inheritdoc />
-    public override async Task<IEnumerable<object>> SetPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+    public override async IAsyncEnumerable<object> SetPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
         PreparedCommand command = PrepareCommand(transaction, query, parameters, true);
 
+        DbDataReader reader;
         try {
-            if (DBInfo.MultipleConnectionsSupported)
-                return ReadSet(new Reader(await command.Command.ExecuteReaderAsync(), command, DBInfo));
-            return ReadSet(new Reader(await command.Command.ExecuteReaderAsync(), command, DBInfo)).ToArray();
+            reader = await command.Command.ExecuteReaderAsync();
         }
         catch (Exception e) {
             throw new StatementException(query, command.Command.Parameters.Cast<object>().ToArray(), e);
         }
+
+        Reader wrapper = new(reader, command, DBInfo);
+        if (DBInfo.MultipleConnectionsSupported) {
+            await foreach (object item in ReadSetAsync(wrapper))
+                yield return item;
+            yield break;
+        }
+
+        await foreach (object item in ReadSetAsync(wrapper).Buffer())
+            yield return item;
     }
 
     /// <inheritdoc />
@@ -298,17 +308,26 @@ public class DBClient : ADbClient {
     }
 
     /// <inheritdoc />
-    public override async Task<IEnumerable<object>> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+    public override async IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
         PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
 
+        DbDataReader reader;
         try {
-            if (DBInfo.MultipleConnectionsSupported)
-                return ReadSet(new Reader(await command.Command.ExecuteReaderAsync(), command, DBInfo));
-            return ReadSet(new Reader(await command.Command.ExecuteReaderAsync(), command, DBInfo)).ToArray();
+            reader = await command.Command.ExecuteReaderAsync();
         }
         catch (Exception e) {
             throw new StatementException(query, command.Command.Parameters.Cast<object>().ToArray(), e);
         }
+
+        Reader wrapper = new(reader, command, DBInfo);
+        if (DBInfo.MultipleConnectionsSupported) {
+            await foreach (object item in ReadSetAsync(wrapper))
+                yield return item;
+            yield break;
+        }
+
+        await foreach (object item in ReadSetAsync(wrapper).Buffer())
+            yield return item;
     }
 
     IEnumerable<object> ReadSet(IDataReader reader) {
@@ -316,6 +335,14 @@ public class DBClient : ADbClient {
             while (reader.Read())
                 yield return reader.GetValue(0);
             reader.Close();
+        }
+    }
+    
+    async IAsyncEnumerable<object> ReadSetAsync(Reader reader) {
+        using (reader) {
+            while (await reader.ReadAsync())
+                yield return await reader.FieldValueAsync<object>(0);
+            await reader.CloseAsync();
         }
     }
 }

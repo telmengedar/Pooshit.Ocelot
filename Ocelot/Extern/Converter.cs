@@ -134,16 +134,9 @@ internal static class Converter {
             return specificconverter(value);
 
 
-#if WINDOWS_UWP
-            if(targettype.GetTypeInfo().IsGenericType && targettype.GetGenericTypeDefinition() == typeof(Nullable<>)) {
-                // the value is never null at this point
-                value=Convert(value, targettype.GetGenericArguments()[0]);
-                return Activator.CreateInstance(typeof(Nullable<>).MakeGenericType(targettype.GetGenericArguments()[0]), value);
-#else
         if (targettype.IsGenericType && targettype.GetGenericTypeDefinition() == typeof(Nullable<>)) {
             // the value is never null at this point
             return new NullableConverter(targettype).ConvertFrom(Convert(value, targettype.GetGenericArguments()[0], true));
-#endif
         }
 
         if(targettype == typeof(string))
@@ -153,7 +146,7 @@ internal static class Converter {
             return System.Convert.ChangeType(value, targettype, CultureInfo.InvariantCulture);
         }
         catch (Exception e) {
-            throw new Exception($"Unable to convert '{value}' to '{targettype}'", e);
+            throw new($"Unable to convert '{value}' to '{targettype}'", e);
         }
     }
 

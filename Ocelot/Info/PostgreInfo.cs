@@ -682,17 +682,17 @@ public class PostgreInfo : DBInfo {
                                   };
 
         Dictionary<string, ColumnDescriptor> columns = new();
-        foreach(PgColumn column in await new LoadOperation<PgColumn>(client, EntityDescriptor.Create, DB.All).Where(c => c.Table == name).ExecuteEntitiesAsync()) {
-            columns[column.Column] = new ColumnDescriptor(column.Column) {
-                                                                             Type = column.DataType,
-                                                                             NotNull = column.IsNullable == "NO",
-                                                                             AutoIncrement = column.Default?.StartsWith("nextval") ?? false
-                                                                         };
+        await foreach(PgColumn column in new LoadOperation<PgColumn>(client, EntityDescriptor.Create, DB.All).Where(c => c.Table == name).ExecuteEntitiesAsync()) {
+            columns[column.Column] = new(column.Column) {
+                                                            Type = column.DataType,
+                                                            NotNull = column.IsNullable == "NO",
+                                                            AutoIncrement = column.Default?.StartsWith("nextval") ?? false
+                                                        };
         }
 
-        List<UniqueDescriptor> uniques = new();
-        List<IndexDescriptor> indices = new();
-        foreach(PgIndex index in await new LoadOperation<PgIndex>(client, EntityDescriptor.Create, DB.All).Where(i => i.Table == name).ExecuteEntitiesAsync()) {
+        List<UniqueDescriptor> uniques = [];
+        List<IndexDescriptor> indices = [];
+        await foreach(PgIndex index in new LoadOperation<PgIndex>(client, EntityDescriptor.Create, DB.All).Where(i => i.Table == name).ExecuteEntitiesAsync()) {
             Match match = Regex.Match(index.Definition, "^CREATE (?<unique>UNIQUE )?INDEX (?<name>[^ ]+) ON (?<table>[^ ]+)( USING (?<type>[a-zA-Z]+))? \\((?<columns>.+)\\)");
             if(!match.Success)
                 continue;
@@ -710,14 +710,14 @@ public class PostgreInfo : DBInfo {
                         desc.IsUnique = true;
                 }
                 else
-                    uniques.Add(new UniqueDescriptor(index.Name, columnnames));
+                    uniques.Add(new(index.Name, columnnames));
             }
             else {
                 match = Regex.Match(index.Name, $"^idx_{name}_(?<indexname>.+)$");
                 if(match.Success)
-                    indices.Add(new IndexDescriptor(match.Groups["indexname"].Value, columnnames, match.Groups["type"].Value));
+                    indices.Add(new(match.Groups["indexname"].Value, columnnames, match.Groups["type"].Value));
                 else
-                    indices.Add(new IndexDescriptor(index.Name, columnnames, match.Groups["type"].Value));
+                    indices.Add(new(index.Name, columnnames, match.Groups["type"].Value));
             }
         }
 

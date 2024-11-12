@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Entities.Operations;
+using Pooshit.Ocelot.Extensions;
 using Pooshit.Ocelot.Fields;
 using Pooshit.Ocelot.Tests.Data;
 using Pooshit.Ocelot.Tests.Models;
@@ -84,7 +85,7 @@ public class AggregateTests {
                                                            new ValueModel { Integer = 3 },
                                                            new ValueModel { Integer = 7 });
 
-        IEnumerable<int> result = await entitymanager.Load<ValueModel>(m=>m.Integer).OrderBy(m=>DB.Abs(m.Integer-6)).ExecuteSetAsync<int>();
+        int[] result = await entitymanager.Load<ValueModel>(m=>m.Integer).OrderBy(m=>DB.Abs(m.Integer-6)).ExecuteSetAsync<int>().ToArray();
         CollectionAssert.AreEqual(new[]{5,7,3,11,0}, result);
     }
 

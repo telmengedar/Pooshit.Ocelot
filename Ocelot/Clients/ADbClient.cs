@@ -100,16 +100,16 @@ public abstract class ADbClient : IDBClient {
     public abstract Task<object> ScalarAsync(Transaction transaction, string query, IEnumerable<object> parameters);
 
     /// <inheritdoc />
-    public Task<IEnumerable<object>> SetAsync(string query, params object[] parameters) => SetAsync(null, query, (IEnumerable<object>)parameters);
+    public IAsyncEnumerable<object> SetAsync(string query, params object[] parameters) => SetAsync(null, query, (IEnumerable<object>)parameters);
 
     /// <inheritdoc />
-    public Task<IEnumerable<object>> SetAsync(string query, IEnumerable<object> parameters) => SetAsync(null, query, parameters);
+    public IAsyncEnumerable<object> SetAsync(string query, IEnumerable<object> parameters) => SetAsync(null, query, parameters);
 
     /// <inheritdoc />
-    public Task<IEnumerable<object>> SetAsync(Transaction transaction, string query, params object[] parameters) => SetAsync(transaction, query, (IEnumerable<object>)parameters);
+    public IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, params object[] parameters) => SetAsync(transaction, query, (IEnumerable<object>)parameters);
 
     /// <inheritdoc />
-    public abstract Task<IEnumerable<object>> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters);
+    public abstract IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters);
 
     /// <inheritdoc />
     public abstract Transaction Transaction();
@@ -199,16 +199,16 @@ public abstract class ADbClient : IDBClient {
     public abstract Task<object> ScalarPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters);
 
     /// <inheritdoc />
-    public Task<IEnumerable<object>> SetPreparedAsync(string query, params object[] parameters) => SetPreparedAsync(null, query, (IEnumerable<object>)parameters);
+    public IAsyncEnumerable<object> SetPreparedAsync(string query, params object[] parameters) => SetPreparedAsync(null, query, (IEnumerable<object>)parameters);
 
     /// <inheritdoc />
-    public Task<IEnumerable<object>> SetPreparedAsync(string query, IEnumerable<object> parameters) => SetPreparedAsync(null, query, parameters);
+    public IAsyncEnumerable<object> SetPreparedAsync(string query, IEnumerable<object> parameters) => SetPreparedAsync(null, query, parameters);
 
     /// <inheritdoc />
-    public Task<IEnumerable<object>> SetPreparedAsync(Transaction transaction, string query, params object[] parameters) => SetPreparedAsync(transaction, query, (IEnumerable<object>)parameters);
+    public IAsyncEnumerable<object> SetPreparedAsync(Transaction transaction, string query, params object[] parameters) => SetPreparedAsync(transaction, query, (IEnumerable<object>)parameters);
 
     /// <inheritdoc />
-    public abstract Task<IEnumerable<object>> SetPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters);
+    public abstract IAsyncEnumerable<object> SetPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters);
 
     /// <inheritdoc />
     public abstract Reader Reader(Transaction transaction, string command, IEnumerable<object> parameters);

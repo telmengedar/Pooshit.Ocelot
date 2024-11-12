@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
@@ -12,6 +11,7 @@ using Pooshit.Ocelot.CustomTypes;
 using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Entities.Operations.Tables;
+using Pooshit.Ocelot.Extensions;
 using Pooshit.Ocelot.Fields;
 using Pooshit.Ocelot.Info;
 using Pooshit.Ocelot.Schemas;
@@ -83,7 +83,7 @@ public class PostgresLocalTests {
 
         BigIntData[] loadedData = (await entitymanager.Load<BigIntData>()
                                                       .Where(d=>d.Range.Contains(11m))
-                                                      .ExecuteEntitiesAsync()).ToArray();
+                                                      .ExecuteEntitiesAsync().ToArray());
 
         Assert.AreEqual(1, loadedData.Length);
             
@@ -103,11 +103,11 @@ public class PostgresLocalTests {
         IDBClient dbclient = ClientFactory.Create(() => new NpgsqlConnection(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION")), new PostgreInfo(), true);
         EntityManager entitymanager = new(dbclient);
 
-        string[] terms = { "motherfucker", "retard", "asshole", "bitch", "fuck" };
-        Word[] result = (await entitymanager.Load<Word>()
-                                            .Where(w => w.Text.In(DBParameter<string[]>.Value))
-                                            .Prepare()
-                                            .ExecuteEntitiesAsync(new object[]{terms})).ToArray();
+        string[] terms = ["motherfucker", "retard", "asshole", "bitch", "fuck"];
+        Word[] result = await entitymanager.Load<Word>()
+                                           .Where(w => w.Text.In(DBParameter<string[]>.Value))
+                                           .Prepare()
+                                           .ExecuteEntitiesAsync([terms]).ToArray();
         Assert.AreEqual(5, result.Length);
     }
 
@@ -119,10 +119,10 @@ public class PostgresLocalTests {
         IDBClient dbclient = ClientFactory.Create(() => new NpgsqlConnection(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION")), new PostgreInfo(), true);
         EntityManager entitymanager = new(dbclient);
 
-        string[] terms = { "motherfucker", "retard", "asshole", "bitch", "fuck" };
-        Word[] result = (await entitymanager.Load<Word>()
-                                            .Where(w => w.Text.In(DBParameter<string[]>.Value))
-                                            .ExecuteEntitiesAsync(new object[]{terms})).ToArray();
+        string[] terms = ["motherfucker", "retard", "asshole", "bitch", "fuck"];
+        Word[] result = await entitymanager.Load<Word>()
+                                           .Where(w => w.Text.In(DBParameter<string[]>.Value))
+                                           .ExecuteEntitiesAsync([terms]).ToArray();
         Assert.AreEqual(5, result.Length);
     }
 
@@ -134,9 +134,9 @@ public class PostgresLocalTests {
         IDBClient dbclient = ClientFactory.Create(() => new NpgsqlConnection(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION")), new PostgreInfo(), true);
         EntityManager entitymanager = new(dbclient);
 
-        Word[] result = (await entitymanager.Load<Word>()
-                                            .Where(w => w.Text.In(new[] { "motherfucker", "retard", "asshole", "bitch", "fuck" }))
-                                            .ExecuteEntitiesAsync()).ToArray();
+        Word[] result = await entitymanager.Load<Word>()
+                                           .Where(w => w.Text.In(new[] { "motherfucker", "retard", "asshole", "bitch", "fuck" }))
+                                           .ExecuteEntitiesAsync().ToArray();
         Assert.AreEqual(5, result.Length);
     }
 
@@ -148,11 +148,11 @@ public class PostgresLocalTests {
         IDBClient dbclient = ClientFactory.Create(() => new NpgsqlConnection(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION")), new PostgreInfo(), true);
         EntityManager entitymanager = new(dbclient);
 
-        string[] terms = { "motherfucker", "retard", "asshole", "bitch", "fuck" };
-        Word[] result = (await entitymanager.Load<Word>()
-                                            .Where(w => w.Text.In(terms))
-                                            .Prepare()
-                                            .ExecuteEntitiesAsync()).ToArray();
+        string[] terms = ["motherfucker", "retard", "asshole", "bitch", "fuck"];
+        Word[] result = await entitymanager.Load<Word>()
+                                           .Where(w => w.Text.In(terms))
+                                           .Prepare()
+                                           .ExecuteEntitiesAsync().ToArray();
         Assert.AreEqual(5, result.Length);
     }
 
@@ -164,10 +164,10 @@ public class PostgresLocalTests {
         IDBClient dbclient = ClientFactory.Create(() => new NpgsqlConnection(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION")), new PostgreInfo(), true);
         EntityManager entitymanager = new(dbclient);
 
-        string[] terms = { "motherfucker", "retard", "asshole", "bitch", "fuck" };
-        Word[] result = (await entitymanager.Load<Word>()
-                                            .Where(w => w.Text.In(terms))
-                                            .ExecuteEntitiesAsync()).ToArray();
+        string[] terms = ["motherfucker", "retard", "asshole", "bitch", "fuck"];
+        Word[] result = await entitymanager.Load<Word>()
+                                           .Where(w => w.Text.In(terms))
+                                           .ExecuteEntitiesAsync().ToArray();
         Assert.AreEqual(5, result.Length);
     }
 
@@ -179,11 +179,11 @@ public class PostgresLocalTests {
         IDBClient dbclient = ClientFactory.Create(() => new NpgsqlConnection(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION")), new PostgreInfo(), true);
         EntityManager entitymanager = new(dbclient);
 
-        string[] terms = { "motherfucker", "retard", "asshole", "bitch", "fuck" };
-        Word[] result = (await entitymanager.Load<Word>()
-                                            .Where(w => !w.Text.In(DBParameter<string[]>.Value))
-                                            .Limit(10)
-                                            .ExecuteEntitiesAsync(new object[]{terms})).ToArray();
+        string[] terms = ["motherfucker", "retard", "asshole", "bitch", "fuck"];
+        Word[] result = await entitymanager.Load<Word>()
+                                           .Where(w => !w.Text.In(DBParameter<string[]>.Value))
+                                           .Limit(10)
+                                           .ExecuteEntitiesAsync([terms]).ToArray();
         Assert.AreEqual(10, result.Length);
     }
 

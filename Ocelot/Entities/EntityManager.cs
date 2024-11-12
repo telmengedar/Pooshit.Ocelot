@@ -142,27 +142,27 @@ namespace Pooshit.Ocelot.Entities {
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public UpdateValuesOperation<T> Update<T>() {
-            return new UpdateValuesOperation<T>(DBClient, modelcache.Get);
+            return new(DBClient, modelcache.Get);
         }
 
         /// <inheritdoc />
         public LoadDataOperation LoadData(string tablename) {
-            return new LoadDataOperation(DBClient, modelcache.Get, tablename);
+            return new(DBClient, modelcache.Get, tablename);
         }
 
         /// <inheritdoc />
         public InsertValuesOperation<T> Insert<T>() {
-            return new InsertValuesOperation<T>(DBClient, modelcache.Get);
+            return new(DBClient, modelcache.Get);
         }
 
         /// <inheritdoc />
         public DeleteOperation<T> Delete<T>() {
-            return new DeleteOperation<T>(DBClient, modelcache.Get);
+            return new(DBClient, modelcache.Get);
         }
 
         /// <inheritdoc />
         public DeleteOperation Delete(string table) {
-            return new DeleteOperation(DBClient, table);
+            return new(DBClient, table);
         }
 
         /// <summary>
@@ -218,21 +218,21 @@ namespace Pooshit.Ocelot.Entities {
         /// get a load operation to use to load values of an entity from the database
         /// </summary>
         public LoadOperation<T> Load<T>() {
-            return new LoadOperation<T>(DBClient, modelcache.Get, Array.Empty<IDBField>());
+            return new(DBClient, modelcache.Get, Array.Empty<IDBField>());
         }
 
         /// <summary>
         /// get a load operation to use to load values of an entity from the database
         /// </summary>
         public LoadOperation<T> Load<T>(params IDBField[] fields) {
-            return new LoadOperation<T>(DBClient, modelcache.Get, fields);
+            return new(DBClient, modelcache.Get, fields);
         }
 
         /// <summary>
         /// get a load operation to use to load values of an entity from the database
         /// </summary>
         public LoadOperation<T> Load<T>(params Expression<Func<T, object>>[] fields) {
-            return new LoadOperation<T>(DBClient, modelcache.Get, fields.Select(EntityField.Create).Cast<IDBField>().ToArray());
+            return new(DBClient, modelcache.Get, fields.Select(EntityField.Create).Cast<IDBField>().ToArray());
         }
 
         /// <summary>
@@ -240,7 +240,7 @@ namespace Pooshit.Ocelot.Entities {
         /// </summary>
         /// <typeparam name="T">type of entity of which to access model</typeparam>
         public EntityDescriptorAccess<T> Model<T>() {
-            return new EntityDescriptorAccess<T>(modelcache.Get<T>());
+            return new(modelcache.Get<T>());
         }
 
         /// <inheritdoc />

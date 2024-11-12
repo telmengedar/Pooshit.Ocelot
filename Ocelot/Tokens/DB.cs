@@ -358,7 +358,7 @@ public static class DB {
     /// <param name="value">value to use if condition evaluates to true</param>
     /// <returns>when token</returns>
     public static When When(bool condition, object value) {
-        return new When(Constant(condition), Constant(value));
+        return new(Constant(condition), Constant(value));
     }
 
     /// <summary>

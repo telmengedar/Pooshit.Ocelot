@@ -730,4 +730,10 @@ public class SQLiteInfo : DBInfo {
     public override object ValueFromReader(Reader reader, int ordinal, Type type) {
         return reader.GetValue(ordinal);
     }
+    
+    /// <inheritdoc />
+    public override Task<object> ValueFromReaderAsync(Reader reader, int ordinal, Type type) {
+        return Task.FromResult(reader.GetValue(ordinal));
+    }
+
 }

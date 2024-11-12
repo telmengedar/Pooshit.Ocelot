@@ -193,7 +193,7 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
         /// </summary>
         /// <typeparam name="TScalar">type of scalar to return</typeparam>
         /// <returns>values of first column of result set converted to TScalar</returns>
-        public virtual Task<IEnumerable<TScalar>> ExecuteSetAsync<TScalar>(params object[] parameters)
+        public virtual IAsyncEnumerable<TScalar> ExecuteSetAsync<TScalar>(params object[] parameters)
         {
             return ExecuteSetAsync<TScalar>(null, parameters);
         }
@@ -203,10 +203,14 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
         /// </summary>
         /// <typeparam name="TScalar">type of scalar to return</typeparam>
         /// <returns>values of first column of result set converted to TScalar</returns>
-        public virtual async Task<IEnumerable<TScalar>> ExecuteSetAsync<TScalar>(Transaction transaction, params object[] parameters) {
-            if(DBPrepare && DBClient.DBInfo.PreparationSupported)
-                return (await DBClient.SetPreparedAsync(transaction, CommandText, ConstantParameters.Concat(parameters))).Select(v => Converter.Convert<TScalar>(v, true));
-            return (await DBClient.SetAsync(transaction, CommandText, ConstantParameters.Concat(parameters))).Select(v => Converter.Convert<TScalar>(v, true));
+        public virtual async IAsyncEnumerable<TScalar> ExecuteSetAsync<TScalar>(Transaction transaction, params object[] parameters) {
+            IAsyncEnumerable<object> result;
+            if (DBPrepare && DBClient.DBInfo.PreparationSupported)
+                result = DBClient.SetPreparedAsync(transaction, CommandText, ConstantParameters.Concat(parameters));
+            else result = DBClient.SetAsync(transaction, CommandText, ConstantParameters.Concat(parameters));
+
+            await foreach (object value in result)
+                yield return Converter.Convert<TScalar>(value, true);
         }
 
         /// <summary>
@@ -216,7 +220,7 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
         /// <param name="assignments">action used to assign values</param>
         /// <param name="parameters">custom parameters for query execution</param>
         /// <returns>enumeration of result types</returns>
-        public virtual Task<IEnumerable<TType>> ExecuteTypesAsync<TType>(Func<Row, TType> assignments, params object[] parameters)
+        public virtual IAsyncEnumerable<TType> ExecuteTypesAsync<TType>(Func<Row, TType> assignments, params object[] parameters)
         {
             return ExecuteTypesAsync(null, assignments, parameters);
         }
@@ -229,12 +233,21 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
         /// <param name="transaction">transaction to use for execution</param>
         /// <param name="parameters">custom parameters for query execution</param>
         /// <returns>enumeration of result types</returns>
-        public virtual async Task<IEnumerable<TType>> ExecuteTypesAsync<TType>(Transaction transaction, Func<Row, TType> assignments, params object[] parameters)
+        public virtual async IAsyncEnumerable<TType> ExecuteTypesAsync<TType>(Transaction transaction, Func<Row, TType> assignments, params object[] parameters)
         {
             Reader reader = await ExecuteReaderAsync(transaction, parameters);
-            if(DBClient.DBInfo.MultipleConnectionsSupported)
-                return reader.ReadTypes(assignments);
-            return reader.ReadTypes(assignments).ToArray();
+            if (DBClient.DBInfo.MultipleConnectionsSupported) {
+                await foreach (TType item in reader.ReadTypesAsync(assignments))
+                    yield return item;
+                yield break;
+            }
+
+            List<TType> buffer = [];
+            await foreach (TType item in reader.ReadTypesAsync(assignments))
+                buffer.Add(item);
+
+            foreach (TType item in buffer)
+                yield return item;
         }
 
         /// <summary>
@@ -296,7 +309,9 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
         public virtual async Task<T> ExecuteEntityAsync<T>(Transaction transaction, params object[] parameters) {
-            return (await ExecuteEntitiesAsync<T>(transaction, parameters)).FirstOrDefault();
+            await foreach (T item in ExecuteEntitiesAsync<T>(transaction, parameters))
+                return item;
+            return default;
         }
 
         /// <summary>
@@ -306,11 +321,20 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
         /// <param name="transaction">transaction to use</param>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual async Task<IEnumerable<T>> ExecuteEntitiesAsync<T>(Transaction transaction, params object[] parameters) {
+        public virtual async IAsyncEnumerable<T> ExecuteEntitiesAsync<T>(Transaction transaction, params object[] parameters) {
             Reader reader = await ExecuteReaderAsync(transaction, parameters);
-            if (DBClient.DBInfo.MultipleConnectionsSupported)
-                return CreateObjects<T>(reader);
-            return CreateObjects<T>(reader).ToArray();
+            if (DBClient.DBInfo.MultipleConnectionsSupported) {
+                await foreach (T item in CreateObjectsAsync<T>(reader))
+                    yield return item;
+                yield break;
+            }
+
+            List<T> buffer = [];
+            await foreach (T item in CreateObjectsAsync<T>(reader))
+                buffer.Add(item);
+
+            foreach (T item in buffer)
+                yield return item;
         }
 
         /// <summary>
@@ -319,7 +343,7 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
         /// <typeparam name="T">type of entities to create</typeparam>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual Task<IEnumerable<T>> ExecuteEntitiesAsync<T>(params object[] parameters) {
+        public virtual IAsyncEnumerable<T> ExecuteEntitiesAsync<T>(params object[] parameters) {
             return ExecuteEntitiesAsync<T>(null, parameters);
         }
 
@@ -408,7 +432,7 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
             using (reader) {
                 EntityDescriptor descriptor = modelcache(typeof(T));
 
-                List<PropertyInfo> setters = new();
+                List<PropertyInfo> setters = [];
                 for (int i = 0; i < reader.FieldCount; ++i) {
                     string columnname = reader.GetName(i);
                     EntityColumnDescriptor column = descriptor.TryGetColumn(columnname);
@@ -417,6 +441,31 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
 
                 while (reader.Read())
                     yield return ToObject<T>(reader, setters);
+            }
+        }
+
+        /// <summary>
+        /// creates entities from table data
+        /// </summary>
+        /// <typeparam name="T">type of entity to create</typeparam>
+        /// <param name="reader">reader used to retrieve data rows from database</param>
+        /// <returns>created entities</returns>
+        protected async IAsyncEnumerable<T> CreateObjectsAsync<T>(Reader reader) {
+            if (reader == null)
+                yield break;
+            
+            using (reader) {
+                EntityDescriptor descriptor = modelcache(typeof(T));
+
+                List<PropertyInfo> setters = [];
+                for (int i = 0; i < reader.FieldCount; ++i) {
+                    string columnname = reader.GetName(i);
+                    EntityColumnDescriptor column = descriptor.TryGetColumn(columnname);
+                    setters.Add(column?.Property);
+                }
+
+                while (await reader.ReadAsync())
+                    yield return await ToObjectAsync<T>(reader, setters);
             }
         }
 
@@ -461,6 +510,49 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
 
             return obj;
         }
+        
+        /// <summary>
+        /// converts a data row to an object
+        /// </summary>
+        /// <typeparam name="T">type of entity to which to convert data row</typeparam>
+        /// <param name="reader">reader used to retrieve field values</param>
+        /// <param name="properties">properties to assign values to</param>
+        /// <returns>created entity</returns>
+        async Task<T> ToObjectAsync<T>(Reader reader, List<PropertyInfo> properties) {
+            T obj = (T)Activator.CreateInstance(typeof(T), true);
+            
+            for(int i=0;i<reader.FieldCount;++i) {
+                PropertyInfo pi = properties[i];
+                if (pi == null)
+                    // property for column not found
+                    continue;
+
+                object dbvalue;
+                try {
+                    dbvalue = await DBClient.DBInfo.ValueFromReaderAsync(reader, i, pi.PropertyType);
+                }
+                catch (Exception e) {
+                    Logger.Warning(this,$"Unable to read property '{pi.Name}'", e.ToString());
+                    continue;
+                }
+                
+                if (dbvalue is null or DBNull)
+                    continue;
+                
+                if(pi.PropertyType.IsEnum) {
+                    int index = Converter.Convert<int>(dbvalue, true);
+                    object value = Enum.ToObject(pi.PropertyType, index);
+                    pi.SetValue(obj, value, null);
+                }
+                else if(dbvalue.GetType() == pi.PropertyType)
+                    pi.SetValue(obj, dbvalue, null);
+                else
+                    pi.SetValue(obj, Converter.Convert(dbvalue, pi.PropertyType), null);
+            }
+
+            return obj;
+        }
+
     }
 
     /// <summary>
@@ -511,7 +603,9 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
         public virtual async Task<T> ExecuteEntityAsync(Transaction transaction, params object[] parameters) {
-            return (await ExecuteEntitiesAsync<T>(transaction, parameters)).FirstOrDefault();
+            await foreach (T item in ExecuteEntitiesAsync<T>(transaction, parameters))
+                return item;
+            return default;
         }
 
         /// <summary>
@@ -532,7 +626,7 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
         /// </summary>
         /// <param name="parameters">parameters for execution</param>
         /// <returns>created entities</returns>
-        public virtual Task<IEnumerable<T>> ExecuteEntitiesAsync(params object[] parameters) {
+        public virtual IAsyncEnumerable<T> ExecuteEntitiesAsync(params object[] parameters) {
             return ExecuteEntitiesAsync<T>(null, parameters);
         }
 

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq.Expressions;
+using Pooshit.Ocelot.Entities.Operations;
 using Pooshit.Ocelot.Extern;
 
 namespace Pooshit.Ocelot.Fields;
@@ -46,6 +48,7 @@ public abstract class FieldMapping<TEntity> {
 /// mapping for a field to load
 /// </summary>
 public class FieldMapping<TEntity, TValue> : FieldMapping<TEntity> {
+    
     /// <summary>
     /// creates a new <see cref="FieldMapping{TEntity,TValue}"/>
     /// </summary>
@@ -54,6 +57,15 @@ public class FieldMapping<TEntity, TValue> : FieldMapping<TEntity> {
     /// <param name="setter">setter used to set field values to entities</param>
     public FieldMapping(string name, IDBField field, Action<TEntity, TValue> setter) 
         : base(name, field, typeof(TValue)) => Setter = setter;
+
+    /// <summary>
+    /// creates a new <see cref="FieldMapping{TEntity,TValue}"/>
+    /// </summary>
+    /// <param name="name">name of field</param>
+    /// <param name="field">field to map</param>
+    /// <param name="setter">setter used to set field values to entities</param>
+    public FieldMapping(string name, Expression<Func<TEntity, object>> field, Action<TEntity, TValue> setter) 
+        : base(name, EntityField.Create(field), typeof(TValue)) => Setter = setter;
 
     Action<TEntity, TValue> Setter { get; }
 

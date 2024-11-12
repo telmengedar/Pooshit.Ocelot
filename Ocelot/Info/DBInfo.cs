@@ -545,6 +545,13 @@ public abstract class DBInfo : IDBInfo {
     }
 
     /// <inheritdoc />
+    public virtual async Task<object> ValueFromReaderAsync(Reader reader, int ordinal, Type type) {
+        if (type == typeof(BigInteger))
+            return reader.FieldValueAsync<BigInteger>(ordinal);
+        return await reader.FieldValueAsync<object>(ordinal);
+    }
+
+    /// <inheritdoc />
     public virtual void CreateIndexTypeFragment(StringBuilder commandBuilder, string type) {
     }
 }

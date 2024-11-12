@@ -85,13 +85,13 @@ public class LoadOperation<TLoad, TJoin> : LoadOperation<TLoad> {
 public class LoadOperation<T> : IDatabaseOperation {
     readonly IDBClient dbclient;
     readonly Func<Type, EntityDescriptor> descriptorgetter;
-    List<IDBField> columns=new();
+    readonly List<IDBField> columns= [];
     OrderByCriteria[] orderbycriterias;
-    readonly List<IDBField> groupbycriterias=new();
-    readonly List<JoinOperation> joinoperations = new();
+    readonly List<IDBField> groupbycriterias= [];
+    readonly List<JoinOperation> joinoperations = [];
     bool distinct;
     string alias;
-    readonly List<IDatabaseOperation> unions=new();
+    readonly List<IDatabaseOperation> unions= [];
 
     /// <summary>
     /// creates a new <see cref="LoadOperation{T}"/>
@@ -262,7 +262,7 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// </summary>
     /// <typeparam name="TScalar">type of resulting set values</typeparam>
     /// <returns>resultset of operation</returns>
-    public Task<IEnumerable<TScalar>> ExecuteSetAsync<TScalar>(params object[] parameters) {
+    public IAsyncEnumerable<TScalar> ExecuteSetAsync<TScalar>(params object[] parameters) {
         return Prepare(false).ExecuteSetAsync<TScalar>(parameters);
     }
 
@@ -273,7 +273,7 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// <param name="transaction">transaction to use (optional)</param>
     /// <param name="parameters">parameters for command</param>
     /// <returns>resultset of operation</returns>
-    public Task<IEnumerable<TScalar>> ExecuteSetAsync<TScalar>(Transaction transaction, params object[] parameters) {
+    public IAsyncEnumerable<TScalar> ExecuteSetAsync<TScalar>(Transaction transaction, params object[] parameters) {
         return Prepare(false).ExecuteSetAsync<TScalar>(transaction, parameters);
     }
 
@@ -330,7 +330,7 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// <param name="assignments">action used to assign values</param>
     /// <param name="parameters">parameters for command</param>
     /// <returns>enumeration of result types</returns>
-    public Task<IEnumerable<TType>> ExecuteTypesAsync<TType>(Func<Row, TType> assignments, params object[] parameters) {
+    public IAsyncEnumerable<TType> ExecuteTypesAsync<TType>(Func<Row, TType> assignments, params object[] parameters) {
         return Prepare(false).ExecuteTypesAsync(assignments, parameters);
     }
 
@@ -342,7 +342,7 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// <param name="assignments">action used to assign values</param>
     /// <param name="parameters">parameters for command</param>
     /// <returns>enumeration of result types</returns>
-    public Task<IEnumerable<TType>> ExecuteTypesAsync<TType>(Func<Row, TType> assignments, Transaction transaction, params object[] parameters) {
+    public IAsyncEnumerable<TType> ExecuteTypesAsync<TType>(Func<Row, TType> assignments, Transaction transaction, params object[] parameters) {
         return Prepare(false).ExecuteTypesAsync(transaction, assignments, parameters);
     }
 
@@ -390,7 +390,7 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// <param name="transaction">transaction to use</param>
     /// <param name="parameters">parameters for execution</param>
     /// <returns>created entities</returns>
-    public Task<IEnumerable<TEntity>> ExecuteEntitiesAsync<TEntity>(Transaction transaction, params object[] parameters) {
+    public IAsyncEnumerable<TEntity> ExecuteEntitiesAsync<TEntity>(Transaction transaction, params object[] parameters) {
         return Prepare(false).ExecuteEntitiesAsync<TEntity>(transaction, parameters);
     }
 
@@ -400,7 +400,7 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// <typeparam name="TEntity">type of entities to create</typeparam>
     /// <param name="parameters">parameters for execution</param>
     /// <returns>created entities</returns>
-    public Task<IEnumerable<TEntity>> ExecuteEntitiesAsync<TEntity>(params object[] parameters) {
+    public IAsyncEnumerable<TEntity> ExecuteEntitiesAsync<TEntity>(params object[] parameters) {
         return ExecuteEntitiesAsync<TEntity>(null, parameters);
     }
 
@@ -470,7 +470,7 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// <param name="transaction">transaction to use</param>
     /// <param name="parameters">parameters for execution</param>
     /// <returns>created entities</returns>
-    public Task<IEnumerable<T>> ExecuteEntitiesAsync(Transaction transaction, params object[] parameters) {
+    public IAsyncEnumerable<T> ExecuteEntitiesAsync(Transaction transaction, params object[] parameters) {
         return Prepare(false).ExecuteEntitiesAsync<T>(transaction, parameters);
     }
 
@@ -479,7 +479,7 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// </summary>
     /// <param name="parameters">parameters for execution</param>
     /// <returns>created entities</returns>
-    public Task<IEnumerable<T>> ExecuteEntitiesAsync(params object[] parameters) {
+    public IAsyncEnumerable<T> ExecuteEntitiesAsync(params object[] parameters) {
         return ExecuteEntitiesAsync<T>(null, parameters);
     }
 

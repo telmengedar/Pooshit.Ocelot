@@ -255,7 +255,7 @@ namespace Pooshit.Ocelot.Clients {
         /// <param name="query">command text to execute</param>
         /// <param name="parameters">parameters for command</param>
         /// <returns>resulting set of values</returns>
-        Task<IEnumerable<object>> SetAsync(string query, params object[] parameters);
+        IAsyncEnumerable<object> SetAsync(string query, params object[] parameters);
 
         /// <summary>
         /// executes a query returning a set of values
@@ -263,16 +263,7 @@ namespace Pooshit.Ocelot.Clients {
         /// <param name="query">command text to execute</param>
         /// <param name="parameters">parameters for command</param>
         /// <returns>resulting set of values</returns>
-        Task<IEnumerable<object>> SetAsync(string query, IEnumerable<object> parameters);
-
-        /// <summary>
-        /// executes a query returning a set of values
-        /// </summary>
-        /// <param name="transaction">transaction to use</param>
-        /// <param name="query">command text to execute</param>
-        /// <param name="parameters">parameters for command</param>
-        /// <returns>resulting set of values</returns>
-        Task<IEnumerable<object>> SetAsync(Transaction transaction, string query, params object[] parameters);
+        IAsyncEnumerable<object> SetAsync(string query, IEnumerable<object> parameters);
 
         /// <summary>
         /// executes a query returning a set of values
@@ -281,7 +272,16 @@ namespace Pooshit.Ocelot.Clients {
         /// <param name="query">command text to execute</param>
         /// <param name="parameters">parameters for command</param>
         /// <returns>resulting set of values</returns>
-        Task<IEnumerable<object>> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters);
+        IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, params object[] parameters);
+
+        /// <summary>
+        /// executes a query returning a set of values
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>resulting set of values</returns>
+        IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters);
 
         /// <summary>
         /// begins a transaction
@@ -525,7 +525,7 @@ namespace Pooshit.Ocelot.Clients {
         /// <param name="query">command text to execute</param>
         /// <param name="parameters">parameters for command</param>
         /// <returns>resulting set of values</returns>
-        Task<IEnumerable<object>> SetPreparedAsync(string query, params object[] parameters);
+        IAsyncEnumerable<object> SetPreparedAsync(string query, params object[] parameters);
 
         /// <summary>
         /// executes a query returning a set of values
@@ -533,16 +533,7 @@ namespace Pooshit.Ocelot.Clients {
         /// <param name="query">command text to execute</param>
         /// <param name="parameters">parameters for command</param>
         /// <returns>resulting set of values</returns>
-        Task<IEnumerable<object>> SetPreparedAsync(string query, IEnumerable<object> parameters);
-
-        /// <summary>
-        /// executes a query returning a set of values
-        /// </summary>
-        /// <param name="transaction">transaction to use</param>
-        /// <param name="query">command text to execute</param>
-        /// <param name="parameters">parameters for command</param>
-        /// <returns>resulting set of values</returns>
-        Task<IEnumerable<object>> SetPreparedAsync(Transaction transaction, string query, params object[] parameters);
+        IAsyncEnumerable<object> SetPreparedAsync(string query, IEnumerable<object> parameters);
 
         /// <summary>
         /// executes a query returning a set of values
@@ -551,7 +542,16 @@ namespace Pooshit.Ocelot.Clients {
         /// <param name="query">command text to execute</param>
         /// <param name="parameters">parameters for command</param>
         /// <returns>resulting set of values</returns>
-        Task<IEnumerable<object>> SetPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters);
+        IAsyncEnumerable<object> SetPreparedAsync(Transaction transaction, string query, params object[] parameters);
+
+        /// <summary>
+        /// executes a query returning a set of values
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>resulting set of values</returns>
+        IAsyncEnumerable<object> SetPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters);
 
         /// <summary>
         /// executes a command returning a data reader

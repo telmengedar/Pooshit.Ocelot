@@ -6,6 +6,7 @@ using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
+using Pooshit.Ocelot.Extensions;
 using Pooshit.Ocelot.Fields;
 using Pooshit.Ocelot.Tests.Data;
 using Pooshit.Ocelot.Tests.Models;
@@ -43,7 +44,7 @@ public class ValueMethodTests {
         for (int i = 0; i < 5; ++i)
             await operation.ExecuteAsync(i, 0.0f, 0.0);
 
-        int[] result = (await entitymanager.Load<ValueModel>(v => v.Integer).ExecuteSetAsync<int>()).ToArray();
+        int[] result = (await entitymanager.Load<ValueModel>(v => v.Integer).ExecuteSetAsync<int>().ToArray());
         Assert.True(new[] { 0, 1, 2, 3, 4 }.SequenceEqual(result));
     }
 
@@ -137,7 +138,7 @@ public class ValueMethodTests {
 
         await entitymanager.Delete<ValueModel>().Where(v => v.Integer == 3).ExecuteAsync();
 
-        int[] values = (await entitymanager.Load<ValueModel>(v => v.Integer).ExecuteSetAsync<int>()).ToArray();
+        int[] values = (await entitymanager.Load<ValueModel>(v => v.Integer).ExecuteSetAsync<int>().ToArray());
         Assert.AreEqual(4, values.Length);
         Assert.False(values.Any(v => v == 3));
     }

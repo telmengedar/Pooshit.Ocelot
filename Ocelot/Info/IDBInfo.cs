@@ -352,6 +352,15 @@ public interface IDBInfo {
     object ValueFromReader(Reader reader, int ordinal, Type type);
 
     /// <summary>
+    /// reads a typed value from a reader
+    /// </summary>
+    /// <param name="reader">reader used to retrieve value</param>
+    /// <param name="ordinal">ordinal index of column to read</param>
+    /// <param name="type">type to read</param>
+    /// <returns>read value</returns>
+    Task<object> ValueFromReaderAsync(Reader reader, int ordinal, Type type);
+
+    /// <summary>
     /// create fragment to be used for index types
     /// </summary>
     /// <param name="commandBuilder">builder used to build command</param>
