@@ -837,11 +837,11 @@ public class PostgreInfo : DBInfo {
             object value;
             if (type == typeof(Range<BigInteger>)) {
                 value = reader.GetValue(ordinal, decimalRangeType);
-                return new Range<BigInteger>(new BigInteger((decimal)lowerDecimal.GetValue(value)),
-                                             new BigInteger((decimal)upperDecimal.GetValue(value))) {
-                                                                                                        LowerInclusive = (bool)lowerInclusiveDecimal.GetValue(value),
-                                                                                                        UpperInclusive = (bool)upperInclusiveDecimal.GetValue(value)
-                                                                                                    };
+                return new Range<BigInteger>(new((decimal)lowerDecimal.GetValue(value)),
+                                             new((decimal)upperDecimal.GetValue(value))) {
+                                                                                             LowerInclusive = (bool)lowerInclusiveDecimal.GetValue(value),
+                                                                                             UpperInclusive = (bool)upperInclusiveDecimal.GetValue(value)
+                                                                                         };
             }
 
             if (type == typeof(Range<int>)) {
