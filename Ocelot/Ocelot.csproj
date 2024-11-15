@@ -11,10 +11,10 @@
         <PackageId>Pooshit.Ocelot</PackageId>
         <PackageProjectUrl>https://github.com/telmengedar/Pooshit.Ocelot</PackageProjectUrl>
         <RepositoryUrl>https://github.com/telmengedar/Pooshit.Ocelot.git</RepositoryUrl>
-        <AssemblyVersion>0.16.2</AssemblyVersion>
+        <AssemblyVersion>0.16.3</AssemblyVersion>
         <RootNamespace>Pooshit.Ocelot</RootNamespace>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <PackageVersion>0.16.2-preview</PackageVersion>
+        <PackageVersion>0.16.3-preview</PackageVersion>
         <LangVersion>default</LangVersion>
         <Title>Ocelot</Title>
     </PropertyGroup>

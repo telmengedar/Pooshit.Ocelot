@@ -875,6 +875,50 @@ public class PostgreInfo : DBInfo {
     }
 
     /// <inheritdoc />
+    public override async Task<object> ValueFromReaderAsync(Reader reader, int ordinal, Type type) {
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Range<>)) {
+            object value;
+            if (type == typeof(Range<BigInteger>)) {
+                value = reader.GetValue(ordinal, decimalRangeType);
+                return new Range<BigInteger>(new((decimal)lowerDecimal.GetValue(value)),
+                                             new((decimal)upperDecimal.GetValue(value))) {
+                                                                                             LowerInclusive = (bool)lowerInclusiveDecimal.GetValue(value),
+                                                                                             UpperInclusive = (bool)upperInclusiveDecimal.GetValue(value)
+                                                                                         };
+            }
+
+            if (type == typeof(Range<int>)) {
+                value = reader.GetValue(ordinal);
+                return new Range<int>((int)lowerInt.GetValue(value),
+                                      (int)upperInt.GetValue(value)) {
+                                                                         LowerInclusive = (bool)lowerInclusiveInt.GetValue(value),
+                                                                         UpperInclusive = (bool)upperInclusiveInt.GetValue(value)
+                                                                     };
+            }
+
+            if (type == typeof(Range<long>)) {
+                value = reader.GetValue(ordinal);
+                return new Range<long>((long)lowerLong.GetValue(value),
+                                       (long)upperLong.GetValue(value)) {
+                                                                            LowerInclusive = (bool)lowerInclusiveLong.GetValue(value),
+                                                                            UpperInclusive = (bool)upperInclusiveLong.GetValue(value)
+                                                                        };
+            }
+
+            if (type == typeof(Range<DateTime>)) {
+                value = reader.GetValue(ordinal);
+                return new Range<DateTime>((DateTime)lowerDate.GetValue(value),
+                                           (DateTime)upperDate.GetValue(value)) {
+                                                                                    LowerInclusive = (bool)lowerInclusiveDate.GetValue(value),
+                                                                                    UpperInclusive = (bool)upperInclusiveDate.GetValue(value)
+                                                                                };
+            }
+        }
+
+        return await base.ValueFromReaderAsync(reader, ordinal, type);
+    }
+
+    /// <inheritdoc />
     public override void CreateIndexTypeFragment(StringBuilder commandBuilder, string type) {
         if (string.IsNullOrEmpty(type))
             return;
