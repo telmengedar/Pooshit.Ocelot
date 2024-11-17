@@ -24,7 +24,7 @@ public class RowValues : IRowValues {
     /// <inheritdoc />
     public object GetFieldValue(string name) {
         int index = fieldIndex(fields, name);
-        return index < 0 ? null : row[index];
+        return index < 0 ? null : row.GetValue<object>(index);
     }
 
     /// <inheritdoc />

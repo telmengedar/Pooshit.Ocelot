@@ -24,7 +24,7 @@ public class ReaderValues : IRowValues {
     /// <inheritdoc />
     public object GetFieldValue(string name) {
         int index = fieldIndex(fields, name);
-        return index < 0 ? null : reader[index];
+        return index < 0 ? null : reader.GetValue<object>(index);
     }
 
     /// <inheritdoc />
