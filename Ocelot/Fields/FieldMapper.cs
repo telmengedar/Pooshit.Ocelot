@@ -28,7 +28,7 @@ public class FieldMapper<TEntity> {
     /// </summary>
     /// <param name="mappings">mappings to initialize mapper with</param>
     /// <param name="initializer">initializer used to initialize entities before processing mappings</param>
-    public FieldMapper(FieldMapping<TEntity>[] mappings, Action<TEntity, string[], Func<string, object>> initializer=null) 
+    public FieldMapper(FieldMapping<TEntity>[] mappings, Action<TEntity, string[], IRowValues> initializer=null) 
     : this((IEnumerable<FieldMapping<TEntity>>)mappings, initializer)
     {
     }
@@ -38,7 +38,7 @@ public class FieldMapper<TEntity> {
     /// </summary>
     /// <param name="initializer">initializer used to initialize entities before processing mappings</param>
     /// <param name="mappings">mappings to initialize mapper with</param>
-    public FieldMapper(IEnumerable<FieldMapping<TEntity>> mappings, Action<TEntity, string[], Func<string, object>> initializer=null) {
+    public FieldMapper(IEnumerable<FieldMapping<TEntity>> mappings, Action<TEntity, string[], IRowValues> initializer=null) {
         this.mappings.AddRange(mappings);
         InitializeEntity = initializer;
         BuildFieldLookup();
@@ -47,15 +47,21 @@ public class FieldMapper<TEntity> {
     /// <summary>
     /// access to fields by name
     /// </summary>
-    /// <param name="name"></param>
-    public FieldMapping<TEntity> this[string name] => fieldLookup[name];
+    /// <param name="name">name of field to get</param>
+    public FieldMapping<TEntity> this[string name] {
+        get {
+            if (!fieldLookup.TryGetValue(name, out FieldMapping<TEntity> field))
+                fieldLookup[name] = field = fieldLookup[name.ToLower()];
+            return field;
+        }
+    }
 
     /// <summary>
     /// referenced db fields of contained field mappings
     /// </summary>
     public IEnumerable<IDBField> DbFields => mappings.Select(m => m.Field);
 
-    Action<TEntity, string[], Func<string,object>> InitializeEntity { get; }
+    Action<TEntity, string[], IRowValues> InitializeEntity { get; }
     
     void BuildFieldLookup() {
         fieldLookup = new();
@@ -109,10 +115,7 @@ public class FieldMapper<TEntity> {
     /// <returns>created entity</returns>
     public TEntity EntityFromRow(DataRow row, params string[] fields) {
         TEntity entity = Activator.CreateInstance<TEntity>();
-        InitializeEntity?.Invoke(entity, fields, fieldName => {
-                                                     int index = IndexOf(fields, fieldName);
-                                                     return index < 0 ? null : row.GetValue<object>(index);
-                                                 });
+        InitializeEntity?.Invoke(entity, fields, new RowValues(row, fields, IndexOf));
         int index = 0;
         if (fields.Length == 0) {
             foreach (FieldMapping<TEntity> field in mappings)
@@ -134,10 +137,7 @@ public class FieldMapper<TEntity> {
     /// <returns>created entity</returns>
     TEntity EntityFromReader(Reader reader, params string[] fields) {
         TEntity entity = Activator.CreateInstance<TEntity>();
-        InitializeEntity?.Invoke(entity, fields, fieldName => {
-                                                     int index = IndexOf(fields, fieldName);
-                                                     return index < 0 ? null : reader.GetValue<object>(index);
-                                                 });
+        InitializeEntity?.Invoke(entity, fields, new ReaderValues(reader, fields, IndexOf));
         int index = 0;
         if (fields.Length == 0) {
             foreach (FieldMapping<TEntity> field in mappings)
