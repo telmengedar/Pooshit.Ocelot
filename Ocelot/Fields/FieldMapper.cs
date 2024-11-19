@@ -117,13 +117,13 @@ public class FieldMapper<TEntity> {
         TEntity entity = Activator.CreateInstance<TEntity>();
         InitializeEntity?.Invoke(entity, fields, new RowValues(row, fields, IndexOf));
         int index = 0;
-        if (fields.Length == 0) {
-            foreach (FieldMapping<TEntity> field in mappings)
-                field.SetValue(entity, row.GetValue<object>(index++));
-        }
-        else {
+        if (fields?.Length > 0) {
             foreach(string field in fields)
                 this[field].SetValue(entity, row.GetValue<object>(index++));
+        }
+        else {
+            foreach (FieldMapping<TEntity> field in mappings)
+                field.SetValue(entity, row.GetValue<object>(index++));
         }
 
         return entity;
@@ -139,13 +139,13 @@ public class FieldMapper<TEntity> {
         TEntity entity = Activator.CreateInstance<TEntity>();
         InitializeEntity?.Invoke(entity, fields, new ReaderValues(reader, fields, IndexOf));
         int index = 0;
-        if (fields.Length == 0) {
-            foreach (FieldMapping<TEntity> field in mappings)
-                field.SetValue(entity, reader.GetValue<object>(index++));
-        }
-        else {
+        if (fields?.Length > 0) {
             foreach(string field in fields)
                 this[field].SetValue(entity, reader.GetValue<object>(index++));
+        }
+        else {
+            foreach (FieldMapping<TEntity> field in mappings)
+                field.SetValue(entity, reader.GetValue<object>(index++));
         }
 
         return entity;
