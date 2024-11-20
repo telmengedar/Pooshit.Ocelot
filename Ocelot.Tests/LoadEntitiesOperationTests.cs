@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities;
@@ -8,6 +9,7 @@ using Pooshit.Ocelot.Expressions;
 using Pooshit.Ocelot.Fields;
 using Pooshit.Ocelot.Tests.Data;
 using Pooshit.Ocelot.Tests.Models;
+using Pooshit.Ocelot.Tokens;
 
 namespace Pooshit.Ocelot.Tests;
 
@@ -89,6 +91,28 @@ public class LoadEntitiesOperationTests {
 
         string text = operation.Prepare().CommandText;
         Console.WriteLine(text);
+    }
+
+    [Test, Parallelizable]
+    public void JoinLoadOperation() {
+        IDBClient dbclient = TestData.CreateDatabaseAccess();
+        EntityManager entityManager = new(dbclient);
+        entityManager.UpdateSchema<ValueModel>();
+
+        PreparedOperation insert = entityManager.Insert<ValueModel>().Columns(v => v.Integer, v=>v.Single, v=>v.Double).Prepare();
+        for (int i = 0; i < 5; ++i)
+            insert.Execute(i, 0.0f, 0.0);
+
+        LoadOperation<ValueModel> operation = entityManager.Load<ValueModel>()
+                                                           .Alias("sq1")
+                                                           .Join(entityManager.Load<ValueModel>(), v => DB.Property<ValueModel>(m => m.Integer, "sq1") == DB.Property<ValueModel>(m => m.Integer, "sq2"), "sq2");
+
+        PreparedLoadOperation<ValueModel> prepared = operation.Prepare();
+        string text = prepared.CommandText;
+        Console.WriteLine(text);
+
+        ValueModel[] result = prepared.ExecuteEntities().ToArray();
+        Assert.AreEqual(5, result.Length);
     }
 
 }

@@ -714,7 +714,7 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// </summary>
     /// <param name="limit">number of rows to return</param>
     public LoadOperation<T> Limit(long limit) {
-        LimitStatement ??= new LimitField();
+        LimitStatement ??= new();
         LimitStatement.Limit = DB.Constant(limit);
         return this;
     }
@@ -724,7 +724,7 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// </summary>
     /// <param name="limit">number of rows to return</param>
     public LoadOperation<T> Limit(ISqlToken limit) {
-        LimitStatement ??= new LimitField();
+        LimitStatement ??= new();
         LimitStatement.Limit = limit;
         return this;
     }
@@ -734,7 +734,7 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// </summary>
     /// <param name="offset">number of rows to skip</param>
     public LoadOperation<T> Offset(long offset) {
-        LimitStatement ??= new LimitField();
+        LimitStatement ??= new();
         LimitStatement.Offset = new ConstantValue(offset);
         return this;
     }
@@ -744,7 +744,7 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// </summary>
     /// <param name="offset">number of rows to skip</param>
     public LoadOperation<T> Offset(ISqlToken offset) {
-        LimitStatement ??= new LimitField();
+        LimitStatement ??= new();
         LimitStatement.Offset = offset;
         return this;
     }
@@ -757,8 +757,20 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// <param name="alias">alias to use</param>
     /// <returns>this load operation for fluent behavior</returns>
     public LoadOperation<T, TJoin> Join<TJoin>(Expression<Func<T, TJoin, bool>> criteria, string alias = null) {
-        joinoperations.Add(new JoinOperation(typeof(TJoin), criteria, JoinOp.Inner, null, alias));
-        return new LoadOperation<T, TJoin>(this);
+        joinoperations.Add(new(typeof(TJoin), criteria, JoinOp.Inner, null, alias));
+        return new(this);
+    }
+
+    /// <summary>
+    /// joins another type to the operation
+    /// </summary>
+    /// <param name="operation">operation to join</param>
+    /// <param name="criteria">join criteria</param>
+    /// <param name="alias">alias to use</param>
+    /// <returns>this load operation for fluent behavior</returns>
+    public LoadOperation<T> Join(IDatabaseOperation operation, Expression<Func<T, bool>> criteria, string alias = null) {
+        joinoperations.Add(new(operation, criteria, JoinOp.Inner, null, alias));
+        return new(this);
     }
 
     /// <summary>
@@ -769,8 +781,20 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// <param name="alias">alias to use</param>
     /// <returns>this load operation for fluent behavior</returns>
     public LoadOperation<T, TJoin> LeftJoin<TJoin>(Expression<Func<T, TJoin, bool>> criteria, string alias = null) {
-        joinoperations.Add(new JoinOperation(typeof(TJoin), criteria, JoinOp.Left, null, alias));
-        return new LoadOperation<T, TJoin>(this);
+        joinoperations.Add(new(typeof(TJoin), criteria, JoinOp.Left, null, alias));
+        return new(this);
+    }
+
+    /// <summary>
+    /// joins another type to the operation
+    /// </summary>
+    /// <param name="operation">operation to join</param>
+    /// <param name="criteria">join criteria</param>
+    /// <param name="alias">alias to use</param>
+    /// <returns>this load operation for fluent behavior</returns>
+    public LoadOperation<T> LeftJoin(IDatabaseOperation operation, Expression<Func<T, bool>> criteria, string alias = null) {
+        joinoperations.Add(new(operation, criteria, JoinOp.Left, null, alias));
+        return new(this);
     }
 
     /// <inheritdoc />
@@ -813,8 +837,14 @@ public class LoadOperation<T> : IDatabaseOperation {
             
         if(joinoperations.Count > 0) {
             foreach(JoinOperation operation in joinoperations) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
-                preparator.AppendText($"{operation.Operation.ToString().ToUpper()} JOIN")
-                          .AppendText(descriptorgetter(operation.JoinType).TableName);
+                preparator.AppendText($"{operation.JoinType.ToString().ToUpper()} JOIN");
+                if (operation.Operation != null) {
+                    preparator.AppendText("(");
+                    operation.Operation.Prepare(preparator);
+                    preparator.AppendText(")");
+                }   
+                else preparator.AppendText(descriptorgetter(operation.Type).TableName);
+                
                 if(!string.IsNullOrEmpty(operation.Alias))
                     preparator.AppendText("AS").AppendText(operation.Alias);
                 preparator.AppendText("ON");
