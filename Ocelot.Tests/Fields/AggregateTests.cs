@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
@@ -9,6 +12,7 @@ using Pooshit.Ocelot.Fields;
 using Pooshit.Ocelot.Tests.Data;
 using Pooshit.Ocelot.Tests.Models;
 using Pooshit.Ocelot.Tokens;
+using Pooshit.Ocelot.Tokens.Values;
 
 namespace Pooshit.Ocelot.Tests.Fields;
 
@@ -89,6 +93,61 @@ public class AggregateTests {
         CollectionAssert.AreEqual(new[]{5,7,3,11,0}, result);
     }
 
+    [Test, Parallelizable]
+    public async Task TestCountDistinct()
+    {
+        IDBClient dbclient = TestData.CreateDatabaseAccess();
+        EntityManager entityManager = new(dbclient);
+
+        entityManager.UpdateSchema<ValueModel>();
+
+        entityManager.InsertEntities<ValueModel>().Execute(
+                                                           new ValueModel { String = "A", Integer = 5 },
+                                                           new ValueModel { String = "A" },
+                                                           new ValueModel { String = "B", Integer = 11 },
+                                                           new ValueModel { String = "B", Integer = 11 },
+                                                           new ValueModel { String = "B", Integer = 7 });
+
+        decimal value = await entityManager.Load<ValueModel>(x => DB.Cast(DB.Count(DB.Distinct(x.Integer)), CastType.Float).Decimal / DB.Count().Decimal)
+                                     .ExecuteScalarAsync<decimal>();
+        Assert.AreEqual(0.8m, value);
+    }
+
+    [Test, Parallelizable]
+    public async Task TestCountDistinctSubSelect()
+    {
+        IDBClient dbclient = TestData.CreateDatabaseAccess();
+        EntityManager entityManager = new(dbclient);
+
+        entityManager.UpdateSchema<ValueModel>();
+
+        entityManager.InsertEntities<ValueModel>().Execute(
+                                                           new ValueModel { String = "A", Integer = 5 },
+                                                           new ValueModel { String = "A" },
+                                                           new ValueModel { String = "B", Integer = 11 },
+                                                           new ValueModel { String = "B", Integer = 11 },
+                                                           new ValueModel { String = "B", Integer = 7 });
+
+        IDatabaseOperation subSelect = entityManager.Load<ValueModel>(x=> x.String, x => DB.As(DB.Cast(DB.Count(DB.Distinct(x.Integer)), CastType.Float).Decimal / DB.Count().Decimal, "ratio"))
+                                                    .GroupBy(v => v.String);
+
+        Tuple<string, float>[] result = await entityManager.Load(() => DB.Column("ss", "string"), () => DB.Column("ss", "ratio"))
+                                                           .From(subSelect)
+                                                           .Alias("ss")
+                                                           .ExecuteTypesAsync(r => new Tuple<string, float>(r.GetValue<string>(0), r.GetValue<float>(1)))
+                                                           .ToArray();
+
+        Assert.AreEqual(2, result.Length);
+        Tuple<string, float> a = result.FirstOrDefault(r=>r.Item1=="A");
+        Tuple<string, float> b = result.FirstOrDefault(r=>r.Item1=="B");
+
+        Assert.NotNull(a);
+        Assert.NotNull(b);
+        
+        Assert.AreEqual(1.0f, a.Item2);
+        Assert.AreEqual(2.0f/3.0f, b.Item2);
+    }
+
     [Test]
     public void TestTotalFields()
     {
@@ -112,7 +171,7 @@ public class AggregateTests {
     public void TestTotalExpressions()
     {
         IDBClient dbclient = TestData.CreateDatabaseAccess();
-        EntityManager entitymanager = new EntityManager(dbclient);
+        EntityManager entitymanager = new(dbclient);
 
         entitymanager.UpdateSchema<ValueModel>();
 

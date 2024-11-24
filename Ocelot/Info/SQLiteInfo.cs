@@ -102,6 +102,21 @@ public class SQLiteInfo : DBInfo {
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText("/10000000 - 62135596800, 'unixepoch')");
                                 break;
+                            case CastType.Integer:
+                                operation.AppendText("CAST(");
+                                visitor.Visit(methodCall.Arguments[0]);
+                                operation.AppendText("AS INTEGER)");
+                                break;
+                            case CastType.Float:
+                                operation.AppendText("CAST(");
+                                visitor.Visit(methodCall.Arguments[0]);
+                                operation.AppendText("AS FLOAT)");
+                                break;
+                            case CastType.Text:
+                                operation.AppendText("CAST(");
+                                visitor.Visit(methodCall.Arguments[0]);
+                                operation.AppendText("AS TEXT)");
+                                break;
                             default:
                                 throw new ArgumentException("Invalid cast target type");
                         }
@@ -169,6 +184,21 @@ public class SQLiteInfo : DBInfo {
                 preparator.AppendText("strftime('%W',");
                 Append(cast.Field, preparator, descriptorgetter, tablealias);
                 preparator.AppendText("/10000000 - 62135596800, 'unixepoch')");
+                break;
+            case CastType.Integer:
+                preparator.AppendText("CAST(");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("AS INTEGER)");
+                break;
+            case CastType.Float:
+                preparator.AppendText("CAST(");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("AS FLOAT)");
+                break;
+            case CastType.Text:
+                preparator.AppendText("CAST(");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("AS TEXT)");
                 break;
             default:
                 throw new ArgumentException("Invalid cast target type");

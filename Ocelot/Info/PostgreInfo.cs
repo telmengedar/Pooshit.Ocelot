@@ -163,6 +163,21 @@ public class PostgreInfo : DBInfo {
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText(")");
                                 break;
+                            case CastType.Integer:
+                                operation.AppendText("CAST(");
+                                visitor.Visit(methodCall.Arguments[0]);
+                                operation.AppendText("AS INTEGER)");
+                                break;
+                            case CastType.Float:
+                                operation.AppendText("CAST(");
+                                visitor.Visit(methodCall.Arguments[0]);
+                                operation.AppendText("AS FLOAT)");
+                                break;
+                            case CastType.Text:
+                                operation.AppendText("CAST(");
+                                visitor.Visit(methodCall.Arguments[0]);
+                                operation.AppendText("AS TEXT)");
+                                break;
                             default:
                                 throw new ArgumentException("Invalid cast target type");
                         }
@@ -238,6 +253,21 @@ public class PostgreInfo : DBInfo {
                 preparator.AppendText("EXTRACT(WEEK FROM ");
                 Append(cast.Field, preparator, descriptorgetter, tablealias);
                 preparator.AppendText(")");
+                break;
+            case CastType.Integer:
+                preparator.AppendText("CAST(");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("AS INTEGER)");
+                break;
+            case CastType.Float:
+                preparator.AppendText("CAST(");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("AS FLOAT)");
+                break;
+            case CastType.Text:
+                preparator.AppendText("CAST(");
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("AS TEXT)");
                 break;
             default:
                 throw new ArgumentException("Invalid cast target type");
@@ -483,10 +513,10 @@ public class PostgreInfo : DBInfo {
     IEnumerable<Schema> CreateSchemata(IDataReader reader) {
         using (reader) {
             while (reader.Read()) {
-                yield return new Schema {
-                                            Name = reader.GetString(0),
-                                            Type = Converter.Convert<SchemaType>(reader.GetString(1))
-                                        };
+                yield return new() {
+                                       Name = reader.GetString(0),
+                                       Type = Converter.Convert<SchemaType>(reader.GetString(1))
+                                   };
             }
         }
     }
@@ -606,7 +636,7 @@ public class PostgreInfo : DBInfo {
         if (templateStream == null)
             throw new InvalidOperationException("Statement template resource not found");
             
-        using (StreamReader reader = new StreamReader(templateStream))
+        using (StreamReader reader = new(templateStream))
             template = await reader.ReadToEndAsync();
 
         string statement = string.Format(template, table);
@@ -625,11 +655,11 @@ public class PostgreInfo : DBInfo {
 
         Dictionary<string, ColumnDescriptor> columns = new();
         foreach(PgColumn column in new LoadOperation<PgColumn>(client, EntityDescriptor.Create, DB.All).Where(c => c.Table == name).ExecuteEntities()) {
-            columns[column.Column] = new ColumnDescriptor(column.Column) {
-                                                                             Type = column.DataType,
-                                                                             NotNull = column.IsNullable == "NO",
-                                                                             AutoIncrement = column.Default?.StartsWith("nextval") ?? false
-                                                                         };
+            columns[column.Column] = new(column.Column) {
+                                                            Type = column.DataType,
+                                                            NotNull = column.IsNullable == "NO",
+                                                            AutoIncrement = column.Default?.StartsWith("nextval") ?? false
+                                                        };
         }
 
         List<UniqueDescriptor> uniques = new();
@@ -652,14 +682,14 @@ public class PostgreInfo : DBInfo {
                         desc.IsUnique = true;
                 }
                 else
-                    uniques.Add(new UniqueDescriptor(index.Name, columnnames));
+                    uniques.Add(new(index.Name, columnnames));
             }
             else {
                 match = Regex.Match(index.Name, $"^idx_{name}_(?<indexname>.+)$");
                 if(match.Success)
-                    indices.Add(new IndexDescriptor(match.Groups["indexname"].Value, columnnames, match.Groups["type"].Value));
+                    indices.Add(new(match.Groups["indexname"].Value, columnnames, match.Groups["type"].Value));
                 else
-                    indices.Add(new IndexDescriptor(index.Name, columnnames, match.Groups["type"].Value));
+                    indices.Add(new(index.Name, columnnames, match.Groups["type"].Value));
             }
         }
 

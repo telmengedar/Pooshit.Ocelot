@@ -75,7 +75,7 @@ public class LoadDataOperation : WhereTokenOperation {
     /// </summary>
     /// <param name="limit">number of rows to return</param>
     public LoadDataOperation Limit(long limit) {
-        LimitStatement ??= new LimitField();
+        LimitStatement ??= new();
         LimitStatement.Limit = DB.Constant(limit);
         return this;
     }
@@ -95,7 +95,7 @@ public class LoadDataOperation : WhereTokenOperation {
     /// </summary>
     /// <param name="offset">number of rows to skip</param>
     public LoadDataOperation Offset(long offset) {
-        LimitStatement ??= new LimitField();
+        LimitStatement ??= new();
         LimitStatement.Offset = new ConstantValue(offset);
         return this;
     }
@@ -105,7 +105,7 @@ public class LoadDataOperation : WhereTokenOperation {
     /// </summary>
     /// <param name="offset">number of rows to skip</param>
     public LoadDataOperation Offset(ISqlToken offset) {
-        LimitStatement ??= new LimitField();
+        LimitStatement ??= new();
         LimitStatement.Offset = offset;
         return this;
     }

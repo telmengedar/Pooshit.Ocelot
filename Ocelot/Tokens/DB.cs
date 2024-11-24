@@ -18,9 +18,20 @@ public static class DB {
     /// <summary>
     /// specifies all columns
     /// </summary>
-    public static readonly ISqlToken All = new AllColumnsToken(); 
+    public static readonly ISqlToken All = new AllColumnsToken();
 
-        
+
+    /// <summary>
+    /// used to create an alias for an expression
+    /// </summary>
+    /// <param name="value">value for which to create an alias</param>
+    /// <param name="alias">alias to use</param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException">thrown when this method is used outside an expression tree</exception>
+    public static ISqlToken As(object value, string alias) {
+        throw new NotImplementedException("Only to be used in expressions");
+    }
+    
     /// <summary>
     /// coalesce function used to return the first token which evaluates in non null
     /// </summary>
@@ -39,6 +50,14 @@ public static class DB {
         return new ConstantValue(value);
     }
 
+    /// <summary>
+    /// distinct keyword
+    /// </summary>
+    /// <param name="value">value which to take into account</param>
+    public static ISqlToken Distinct(object value) {
+        throw new NotImplementedException("Only to be used in expressions");
+    }
+    
     /// <summary>
     /// get absolute of a value
     /// </summary>

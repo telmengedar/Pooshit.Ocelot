@@ -59,6 +59,21 @@ namespace Pooshit.Ocelot.Tokens.Values {
         /// <summary>
         /// extracts week of year from a datetime or timestamp
         /// </summary>
-        WeekOfYear
+        WeekOfYear,
+        
+        /// <summary>
+        /// integer
+        /// </summary>
+        Integer,
+        
+        /// <summary>
+        /// floating point
+        /// </summary>
+        Float,
+        
+        /// <summary>
+        /// text
+        /// </summary>
+        Text
     }
 }

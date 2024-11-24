@@ -273,6 +273,12 @@ public abstract class DBInfo : IDBInfo {
                         visitor.Visit(methodCall.Arguments[0]);
                         operation.AppendText(")");
                         break;
+                    case "As":
+                        visitor.Visit(methodCall.Arguments[0]);
+                        operation.AppendText("AS");
+                        string alias = visitor.GetHost(methodCall.Arguments[1]) as string;
+                        operation.AppendText(alias);
+                        break;
                     case "Sum":
                         operation.AppendText("SUM(");
                         visitor.Visit(methodCall.Arguments[0]);
@@ -336,6 +342,10 @@ public abstract class DBInfo : IDBInfo {
                         }
 
                         operation.AppendText("END");
+                        break;
+                    case "Distinct":
+                        operation.AppendText("DISTINCT");
+                        visitor.Visit(methodCall.Arguments[0]);
                         break;
                     case "When":
                         operation.AppendText("WHEN");

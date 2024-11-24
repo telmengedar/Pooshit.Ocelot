@@ -217,6 +217,27 @@ namespace Pooshit.Ocelot.Entities {
         /// <summary>
         /// get a load operation to use to load values of an entity from the database
         /// </summary>
+        public LoadOperation Load() {
+            return new(DBClient, modelcache.Get, Array.Empty<IDBField>());
+        }
+
+        /// <summary>
+        /// get a load operation to use to load values of an entity from the database
+        /// </summary>
+        public LoadOperation Load(params IDBField[] fields) {
+            return new(DBClient, modelcache.Get, fields);
+        }
+
+        /// <summary>
+        /// get a load operation to use to load values of an entity from the database
+        /// </summary>
+        public LoadOperation Load(params Expression<Func<object>>[] fields) {
+            return new(DBClient, modelcache.Get, fields.Select(EntityField.Create).Cast<IDBField>().ToArray());
+        }
+
+        /// <summary>
+        /// get a load operation to use to load values of an entity from the database
+        /// </summary>
         public LoadOperation<T> Load<T>() {
             return new(DBClient, modelcache.Get, Array.Empty<IDBField>());
         }
