@@ -7,10 +7,8 @@ using Pooshit.Ocelot.Entities.Operations;
 
 namespace Pooshit.Ocelot.Fields;
 
-/// <summary>
-/// mapper for fields
-/// </summary>
-public class FieldMapper<TEntity> {
+/// <inheritdoc />
+public class FieldMapper<TEntity> : IFieldMapper<TEntity> {
     readonly List<FieldMapping<TEntity>> mappings = [];
     Dictionary<string, FieldMapping<TEntity>> fieldLookup;
 
@@ -43,11 +41,8 @@ public class FieldMapper<TEntity> {
         InitializeEntity = initializer;
         BuildFieldLookup();
     }
-    
-    /// <summary>
-    /// access to fields by name
-    /// </summary>
-    /// <param name="name">name of field to get</param>
+
+    /// <inheritdoc />
     public FieldMapping<TEntity> this[string name] {
         get {
             if (!fieldLookup.TryGetValue(name, out FieldMapping<TEntity> field))
@@ -56,9 +51,7 @@ public class FieldMapper<TEntity> {
         }
     }
 
-    /// <summary>
-    /// referenced db fields of contained field mappings
-    /// </summary>
+    /// <inheritdoc />
     public IEnumerable<IDBField> DbFields => mappings.Select(m => m.Field);
 
     Action<TEntity, string[], IRowValues> InitializeEntity { get; }
@@ -69,20 +62,14 @@ public class FieldMapper<TEntity> {
             fieldLookup[field.Name] = field;
     }
 
-    /// <summary>
-    /// get fields from names
-    /// </summary>
-    /// <param name="names">field names</param>
-    /// <returns>db fields</returns>
+    /// <inheritdoc />
     public IEnumerable<IDBField> DbFieldsFromNames(params string[] names) {
+        if (names.Length == 0)
+            return DbFields;
         return DbFieldsFromNames((IEnumerable<string>)names);
     }
 
-    /// <summary>
-    /// get fields from names
-    /// </summary>
-    /// <param name="names">field names</param>
-    /// <returns>db fields</returns>
+    /// <inheritdoc />
     public IEnumerable<IDBField> DbFieldsFromNames(IEnumerable<string> names) {
         return names.Select(n => this[n].Field);
     }
@@ -106,13 +93,8 @@ public class FieldMapper<TEntity> {
 
         return -1;
     }
-    
-    /// <summary>
-    /// creates an entity from a loaded row
-    /// </summary>
-    /// <param name="row">database row loaded from field mapping of this mapper</param>
-    /// <param name="fields">expected fields in row</param>
-    /// <returns>created entity</returns>
+
+    /// <inheritdoc />
     public TEntity EntityFromRow(DataRow row, params string[] fields) {
         TEntity entity = Activator.CreateInstance<TEntity>();
         InitializeEntity?.Invoke(entity, fields, new RowValues(row, fields, IndexOf));
@@ -151,57 +133,32 @@ public class FieldMapper<TEntity> {
         return entity;
     }
 
-    /// <summary>
-    /// create entities from table
-    /// </summary>
-    /// <param name="table">table from which to create entities</param>
-    /// <param name="fields">expected fields in rows (optional)</param>
-    /// <returns>enumeration of entities</returns>
+    /// <inheritdoc />
     public IEnumerable<TEntity> EntitiesFromTable(DataTable table, params string[] fields) {
         return table.Rows.Select(r=>EntityFromRow(r, fields));
     }
 
-    /// <summary>
-    /// creates entities from an operation
-    /// </summary>
-    /// <param name="operation">operation of which to create entities</param>
-    /// <param name="fields">expected fields in rows (optional)</param>
-    /// <returns>enumeration of entities</returns>
+    /// <inheritdoc />
     public async IAsyncEnumerable<TEntity> EntitiesFromOperation(LoadOperation<TEntity> operation, params string[] fields) {
         using Reader reader = await operation.ExecuteReaderAsync();
         await foreach (TEntity item in EntitiesFromReader(reader, fields))
             yield return item;
     }
 
-    /// <summary>
-    /// creates entities from an operation
-    /// </summary>
-    /// <param name="operation">operation of which to create entities</param>
-    /// <param name="fields">expected fields in rows (optional)</param>
-    /// <returns>enumeration of entities</returns>
+    /// <inheritdoc />
     public async IAsyncEnumerable<TEntity> EntitiesFromOperation<TLoad>(LoadOperation<TLoad> operation, params string[] fields) {
         using Reader reader = await operation.ExecuteReaderAsync();
         await foreach (TEntity item in EntitiesFromReader(reader, fields))
             yield return item;
     }
 
-    /// <summary>
-    /// creates entities from an operation
-    /// </summary>
-    /// <param name="reader">dataset result reader</param>
-    /// <param name="fields">expected fields in rows (optional)</param>
-    /// <returns>enumeration of entities</returns>
+    /// <inheritdoc />
     public async IAsyncEnumerable<TEntity> EntitiesFromReader(Reader reader, params string[] fields) {
         while (await reader.ReadAsync())
             yield return EntityFromReader(reader, fields);
     }
 
-    /// <summary>
-    /// create entities from table
-    /// </summary>
-    /// <param name="table">table from which to create entities</param>
-    /// <param name="fields">expected fields in rows (optional)</param>
-    /// <returns>enumeration of entities</returns>
+    /// <inheritdoc />
     public TEntity EntityFromTable(DataTable table, params string[] fields) {
         return table.Rows.Select(r => EntityFromRow(r, fields)).FirstOrDefault();
     }
