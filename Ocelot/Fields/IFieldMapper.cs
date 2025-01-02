@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Clients.Tables;
+using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Entities.Operations;
 
 namespace Pooshit.Ocelot.Fields;
@@ -82,4 +83,12 @@ public interface IFieldMapper<TEntity> {
 	/// <param name="fields">expected fields in rows (optional)</param>
 	/// <returns>enumeration of entities</returns>
 	TEntity EntityFromTable(DataTable table, params string[] fields);
+
+	/// <summary>
+	/// creates a load operation to be used to load the entities from database
+	/// </summary>
+	/// <param name="database">database used to generate load operation</param>
+	/// <param name="fields">selection of fields to load</param>
+	/// <returns>load operation to use to load entities</returns>
+	LoadOperation<TEntity> CreateOperation(IEntityManager database, params string[] fields);
 }

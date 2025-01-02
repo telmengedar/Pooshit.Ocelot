@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Clients.Tables;
+using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Entities.Operations;
 
 namespace Pooshit.Ocelot.Fields;
@@ -163,4 +164,8 @@ public class FieldMapper<TEntity> : IFieldMapper<TEntity> {
         return table.Rows.Select(r => EntityFromRow(r, fields)).FirstOrDefault();
     }
 
+    /// <inheritdoc />
+    public virtual LoadOperation<TEntity> CreateOperation(IEntityManager database, params string[] fields) {
+        return database.Load<TEntity>(DbFieldsFromNames(fields).ToArray());
+    }
 }
