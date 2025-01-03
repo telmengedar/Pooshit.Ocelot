@@ -358,7 +358,7 @@ public abstract class DBInfo : IDBInfo {
                         visitor.Visit(methodCall.Arguments[0]);
                         operation.AppendText("THEN");
                         visitor.Visit(methodCall.Arguments[1]);
-                        if (methodCall.Arguments[2] is ConstantExpression { Value: not null }) {
+                        if (methodCall.Arguments[2] is not ConstantExpression || methodCall.Arguments[2] is ConstantExpression { Value: not null }) {
                             operation.AppendText("ELSE");
                             visitor.Visit(methodCall.Arguments[2]);
                         }
