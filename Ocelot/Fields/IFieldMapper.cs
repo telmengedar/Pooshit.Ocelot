@@ -9,13 +9,13 @@ namespace Pooshit.Ocelot.Fields;
 /// <summary>
 /// mapper for fields used to load entities from database
 /// </summary>
-public interface IFieldMapper<TEntity> {
+public interface IFieldMapper<TModel> {
 	
 	/// <summary>
 	/// access to fields by name
 	/// </summary>
 	/// <param name="name">name of field to get</param>
-	FieldMapping<TEntity> this[string name] { get; }
+	FieldMapping<TModel> this[string name] { get; }
 
 	/// <summary>
 	/// referenced db fields of contained field mappings
@@ -42,7 +42,7 @@ public interface IFieldMapper<TEntity> {
 	/// <param name="row">database row loaded from field mapping of this mapper</param>
 	/// <param name="fields">expected fields in row</param>
 	/// <returns>created entity</returns>
-	TEntity EntityFromRow(DataRow row, params string[] fields);
+	TModel EntityFromRow(DataRow row, params string[] fields);
 
 	/// <summary>
 	/// create entities from table
@@ -50,7 +50,7 @@ public interface IFieldMapper<TEntity> {
 	/// <param name="table">table from which to create entities</param>
 	/// <param name="fields">expected fields in rows (optional)</param>
 	/// <returns>enumeration of entities</returns>
-	IEnumerable<TEntity> EntitiesFromTable(DataTable table, params string[] fields);
+	IEnumerable<TModel> EntitiesFromTable(DataTable table, params string[] fields);
 
 	/// <summary>
 	/// creates entities from an operation
@@ -58,7 +58,7 @@ public interface IFieldMapper<TEntity> {
 	/// <param name="operation">operation of which to create entities</param>
 	/// <param name="fields">expected fields in rows (optional)</param>
 	/// <returns>enumeration of entities</returns>
-	IAsyncEnumerable<TEntity> EntitiesFromOperation(LoadOperation<TEntity> operation, params string[] fields);
+	IAsyncEnumerable<TModel> EntitiesFromOperation(LoadOperation<TModel> operation, params string[] fields);
 
 	/// <summary>
 	/// creates entities from an operation
@@ -66,7 +66,7 @@ public interface IFieldMapper<TEntity> {
 	/// <param name="operation">operation of which to create entities</param>
 	/// <param name="fields">expected fields in rows (optional)</param>
 	/// <returns>enumeration of entities</returns>
-	IAsyncEnumerable<TEntity> EntitiesFromOperation<TLoad>(LoadOperation<TLoad> operation, params string[] fields);
+	IAsyncEnumerable<TModel> EntitiesFromOperation<TLoad>(LoadOperation<TLoad> operation, params string[] fields);
 
 	/// <summary>
 	/// creates entities from an operation
@@ -74,7 +74,7 @@ public interface IFieldMapper<TEntity> {
 	/// <param name="reader">dataset result reader</param>
 	/// <param name="fields">expected fields in rows (optional)</param>
 	/// <returns>enumeration of entities</returns>
-	IAsyncEnumerable<TEntity> EntitiesFromReader(Reader reader, params string[] fields);
+	IAsyncEnumerable<TModel> EntitiesFromReader(Reader reader, params string[] fields);
 
 	/// <summary>
 	/// create entities from table
@@ -82,13 +82,27 @@ public interface IFieldMapper<TEntity> {
 	/// <param name="table">table from which to create entities</param>
 	/// <param name="fields">expected fields in rows (optional)</param>
 	/// <returns>enumeration of entities</returns>
-	TEntity EntityFromTable(DataTable table, params string[] fields);
-
+	TModel EntityFromTable(DataTable table, params string[] fields);
+	
 	/// <summary>
 	/// creates a load operation to be used to load the entities from database
 	/// </summary>
 	/// <param name="database">database used to generate load operation</param>
 	/// <param name="fields">selection of fields to load</param>
 	/// <returns>load operation to use to load entities</returns>
-	LoadOperation<TEntity> CreateOperation(IEntityManager database, params string[] fields);
+	LoadOperation<TModel> CreateOperation(IEntityManager database, params string[] fields);
+}
+
+/// <summary>
+/// mapper for fields used to load entities from database
+/// </summary>
+public interface IFieldMapper<TModel, TEntity> : IFieldMapper<TModel> {
+	
+	/// <summary>
+	/// creates a load operation to be used to load the entities from database
+	/// </summary>
+	/// <param name="database">database used to generate load operation</param>
+	/// <param name="fields">selection of fields to load</param>
+	/// <returns>load operation to use to load entities</returns>
+	new LoadOperation<TEntity> CreateOperation(IEntityManager database, params string[] fields);
 }
