@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Clients.Tables;
 using Pooshit.Ocelot.Entities;
@@ -112,13 +113,14 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
         return entity;
     }
 
-    /// <summary>
-    /// creates an entity from a loaded row
-    /// </summary>
-    /// <param name="reader">database result reader</param>
-    /// <param name="fields">expected fields in row</param>
-    /// <returns>created entity</returns>
-    TModel EntityFromReader(Reader reader, params string[] fields) {
+    /// <inheritdoc />
+    public async Task<TModel> EntityFromOperation(LoadOperation<TModel> operation, params string[] fields) {
+        using Reader reader = await operation.ExecuteReaderAsync();
+        return EntityFromReader(reader, fields);
+    }
+
+    /// <inheritdoc />
+    public TModel EntityFromReader(Reader reader, params string[] fields) {
         TModel entity = Activator.CreateInstance<TModel>();
         InitializeEntity?.Invoke(entity, fields, new ReaderValues(reader, fields, IndexOf));
         int index = 0;

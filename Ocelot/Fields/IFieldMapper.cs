@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Clients.Tables;
 using Pooshit.Ocelot.Entities;
@@ -83,6 +84,22 @@ public interface IFieldMapper<TModel> {
 	/// <param name="fields">expected fields in rows (optional)</param>
 	/// <returns>enumeration of entities</returns>
 	TModel EntityFromTable(DataTable table, params string[] fields);
+
+	/// <summary>
+	/// creates entities from an operation
+	/// </summary>
+	/// <param name="operation">operation of which to create entities</param>
+	/// <param name="fields">expected fields in rows (optional)</param>
+	/// <returns>enumeration of entities</returns>
+	Task<TModel> EntityFromOperation(LoadOperation<TModel> operation, params string[] fields);
+
+	/// <summary>
+	/// creates entities from an operation
+	/// </summary>
+	/// <param name="reader">dataset result reader</param>
+	/// <param name="fields">expected fields in rows (optional)</param>
+	/// <returns>enumeration of entities</returns>
+	TModel EntityFromReader(Reader reader, params string[] fields);
 	
 	/// <summary>
 	/// creates a load operation to be used to load the entities from database
