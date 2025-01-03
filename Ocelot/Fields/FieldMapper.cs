@@ -120,6 +120,12 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
     }
 
     /// <inheritdoc />
+    public async Task<TModel> EntityFromOperation<TLoad>(LoadOperation<TLoad> operation, params string[] fields) {
+        using Reader reader = await operation.ExecuteReaderAsync();
+        return EntityFromReader(reader, fields);
+    }
+
+    /// <inheritdoc />
     public TModel EntityFromReader(Reader reader, params string[] fields) {
         TModel entity = Activator.CreateInstance<TModel>();
         InitializeEntity?.Invoke(entity, fields, new ReaderValues(reader, fields, IndexOf));

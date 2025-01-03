@@ -96,6 +96,14 @@ public interface IFieldMapper<TModel> {
 	/// <summary>
 	/// creates entities from an operation
 	/// </summary>
+	/// <param name="operation">operation of which to create entities</param>
+	/// <param name="fields">expected fields in rows (optional)</param>
+	/// <returns>enumeration of entities</returns>
+	Task<TModel> EntityFromOperation<TLoad>(LoadOperation<TLoad> operation, params string[] fields);
+
+	/// <summary>
+	/// creates entities from an operation
+	/// </summary>
 	/// <param name="reader">dataset result reader</param>
 	/// <param name="fields">expected fields in rows (optional)</param>
 	/// <returns>enumeration of entities</returns>
