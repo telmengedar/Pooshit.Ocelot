@@ -203,6 +203,24 @@ public static class DB {
     }
 
     /// <summary>
+    /// get a minimum of a series of values
+    /// </summary>
+    /// <param name="token">token identifying values of which to get maximum</param>
+    /// <returns>token to be used in statements</returns>
+    public static ISqlToken Concat(ISqlToken token) {
+        return new AggregateFunction("CONCAT", token);
+    }
+
+    /// <summary>
+    /// get a minimum of a series of values
+    /// </summary>
+    /// <param name="values">values of which to get maximum</param>
+    /// <returns>token to be used in statements</returns>
+    public static ISqlToken Concat(object values) {
+        throw new NotImplementedException("Only to be used in expressions");
+    }
+
+    /// <summary>
     /// counts values of a column which are not null
     /// </summary>
     /// <returns>token to be used in statements</returns>

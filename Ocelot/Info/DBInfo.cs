@@ -311,6 +311,11 @@ public abstract class DBInfo : IDBInfo {
                         visitor.Visit(methodCall.Arguments[0]);
                         operation.AppendText(")");
                         break;
+                    case "Concat":
+                        operation.AppendText("CONCAT(");
+                        visitor.Visit(methodCall.Arguments[0]);
+                        operation.AppendText(")");
+                    break;
                     case "Count":
                         if (methodCall.Arguments.Count > 0) {
                             operation.AppendText("COUNT(");
