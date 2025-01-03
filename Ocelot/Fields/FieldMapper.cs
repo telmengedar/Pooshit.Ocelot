@@ -116,13 +116,13 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
     /// <inheritdoc />
     public async Task<TModel> EntityFromOperation(LoadOperation<TModel> operation, params string[] fields) {
         using Reader reader = await operation.ExecuteReaderAsync();
-        return CreateEntityFromReader(reader, fields);
+        return await EntityFromReader(reader, fields);
     }
 
     /// <inheritdoc />
     public async Task<TModel> EntityFromOperation<TLoad>(LoadOperation<TLoad> operation, params string[] fields) {
         using Reader reader = await operation.ExecuteReaderAsync();
-        return CreateEntityFromReader(reader, fields);
+        return await EntityFromReader(reader, fields);
     }
 
     /// <inheritdoc />
