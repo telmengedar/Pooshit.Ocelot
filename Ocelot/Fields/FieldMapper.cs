@@ -116,17 +116,23 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
     /// <inheritdoc />
     public async Task<TModel> EntityFromOperation(LoadOperation<TModel> operation, params string[] fields) {
         using Reader reader = await operation.ExecuteReaderAsync();
-        return EntityFromReader(reader, fields);
+        return CreateEntityFromReader(reader, fields);
     }
 
     /// <inheritdoc />
     public async Task<TModel> EntityFromOperation<TLoad>(LoadOperation<TLoad> operation, params string[] fields) {
         using Reader reader = await operation.ExecuteReaderAsync();
-        return EntityFromReader(reader, fields);
+        return CreateEntityFromReader(reader, fields);
     }
 
     /// <inheritdoc />
-    public TModel EntityFromReader(Reader reader, params string[] fields) {
+    public async Task<TModel> EntityFromReader(Reader reader, params string[] fields) {
+        if(!await reader.ReadAsync())
+            return default;
+        return CreateEntityFromReader(reader, fields);
+    }
+    
+    TModel CreateEntityFromReader(Reader reader, params string[] fields) {
         TModel entity = Activator.CreateInstance<TModel>();
         InitializeEntity?.Invoke(entity, fields, new ReaderValues(reader, fields, IndexOf));
         int index = 0;
@@ -164,7 +170,7 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
     /// <inheritdoc />
     public async IAsyncEnumerable<TModel> EntitiesFromReader(Reader reader, params string[] fields) {
         while (await reader.ReadAsync())
-            yield return EntityFromReader(reader, fields);
+            yield return CreateEntityFromReader(reader, fields);
     }
 
     /// <inheritdoc />

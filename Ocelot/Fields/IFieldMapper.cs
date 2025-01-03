@@ -107,7 +107,7 @@ public interface IFieldMapper<TModel> {
 	/// <param name="reader">dataset result reader</param>
 	/// <param name="fields">expected fields in rows (optional)</param>
 	/// <returns>enumeration of entities</returns>
-	TModel EntityFromReader(Reader reader, params string[] fields);
+	Task<TModel> EntityFromReader(Reader reader, params string[] fields);
 	
 	/// <summary>
 	/// creates a load operation to be used to load the entities from database
