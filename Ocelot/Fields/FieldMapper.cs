@@ -174,5 +174,14 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
 public abstract class FieldMapper<TModel, TEntity> : FieldMapper<TModel>, IFieldMapper<TModel, TEntity> {
     
     /// <inheritdoc />
+    protected FieldMapper(params FieldMapping<TModel>[] mappings) : base(mappings) { }
+
+    /// <inheritdoc />
+    protected FieldMapper(FieldMapping<TModel>[] mappings, Action<TModel, string[], IRowValues> initializer = null) : base(mappings, initializer) { }
+
+    /// <inheritdoc />
+    protected FieldMapper(IEnumerable<FieldMapping<TModel>> mappings, Action<TModel, string[], IRowValues> initializer = null) : base(mappings, initializer) { }
+
+    /// <inheritdoc />
     public new abstract LoadOperation<TEntity> CreateOperation(IEntityManager database, params string[] fields);
 }
