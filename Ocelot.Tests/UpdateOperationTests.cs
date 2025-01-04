@@ -63,7 +63,7 @@ namespace Pooshit.Ocelot.Tests {
 
             entitymanager.UpdateSchema<ValueModel>();
 
-            byte[] blob = {1, 2, 3, 4, 5};
+            byte[] blob = [1, 2, 3, 4, 5];
             await entitymanager.Update<ValueModel>().Set(v => v.Blob == blob).ExecuteAsync();
         }
         

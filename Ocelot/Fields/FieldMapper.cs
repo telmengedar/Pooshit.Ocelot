@@ -66,7 +66,7 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
 
     /// <inheritdoc />
     public IEnumerable<IDBField> DbFieldsFromNames(params string[] names) {
-        if (names.Length == 0)
+        if ((names?.Length??0) == 0)
             return DbFields;
         return DbFieldsFromNames((IEnumerable<string>)names);
     }
