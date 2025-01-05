@@ -51,6 +51,10 @@ public abstract class DBInfo : IDBInfo {
     }
 
     void AppendAggregate(Aggregate aggregate, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
+        string method = aggregate.Method;
+        if (method == "ANY")
+            method = "MIN";
+        
         preparator.AppendText(aggregate.Method).AppendText("(");
         if(aggregate.Arguments.Length > 0) {
             Append(aggregate.Arguments[0], preparator, descriptorgetter);
@@ -253,13 +257,13 @@ public abstract class DBInfo : IDBInfo {
 
     /// <inheritdoc />
     public void Append(IDBField field, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias = null) {
-        if (field is ISqlToken sqltoken) {
-            sqltoken.ToSql(this, preparator, descriptorgetter, tablealias);
-            return;
-        }
-            
-        if(!fieldlogic.TryGetValue(field.GetType(), out Action<IDBField, IOperationPreparator, Func<Type, EntityDescriptor>, string> logic))
+        if (!fieldlogic.TryGetValue(field.GetType(), out Action<IDBField, IOperationPreparator, Func<Type, EntityDescriptor>, string> logic)) {
+            if (field is ISqlToken sqltoken) {
+                sqltoken.ToSql(this, preparator, descriptorgetter, tablealias);
+                return;
+            }
             throw new NotSupportedException($"{field.GetType()} not supported");
+        }
         logic(field, preparator, descriptorgetter, tablealias);
     }
 

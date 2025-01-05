@@ -218,7 +218,7 @@ public class CriteriaVisitor : ExpressionVisitor {
         }
         else {
             AppendValueRemainder();
-            if (value is Array array && !(value is byte[])) {
+            if (value is Array array and not byte[]) {
                 if (dbinfo.SupportsArrayParameters) {
                     preparator.AppendParameter(value);
                 }
@@ -231,8 +231,6 @@ public class CriteriaVisitor : ExpressionVisitor {
                     }
                 }
             }
-            else if(value is ISqlToken sqlfield)
-                sqlfield.ToSql(dbinfo, preparator, descriptorgetter, null);
             else if(value is IDBField field)
                 dbinfo.Append(field, preparator, descriptorgetter);
             else {

@@ -98,6 +98,24 @@ public class PostgreInfo : DBInfo {
         AddFieldLogic<DBFunction>(AppendFunction);
         AddFieldLogic<LimitField>(AppendLimit);
         AddFieldLogic<CastToken>(AppendCast);
+        AddFieldLogic<Aggregate>(AppendAggregate);
+    }
+
+    void AppendAggregate(Aggregate aggregate, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
+        string method = aggregate.Method;
+        if (method == "ANY")
+            method = "ANY_VALUE";
+        
+        preparator.AppendText(aggregate.Method).AppendText("(");
+        if(aggregate.Arguments.Length > 0) {
+            Append(aggregate.Arguments[0], preparator, descriptorgetter);
+            foreach(IDBField field in aggregate.Arguments.Skip(1)) {
+                preparator.AppendText(", ");
+                Append(field, preparator, descriptorgetter);
+            }
+        }
+
+        preparator.AppendText(")");
     }
 
     /// <inheritdoc />

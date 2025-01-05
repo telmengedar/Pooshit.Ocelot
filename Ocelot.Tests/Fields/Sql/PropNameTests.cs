@@ -21,70 +21,66 @@ namespace Pooshit.Ocelot.Tests.Fields.Sql {
         [TestCase("Class", false)]
         [TestCase("class", true)]
         public void ResolveExistingProperties(string property, bool ignorecase) {
-            Mock<IDBInfo> dbinfo = new Mock<IDBInfo>();
-            dbinfo.Setup(i => i.MaskColumn(It.IsAny<string>())).Returns<string>(c => c);
-            Mock<IDBClient> dbclient = new Mock<IDBClient>();
-            dbclient.SetupGet(c => c.DBInfo).Returns(dbinfo.Object);
+            IDBInfo dbInfo = new SQLiteInfo();
+            Mock<IDBClient> dbclient = new();
+            dbclient.SetupGet(c => c.DBInfo).Returns(dbInfo);
 
-            OperationPreparator preparator = new OperationPreparator();
+            OperationPreparator preparator = new();
             EntityDescriptor model = EntityDescriptor.Create(typeof(Keywords));
 
             Expression<Func<Keywords, bool>> predicate = (k) => DB.Property(typeof(Keywords), property, ignorecase) == DB.Property<Keywords>(property, ignorecase);
-            CriteriaVisitor.GetCriteriaText(predicate, type => model, dbinfo.Object, preparator);
+            CriteriaVisitor.GetCriteriaText(predicate, type => model, dbInfo, preparator);
 
             PreparedOperation operation = preparator.GetOperation(dbclient.Object, false);
-            Assert.AreEqual("class = class", operation.CommandText);
+            Assert.AreEqual("[class] = [class]", operation.CommandText);
         }
 
         [Test, Parallelizable]
         [TestCase("Bull", false)]
         [TestCase("bull", true)]
         public void ThrowOnNonExistingProperty(string property, bool ignorecase) {
-            Mock<IDBInfo> dbinfo = new Mock<IDBInfo>();
-            dbinfo.Setup(i => i.MaskColumn(It.IsAny<string>())).Returns<string>(c => c);
-            Mock<IDBClient> dbclient = new Mock<IDBClient>();
-            dbclient.SetupGet(c => c.DBInfo).Returns(dbinfo.Object);
+            IDBInfo dbInfo = new SQLiteInfo();
+            Mock<IDBClient> dbclient = new();
+            dbclient.SetupGet(c => c.DBInfo).Returns(dbInfo);
 
-            OperationPreparator preparator = new OperationPreparator();
+            OperationPreparator preparator = new();
             EntityDescriptor model = EntityDescriptor.Create(typeof(Keywords));
 
             Expression<Func<Keywords, bool>> predicate = (k) => DB.Property(typeof(Keywords), property, ignorecase) == DB.Property<Keywords>(property, ignorecase);
-            Assert.Throws<PropertyNotFoundException>(() => CriteriaVisitor.GetCriteriaText(predicate, type => model, dbinfo.Object, preparator));
+            Assert.Throws<PropertyNotFoundException>(() => CriteriaVisitor.GetCriteriaText(predicate, type => model, dbInfo, preparator));
         }
 
         [Test, Parallelizable]
         [TestCase("Class", false)]
         [TestCase("class", true)]
         public void ResolveExistingPropertiesUsingHelper(string property, bool ignorecase) {
-            Mock<IDBInfo> dbinfo = new Mock<IDBInfo>();
-            dbinfo.Setup(i => i.MaskColumn(It.IsAny<string>())).Returns<string>(c => c);
-            Mock<IDBClient> dbclient = new Mock<IDBClient>();
-            dbclient.SetupGet(c => c.DBInfo).Returns(dbinfo.Object);
+            IDBInfo dbInfo = new SQLiteInfo();
+            Mock<IDBClient> dbclient = new();
+            dbclient.SetupGet(c => c.DBInfo).Returns(dbInfo);
 
-            OperationPreparator preparator = new OperationPreparator();
+            OperationPreparator preparator = new();
             EntityDescriptor model = EntityDescriptor.Create(typeof(Keywords));
 
             Expression<Func<Keywords, bool>> predicate = (k) => Field.Property(typeof(Keywords), property, ignorecase) == Field.Property<Keywords>(property, ignorecase);
-            CriteriaVisitor.GetCriteriaText(predicate,type => model, dbinfo.Object, preparator);
+            CriteriaVisitor.GetCriteriaText(predicate,type => model, dbInfo, preparator);
 
             PreparedOperation operation = preparator.GetOperation(dbclient.Object, false);
-            Assert.AreEqual("class = class", operation.CommandText);
+            Assert.AreEqual("[class] = [class]", operation.CommandText);
         }
 
         [Test, Parallelizable]
         [TestCase("Bull", false)]
         [TestCase("bull", true)]
         public void ThrowOnNonExistingPropertyUsingHelper(string property, bool ignorecase) {
-            Mock<IDBInfo> dbinfo = new Mock<IDBInfo>();
-            dbinfo.Setup(i => i.MaskColumn(It.IsAny<string>())).Returns<string>(c => c);
-            Mock<IDBClient> dbclient = new Mock<IDBClient>();
-            dbclient.SetupGet(c => c.DBInfo).Returns(dbinfo.Object);
+            IDBInfo dbInfo = new SQLiteInfo();
+            Mock<IDBClient> dbclient = new();
+            dbclient.SetupGet(c => c.DBInfo).Returns(dbInfo);
 
-            OperationPreparator preparator = new OperationPreparator();
+            OperationPreparator preparator = new();
             EntityDescriptor model = EntityDescriptor.Create(typeof(Keywords));
 
             Expression<Func<Keywords, bool>> predicate = (k) => Field.Property(typeof(Keywords), property, ignorecase) == Field.Property<Keywords>(property, ignorecase);
-            Assert.Throws<PropertyNotFoundException>(() => CriteriaVisitor.GetCriteriaText(predicate,type => model, dbinfo.Object, preparator));
+            Assert.Throws<PropertyNotFoundException>(() => CriteriaVisitor.GetCriteriaText(predicate,type => model, dbInfo, preparator));
         }
     }
 }
