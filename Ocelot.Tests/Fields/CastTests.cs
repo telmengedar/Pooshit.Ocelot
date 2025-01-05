@@ -150,7 +150,7 @@ namespace Pooshit.Ocelot.Tests.Fields {
                     .ToArray();
 
             Assert.AreEqual(3, tuple.Length);
-            Assert.That(tuple.SequenceEqual(new[] {6, 3, 5}));
+            Assert.That(tuple.SequenceEqual([6, 3, 5]));
         }
     }
 }

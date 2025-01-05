@@ -296,6 +296,17 @@ public class PostgreInfoTests {
     }
 
     [Test, Parallelizable]
+    public void VisitDBAny() {
+        PostgreInfo info = new();
+
+        Expression<Func<ActiveData, bool>> predicate = d => d.Amount == DB.Any(new[]{d.Amount + 7.8m, -d.Amount}).Decimal;
+        OperationPreparator preparator = new();
+        CriteriaVisitor visitor = new(EntityDescriptor.Create, preparator, info, false);
+        visitor.Visit(predicate);
+        Assert.That(preparator.Tokens.Any(t=>t.GetText(info)=="ANY_VALUE("));
+    }
+
+    [Test, Parallelizable]
     public void VisitDBLeast() {
         PostgreInfo info = new();
 

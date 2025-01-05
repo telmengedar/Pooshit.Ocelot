@@ -106,7 +106,7 @@ public class PostgreInfo : DBInfo {
         if (method == "ANY")
             method = "ANY_VALUE";
         
-        preparator.AppendText(aggregate.Method).AppendText("(");
+        preparator.AppendText(method).AppendText("(");
         if(aggregate.Arguments.Length > 0) {
             Append(aggregate.Arguments[0], preparator, descriptorgetter);
             foreach(IDBField field in aggregate.Arguments.Skip(1)) {

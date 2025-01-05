@@ -83,10 +83,7 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
         /// <param name="tablealias">alias to use when resolving properties</param>
         /// <returns>this preparator for fluent behavior</returns>
         public IOperationPreparator AppendField(IDBField field, IDBInfo dbinfo, Func<Type, EntityDescriptor> modelinfo, string tablealias = null) {
-            if(field is ISqlToken sqlfield)
-                sqlfield.ToSql(dbinfo, this, modelinfo, tablealias);
-            else
-                dbinfo.Append(field, this, modelinfo, tablealias);
+            dbinfo.Append(field, this, modelinfo, tablealias);
             return this;
         }
 

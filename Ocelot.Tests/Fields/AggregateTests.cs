@@ -56,6 +56,27 @@ public class AggregateTests {
     }
 
     [Test]
+    public void LoadAnyFromGroup() {
+	    IDBClient dbclient = TestData.CreateDatabaseAccess();
+	    EntityManager entitymanager = new(dbclient);
+
+	    entitymanager.UpdateSchema<ValueModel>();
+
+	    entitymanager.InsertEntities<ValueModel>()
+	                 .Execute(
+	                          new ValueModel { Integer = 5, String = "haha" },
+	                          new ValueModel { String = "haha" },
+	                          new ValueModel { Integer = 11, String = "haha" },
+	                          new ValueModel { Integer = 3, String = "haha" },
+	                          new ValueModel { Integer = 7, String = "haha" });
+
+	    string[] result = entitymanager.Load<ValueModel>(DB.Any(DB.Property<ValueModel>(v => v.String)))
+	                                   .GroupBy(v => v.Integer)
+	                                   .ExecuteSet<string>()
+	                                   .ToArray();
+    }
+
+    [Test]
     public void TestSumExpressions()
     {
         IDBClient dbclient = TestData.CreateDatabaseAccess();

@@ -162,8 +162,8 @@ public static class DB {
     /// </summary>
     /// <param name="token">token identifying values of which to get maximum</param>
     /// <returns>token to be used in statements</returns>
-    public static ISqlToken Any(ISqlToken token) {
-        return new AggregateFunction("ANY", token);
+    public static IDBField Any(ISqlToken token) {
+        return new Aggregate("ANY", token);
     }
 
     /// <summary>
