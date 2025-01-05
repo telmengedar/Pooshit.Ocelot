@@ -301,6 +301,11 @@ public abstract class DBInfo : IDBInfo {
                         visitor.Visit(methodCall.Arguments[0]);
                         operation.AppendText(")");
                         break;
+                    case "Any":
+                        operation.AppendText("MIN(");
+                        visitor.Visit(methodCall.Arguments[0]);
+                        operation.AppendText(")");
+                    break;
                     case "Floor":
                         operation.AppendText("FLOOR(");
                         visitor.Visit(methodCall.Arguments[0]);

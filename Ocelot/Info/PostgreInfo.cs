@@ -192,6 +192,11 @@ public class PostgreInfo : DBInfo {
                         visitor.Visit(methodCall.Arguments[0]);
                         operation.AppendText(")");
                         return node;
+                    case "Any":
+                        operation.AppendText("ANY_VALUE(");
+                        visitor.Visit(methodCall.Arguments[0]);
+                        operation.AppendText(")");
+                    break;
                 }
             }
         }

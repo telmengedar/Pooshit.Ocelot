@@ -160,6 +160,24 @@ public static class DB {
     /// <summary>
     /// get a minimum of a series of values
     /// </summary>
+    /// <param name="token">token identifying values of which to get maximum</param>
+    /// <returns>token to be used in statements</returns>
+    public static ISqlToken Any(ISqlToken token) {
+        return new AggregateFunction("ANY", token);
+    }
+
+    /// <summary>
+    /// get a minimum of a series of values
+    /// </summary>
+    /// <param name="values">values of which to get maximum</param>
+    /// <returns>token to be used in statements</returns>
+    public static ISqlToken Any(object values) {
+        throw new NotImplementedException("Only to be used in expressions");
+    }
+
+    /// <summary>
+    /// get a minimum of a series of values
+    /// </summary>
     /// <param name="values">values of which to get maximum</param>
     /// <returns>token to be used in statements</returns>
     public static ISqlToken Greatest(object values) {
