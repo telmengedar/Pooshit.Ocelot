@@ -561,6 +561,24 @@ public static class DB {
     }
 
     /// <summary>
+    /// references a field of the statement
+    /// </summary>
+    /// <param name="name">name of field</param>
+    /// <returns>token to be used in statements</returns>
+    public static FieldToken Field(string name) {
+        return new(name);
+    }
+
+    /// <summary>
+    /// references a field of the statement
+    /// </summary>
+    /// <param name="field">name of field</param>
+    /// <returns>token to be used in statements</returns>
+    public static FieldToken Field(object field) {
+        throw new NotImplementedException("Only to be used in expressions");
+    }
+
+    /// <summary>
     /// casts data to another type
     /// </summary>
     /// <param name="token">value to cast</param>

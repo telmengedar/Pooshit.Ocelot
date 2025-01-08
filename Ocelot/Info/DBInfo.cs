@@ -39,8 +39,9 @@ public abstract class DBInfo : IDBInfo {
         AddFieldLogic<ConstantValue>(AppendConstant);
         AddFieldLogic<EntityField>(AppendEntityField);
         AddFieldLogic<Aggregate>(AppendAggregate);
+        AddFieldLogic<FieldToken>(AppendFieldToken);
     }
-
+    
     /// <summary>
     /// adds a logic to use when generating code for a database field
     /// </summary>
@@ -48,6 +49,10 @@ public abstract class DBInfo : IDBInfo {
     /// <param name="logic">logic to use when generating code</param>
     protected void AddFieldLogic<T>(Action<T, IOperationPreparator, Func<Type, EntityDescriptor>, string> logic) {
         fieldlogic[typeof(T)] = (field, preparator, getter, alias) => logic((T)field, preparator, getter, alias);
+    }
+
+    void AppendFieldToken(FieldToken field, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorGetter, string tableAlias) {
+        preparator.AppendText(field.Field);
     }
 
     void AppendAggregate(Aggregate aggregate, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
@@ -309,6 +314,9 @@ public abstract class DBInfo : IDBInfo {
                         operation.AppendText("MIN(");
                         visitor.Visit(methodCall.Arguments[0]);
                         operation.AppendText(")");
+                    break;
+                    case "Field":
+                        operation.AppendText(visitor.GetHost(methodCall.Arguments[0]) as string);
                     break;
                     case "Floor":
                         operation.AppendText("FLOOR(");

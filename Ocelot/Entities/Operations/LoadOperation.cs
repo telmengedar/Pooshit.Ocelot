@@ -92,6 +92,7 @@ public class LoadOperation<T> : IDatabaseOperation {
     bool distinct;
     string alias;
     readonly List<IDatabaseOperation> unions= [];
+    IDatabaseOperation from;
 
     /// <summary>
     /// creates a new <see cref="LoadOperation{T}"/>
@@ -562,6 +563,16 @@ public class LoadOperation<T> : IDatabaseOperation {
     }
 
     /// <summary>
+    /// specifies an operation (subselect) to load data from
+    /// </summary>
+    /// <param name="operation">operation to load data from</param>
+    /// <returns>this operation for fluent operations</returns>
+    public LoadOperation<T> From(IDatabaseOperation operation) {
+        from = operation;
+        return this;
+    }
+
+    /// <summary>
     /// specifies fields to be loaded
     /// </summary>
     /// <param name="fields">fields to be specified</param>
@@ -754,10 +765,10 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// </summary>
     /// <typeparam name="TJoin">type to join</typeparam>
     /// <param name="criteria">join criteria</param>
-    /// <param name="alias">alias to use</param>
+    /// <param name="joinAlias">alias to use</param>
     /// <returns>this load operation for fluent behavior</returns>
-    public LoadOperation<T, TJoin> Join<TJoin>(Expression<Func<T, TJoin, bool>> criteria, string alias = null) {
-        joinoperations.Add(new(typeof(TJoin), criteria, JoinOp.Inner, null, alias));
+    public LoadOperation<T, TJoin> Join<TJoin>(Expression<Func<T, TJoin, bool>> criteria, string joinAlias = null) {
+        joinoperations.Add(new(typeof(TJoin), criteria, JoinOp.Inner, null, joinAlias));
         return new(this);
     }
 
@@ -766,10 +777,10 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// </summary>
     /// <param name="operation">operation to join</param>
     /// <param name="criteria">join criteria</param>
-    /// <param name="alias">alias to use</param>
+    /// <param name="joinAlias">alias to use</param>
     /// <returns>this load operation for fluent behavior</returns>
-    public LoadOperation<T> Join(IDatabaseOperation operation, Expression<Func<T, bool>> criteria, string alias = null) {
-        joinoperations.Add(new(operation, criteria, JoinOp.Inner, null, alias));
+    public LoadOperation<T> Join(IDatabaseOperation operation, Expression<Func<T, bool>> criteria, string joinAlias = null) {
+        joinoperations.Add(new(operation, criteria, JoinOp.Inner, null, joinAlias));
         return new(this);
     }
 
@@ -778,10 +789,10 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// </summary>
     /// <typeparam name="TJoin">type to join</typeparam>
     /// <param name="criteria">join criteria</param>
-    /// <param name="alias">alias to use</param>
+    /// <param name="joinAlias">alias to use</param>
     /// <returns>this load operation for fluent behavior</returns>
-    public LoadOperation<T, TJoin> LeftJoin<TJoin>(Expression<Func<T, TJoin, bool>> criteria, string alias = null) {
-        joinoperations.Add(new(typeof(TJoin), criteria, JoinOp.Left, null, alias));
+    public LoadOperation<T, TJoin> LeftJoin<TJoin>(Expression<Func<T, TJoin, bool>> criteria, string joinAlias = null) {
+        joinoperations.Add(new(typeof(TJoin), criteria, JoinOp.Left, null, joinAlias));
         return new(this);
     }
 
@@ -790,10 +801,10 @@ public class LoadOperation<T> : IDatabaseOperation {
     /// </summary>
     /// <param name="operation">operation to join</param>
     /// <param name="criteria">join criteria</param>
-    /// <param name="alias">alias to use</param>
+    /// <param name="joinAlias">alias to use</param>
     /// <returns>this load operation for fluent behavior</returns>
-    public LoadOperation<T> LeftJoin(IDatabaseOperation operation, Expression<Func<T, bool>> criteria, string alias = null) {
-        joinoperations.Add(new(operation, criteria, JoinOp.Left, null, alias));
+    public LoadOperation<T> LeftJoin(IDatabaseOperation operation, Expression<Func<T, bool>> criteria, string joinAlias = null) {
+        joinoperations.Add(new(operation, criteria, JoinOp.Left, null, joinAlias));
         return new(this);
     }
 
@@ -829,7 +840,12 @@ public class LoadOperation<T> : IDatabaseOperation {
             preparator.AppendField(criteria, dbclient.DBInfo, descriptorgetter, tablealias);
         }
 
-        if(descriptor != null)
+        if (from != null) {
+            preparator.AppendText("FROM (");
+            from.Prepare(preparator);
+            preparator.AppendText(")");
+        }
+        else if(descriptor != null)
             preparator.AppendText("FROM").AppendText(descriptor.TableName);
 
         if(!string.IsNullOrEmpty(tablealias))
@@ -905,7 +921,7 @@ public class LoadOperation<T> : IDatabaseOperation {
 /// <summary>
 /// operation used to load values of an entity
 /// </summary>
-public class LoadOperation : IDatabaseOperation {
+public class LoadOperation : ILoadOperation {
     readonly IDBClient dbclient;
     readonly Func<Type, EntityDescriptor> descriptorgetter;
     readonly List<IDBField> columns = [];
@@ -998,310 +1014,157 @@ public class LoadOperation : IDatabaseOperation {
         from = operation;
         return this;
     }
-    
-    /// <summary>
-    /// loads entities using the operation
-    /// </summary>
-    /// <returns></returns>
+
+    /// <inheritdoc />
     public Clients.Tables.DataTable Execute(params object[] parameters) {
         return Prepare(false).Execute(parameters);
     }
 
-    /// <summary>
-    /// loads entities using the operation
-    /// </summary>
-    /// <returns></returns>
+    /// <inheritdoc />
     public Clients.Tables.DataTable Execute(Transaction transaction, params object[] parameters) {
         return Prepare(false).Execute(transaction, parameters);
     }
 
-    /// <summary>
-    /// loads entities using the operation
-    /// </summary>
-    /// <returns></returns>
+    /// <inheritdoc />
     public Task<Clients.Tables.DataTable> ExecuteAsync(params object[] parameters) {
         return Prepare(false).ExecuteAsync(parameters);
     }
 
-    /// <summary>
-    /// loads entities using the operation
-    /// </summary>
-    /// <returns></returns>
+    /// <inheritdoc />
     public Task<Clients.Tables.DataTable> ExecuteAsync(Transaction transaction, params object[] parameters) {
         return Prepare(false).ExecuteAsync(transaction, parameters);
     }
 
-    /// <summary>
-    /// loads a value using the operation
-    /// </summary>
-    /// <typeparam name="TScalar">type of scalar to return</typeparam>
-    /// <returns>resulting scalar of operation</returns>
+    /// <inheritdoc />
     public TScalar ExecuteScalar<TScalar>(params object[] parameters) {
         return Prepare(false).ExecuteScalar<TScalar>(parameters);
     }
 
-    /// <summary>
-    /// loads a value using the operation
-    /// </summary>
-    /// <typeparam name="TScalar">type of scalar to return</typeparam>
-    /// <param name="transaction">transaction to use (optional)</param>
-    /// <param name="parameters">parameters for command</param>
-    /// <returns>resulting scalar of operation</returns>
+    /// <inheritdoc />
     public TScalar ExecuteScalar<TScalar>(Transaction transaction, params object[] parameters) {
         return Prepare(false).ExecuteScalar<TScalar>(transaction, parameters);
     }
 
-    /// <summary>
-    /// loads a value using the operation
-    /// </summary>
-    /// <typeparam name="TScalar">type of scalar to return</typeparam>
-    /// <returns>resulting scalar of operation</returns>
+    /// <inheritdoc />
     public Task<TScalar> ExecuteScalarAsync<TScalar>(params object[] parameters) {
         return Prepare(false).ExecuteScalarAsync<TScalar>(parameters);
     }
 
-    /// <summary>
-    /// loads a value using the operation
-    /// </summary>
-    /// <typeparam name="TScalar">type of scalar to return</typeparam>
-    /// <param name="transaction">transaction to use (optional)</param>
-    /// <param name="parameters">parameters for command</param>
-    /// <returns>resulting scalar of operation</returns>
+    /// <inheritdoc />
     public Task<TScalar> ExecuteScalarAsync<TScalar>(Transaction transaction, params object[] parameters) {
         return Prepare(false).ExecuteScalarAsync<TScalar>(transaction, parameters);
     }
 
-    /// <summary>
-    /// loads several values using the operation
-    /// </summary>
-    /// <typeparam name="TScalar">type of resulting set values</typeparam>
-    /// <returns>resultset of operation</returns>
+    /// <inheritdoc />
     public IEnumerable<TScalar> ExecuteSet<TScalar>(params object[] parameters) {
         return Prepare(false).ExecuteSet<TScalar>(parameters);
     }
 
-    /// <summary>
-    /// loads several values using the operation
-    /// </summary>
-    /// <typeparam name="TScalar">type of resulting set values</typeparam>
-    /// <param name="transaction">transaction to use (optional)</param>
-    /// <param name="parameters">parameters for command</param>
-    /// <returns>resultset of operation</returns>
+    /// <inheritdoc />
     public IEnumerable<TScalar> ExecuteSet<TScalar>(Transaction transaction, params object[] parameters) {
         return Prepare(false).ExecuteSet<TScalar>(transaction, parameters);
     }
 
-    /// <summary>
-    /// loads several values using the operation
-    /// </summary>
-    /// <typeparam name="TScalar">type of resulting set values</typeparam>
-    /// <returns>resultset of operation</returns>
+    /// <inheritdoc />
     public IAsyncEnumerable<TScalar> ExecuteSetAsync<TScalar>(params object[] parameters) {
         return Prepare(false).ExecuteSetAsync<TScalar>(parameters);
     }
 
-    /// <summary>
-    /// loads several values using the operation
-    /// </summary>
-    /// <typeparam name="TScalar">type of resulting set values</typeparam>
-    /// <param name="transaction">transaction to use (optional)</param>
-    /// <param name="parameters">parameters for command</param>
-    /// <returns>resultset of operation</returns>
+    /// <inheritdoc />
     public IAsyncEnumerable<TScalar> ExecuteSetAsync<TScalar>(Transaction transaction, params object[] parameters) {
         return Prepare(false).ExecuteSetAsync<TScalar>(transaction, parameters);
     }
 
-    /// <summary>
-    /// executes a query and stores the result in a custom result type
-    /// </summary>
-    /// <typeparam name="TType">type of result</typeparam>
-    /// <param name="assignments">action used to assign values</param>
-    /// <param name="parameters">parameters for command</param>
-    /// <returns>enumeration of result types</returns>
+    /// <inheritdoc />
     public IEnumerable<TType> ExecuteTypes<TType>(Func<Row, TType> assignments, params object[] parameters) {
         return Prepare(false).ExecuteTypes(assignments, parameters);
     }
 
-    /// <summary>
-    /// executes a query and stores the result in a custom result type
-    /// </summary>
-    /// <typeparam name="TType">type of result</typeparam>
-    /// <param name="transaction">transaction to use for operation execution</param>
-    /// <param name="assignments">action used to assign values</param>
-    /// <param name="parameters">parameters for command</param>
-    /// <returns>enumeration of result types</returns>
+    /// <inheritdoc />
     public IEnumerable<TType> ExecuteTypes<TType>(Func<Row, TType> assignments, Transaction transaction, params object[] parameters) {
         return Prepare(false).ExecuteTypes(transaction, assignments, parameters);
     }
 
-    /// <summary>
-    /// executes a query and stores the result in a custom result type
-    /// </summary>
-    /// <typeparam name="TType">type of result</typeparam>
-    /// <param name="assignments">action used to assign values</param>
-    /// <param name="parameters">parameters for command</param>
-    /// <returns>enumeration of result types</returns>
+    /// <inheritdoc />
     public Task<TType> ExecuteTypeAsync<TType>(Func<Row, TType> assignments, params object[] parameters) {
         return Prepare(false).ExecuteTypeAsync(assignments, parameters);
     }
 
-    /// <summary>
-    /// executes a query and stores the result in a custom result type
-    /// </summary>
-    /// <typeparam name="TType">type of result</typeparam>
-    /// <param name="transaction">transaction to use for operation execution</param>
-    /// <param name="assignments">action used to assign values</param>
-    /// <param name="parameters">parameters for command</param>
-    /// <returns>enumeration of result types</returns>
+    /// <inheritdoc />
     public Task<TType> ExecuteTypeAsync<TType>(Func<Row, TType> assignments, Transaction transaction, params object[] parameters) {
         return Prepare(false).ExecuteTypeAsync(transaction, assignments, parameters);
     }
 
-    /// <summary>
-    /// executes a query and stores the result in a custom result type
-    /// </summary>
-    /// <typeparam name="TType">type of result</typeparam>
-    /// <param name="assignments">action used to assign values</param>
-    /// <param name="parameters">parameters for command</param>
-    /// <returns>enumeration of result types</returns>
+    /// <inheritdoc />
     public IAsyncEnumerable<TType> ExecuteTypesAsync<TType>(Func<Row, TType> assignments, params object[] parameters) {
         return Prepare(false).ExecuteTypesAsync(assignments, parameters);
     }
 
-    /// <summary>
-    /// executes a query and stores the result in a custom result type
-    /// </summary>
-    /// <typeparam name="TType">type of result</typeparam>
-    /// <param name="transaction">transaction to use for operation execution</param>
-    /// <param name="assignments">action used to assign values</param>
-    /// <param name="parameters">parameters for command</param>
-    /// <returns>enumeration of result types</returns>
+    /// <inheritdoc />
     public IAsyncEnumerable<TType> ExecuteTypesAsync<TType>(Func<Row, TType> assignments, Transaction transaction, params object[] parameters) {
         return Prepare(false).ExecuteTypesAsync(transaction, assignments, parameters);
     }
 
-    /// <summary>
-    /// executes the operation and creates entities from the result
-    /// </summary>
-    /// <typeparam name="TEntity">type of entities to create</typeparam>
-    /// <param name="transaction">transaction to use</param>
-    /// <param name="parameters">parameters for execution</param>
-    /// <returns>created entities</returns>
+    /// <inheritdoc />
     public IEnumerable<TEntity> ExecuteEntities<TEntity>(Transaction transaction, params object[] parameters) {
         return Prepare(false).ExecuteEntities<TEntity>(transaction, parameters);
     }
 
-    /// <summary>
-    /// executes the operation and creates entities from the result
-    /// </summary>
-    /// <typeparam name="TEntity">type of entities to create</typeparam>
-    /// <param name="transaction">transaction to use</param>
-    /// <param name="parameters">parameters for execution</param>
-    /// <returns>created entities</returns>
+    /// <inheritdoc />
     public TEntity ExecuteEntity<TEntity>(Transaction transaction, params object[] parameters) {
         if (LimitStatement?.Limit == null)
             Limit(1);
         return Prepare(false).ExecuteEntity<TEntity>(transaction, parameters);
     }
 
-    /// <summary>
-    /// executes the operation and creates entities from the result
-    /// </summary>
-    /// <typeparam name="TEntity">type of entities to create</typeparam>
-    /// <param name="transaction">transaction to use</param>
-    /// <param name="parameters">parameters for execution</param>
-    /// <returns>created entities</returns>
+    /// <inheritdoc />
     public Task<TEntity> ExecuteEntityAsync<TEntity>(Transaction transaction, params object[] parameters) {
         if (LimitStatement?.Limit == null)
             Limit(1);
         return Prepare(false).ExecuteEntityAsync<TEntity>(transaction, parameters);
     }
 
-    /// <summary>
-    /// executes the operation and creates entities from the result
-    /// </summary>
-    /// <typeparam name="TEntity">type of entities to create</typeparam>
-    /// <param name="transaction">transaction to use</param>
-    /// <param name="parameters">parameters for execution</param>
-    /// <returns>created entities</returns>
+    /// <inheritdoc />
     public IAsyncEnumerable<TEntity> ExecuteEntitiesAsync<TEntity>(Transaction transaction, params object[] parameters) {
         return Prepare(false).ExecuteEntitiesAsync<TEntity>(transaction, parameters);
     }
 
-    /// <summary>
-    /// executes the operation and creates entities from the result
-    /// </summary>
-    /// <typeparam name="TEntity">type of entities to create</typeparam>
-    /// <param name="parameters">parameters for execution</param>
-    /// <returns>created entities</returns>
+    /// <inheritdoc />
     public IAsyncEnumerable<TEntity> ExecuteEntitiesAsync<TEntity>(params object[] parameters) {
         return ExecuteEntitiesAsync<TEntity>(null, parameters);
     }
 
-    /// <summary>
-    /// executes the operation and creates entities from the result
-    /// </summary>
-    /// <typeparam name="TEntity">type of entities to create</typeparam>
-    /// <param name="parameters">parameters for execution</param>
-    /// <returns>created entities</returns>
+    /// <inheritdoc />
     public IEnumerable<TEntity> ExecuteEntities<TEntity>(params object[] parameters) {
         return ExecuteEntities<TEntity>(null, parameters);
     }
 
-    /// <summary>
-    /// executes the operation and creates entities from the result
-    /// </summary>
-    /// <typeparam name="TEntity">type of entities to create</typeparam>
-    /// <param name="parameters">parameters for execution</param>
-    /// <returns>created entities</returns>
+    /// <inheritdoc />
     public Task<TEntity> ExecuteEntityAsync<TEntity>(params object[] parameters) {
         return ExecuteEntityAsync<TEntity>(null, parameters);
     }
 
-    /// <summary>
-    /// executes the operation and creates entities from the result
-    /// </summary>
-    /// <typeparam name="TEntity">type of entities to create</typeparam>
-    /// <param name="parameters">parameters for execution</param>
-    /// <returns>created entities</returns>
+    /// <inheritdoc />
     public TEntity ExecuteEntity<TEntity>(params object[] parameters) {
         return ExecuteEntity<TEntity>(null, parameters);
     }
 
-    /// <summary>
-    /// executes the operation returning a reader
-    /// </summary>
-    /// <param name="transaction">transaction to use</param>
-    /// <param name="parameters">parameters for operation</param>
-    /// <returns>reader to use to read command result</returns>
+    /// <inheritdoc />
     public IDataReader ExecuteReader(Transaction transaction, params object[] parameters) {
         return Prepare(false).ExecuteReader(transaction, parameters);
     }
 
-    /// <summary>
-    /// executes the operation returning a reader
-    /// </summary>
-    /// <param name="parameters">parameters for operation</param>
-    /// <returns>reader to use to read command result</returns>
+    /// <inheritdoc />
     public IDataReader ExecuteReader(params object[] parameters) {
         return ExecuteReader(null, parameters);
     }
 
-    /// <summary>
-    /// executes the operation returning a reader
-    /// </summary>
-    /// <param name="transaction">transaction to use</param>
-    /// <param name="parameters">parameters for operation</param>
-    /// <returns>reader to use to read command result</returns>
+    /// <inheritdoc />
     public Task<Reader> ExecuteReaderAsync(Transaction transaction, params object[] parameters) {
         return Prepare(false).ExecuteReaderAsync(transaction, parameters);
     }
 
-    /// <summary>
-    /// executes the operation returning a reader
-    /// </summary>
-    /// <param name="parameters">parameters for operation</param>
-    /// <returns>reader to use to read command result</returns>
+    /// <inheritdoc />
     public Task<Reader> ExecuteReaderAsync(params object[] parameters) {
         return ExecuteReaderAsync(null, parameters);
     }
@@ -1312,113 +1175,67 @@ public class LoadOperation : IDatabaseOperation {
         return preparator.GetLoadValuesOperation(dbclient, descriptorgetter, dbPrepare);
     }
 
-    /// <summary>
-    /// prepares the operation for execution
-    /// </summary>
-    /// <returns>operation used to load data</returns>
+    /// <inheritdoc />
     public PreparedLoadOperation Prepare() {
         return Prepare(true);
     }
 
-    /// <summary>
-    /// specifies fields to be loaded
-    /// </summary>
-    /// <param name="fields">fields to be specified</param>
-    /// <returns>this operation for fluent behavior</returns>
-    public LoadOperation Fields(params IDBField[] fields) {
+    /// <inheritdoc />
+    public ILoadOperation Fields(params IDBField[] fields) {
         columns.AddRange(fields);
         return this;
     }
 
-    /// <summary>
-    /// specifies fields to be loaded
-    /// </summary>
-    /// <param name="fields">fields to be specified</param>
-    /// <returns>this operation for fluent behavior</returns>
-    public LoadOperation Fields(params Expression<Func<object>>[] fields) {
+    /// <inheritdoc />
+    public ILoadOperation Fields(params Expression<Func<object>>[] fields) {
         columns.AddRange(fields.Select(EntityField.Create));
         return this;
     }
 
-    /// <summary>
-    /// specifies fields to be loaded
-    /// </summary>
-    /// <param name="fields">fields to be specified</param>
-    /// <returns>this operation for fluent behavior</returns>
-    public LoadOperation Fields<TEntity>(params Expression<Func<TEntity, object>>[] fields) {
+    /// <inheritdoc />
+    public ILoadOperation Fields<TEntity>(params Expression<Func<TEntity, object>>[] fields) {
         columns.AddRange(fields.Select(EntityField.Create));
         return this;
     }
 
-    /// <summary>
-    /// specifies fields to be loaded
-    /// </summary>
-    /// <param name="entityAlias">alias of table to load fields from</param>
-    /// <param name="fields">fields to be specified</param>
-    /// <returns>this operation for fluent behavior</returns>
-    public LoadOperation Fields<TEntity>(string entityAlias, params Expression<Func<TEntity, object>>[] fields) {
+    /// <inheritdoc />
+    public ILoadOperation Fields<TEntity>(string entityAlias, params Expression<Func<TEntity, object>>[] fields) {
         columns.AddRange(fields.Select(f => DB.Property(f, entityAlias)));
         return this;
     }
 
-    /// <summary>
-    /// provides an alias to use for the operation
-    /// </summary>
-    /// <remarks>
-    /// necessary to prevent conflicts if the loaded type is used multiple times in a complex query
-    /// </remarks>
-    /// <param name="tablealias">name of alias to use</param>
-    /// <returns>this operation for fluent behavior</returns>
-    public LoadOperation Alias(string tablealias) {
+    /// <inheritdoc />
+    public ILoadOperation Alias(string tablealias) {
         alias = tablealias;
         return this;
     }
 
-    /// <summary>
-    /// executes a union with another statement
-    /// </summary>
-    /// <param name="operation">operation to use as union</param>
-    /// <returns>this operation for fluent behavior</returns>
-    public LoadOperation Union(IDatabaseOperation operation) {
+    /// <inheritdoc />
+    public ILoadOperation Union(IDatabaseOperation operation) {
         unions.Add(operation);
         return this;
     }
 
-    /// <summary>
-    /// specifies to only load rows with distinct values
-    /// </summary>
-    /// <returns></returns>
-    public LoadOperation Distinct() {
+    /// <inheritdoc />
+    public ILoadOperation Distinct() {
         distinct = true;
         return this;
     }
 
-    /// <summary>
-    /// specifies criterias for the operation
-    /// </summary>
-    /// <param name="criterias"></param>
-    /// <returns></returns>
-    public LoadOperation Where(Expression<Func<bool>> criterias) {
+    /// <inheritdoc />
+    public ILoadOperation Where(Expression<Func<bool>> criterias) {
         Criterias = criterias;
         return this;
     }
 
-    /// <summary>
-    /// specifies having criterias for the operation
-    /// </summary>
-    /// <param name="criterias"></param>
-    /// <returns></returns>
-    public LoadOperation Having(Expression<Func<bool>> criterias) {
+    /// <inheritdoc />
+    public ILoadOperation Having(Expression<Func<bool>> criterias) {
         Havings = criterias;
         return this;
     }
 
-    /// <summary>
-    /// specifies an order
-    /// </summary>
-    /// <param name="fields"></param>
-    /// <returns></returns>
-    public LoadOperation OrderBy(params OrderByCriteria[] fields) {
+    /// <inheritdoc />
+    public ILoadOperation OrderBy(params OrderByCriteria[] fields) {
         if (fields.Length == 0)
             throw new InvalidOperationException("at least one criteria has to be specified");
 
@@ -1426,32 +1243,20 @@ public class LoadOperation : IDatabaseOperation {
         return this;
     }
 
-    /// <summary>
-    /// specifies sort criterias
-    /// </summary>
-    /// <param name="fields">fields to order the result set by</param>
-    /// <returns>this operation for fluent behavior</returns>
-    public LoadOperation OrderBy(params Expression<Func<object>>[] fields) {
+    /// <inheritdoc />
+    public ILoadOperation OrderBy(params Expression<Func<object>>[] fields) {
         OrderByCriteria[] criteriafields = fields.Select(f => new OrderByCriteria(EntityField.Create(f))).ToArray();
         return OrderBy(criteriafields);
     }
 
-    /// <summary>
-    /// specifies sort criterias
-    /// </summary>
-    /// <param name="fields">fields to order the result set by</param>
-    /// <returns>this operation for fluent behavior</returns>
-    public LoadOperation OrderByDesc(params Expression<Func<object>>[] fields) {
+    /// <inheritdoc />
+    public ILoadOperation OrderByDesc(params Expression<Func<object>>[] fields) {
         OrderByCriteria[] criteriafields = fields.Select(f => new OrderByCriteria(EntityField.Create(f), false)).ToArray();
         return OrderBy(criteriafields);
     }
 
-    /// <summary>
-    /// groups the results by the specified fields
-    /// </summary>
-    /// <param name="fields"></param>
-    /// <returns></returns>
-    public LoadOperation GroupBy(params IDBField[] fields) {
+    /// <inheritdoc />
+    public ILoadOperation GroupBy(params IDBField[] fields) {
         if (fields.Length == 0)
             throw new InvalidOperationException("at least one group criteria has to be specified");
 
@@ -1459,101 +1264,61 @@ public class LoadOperation : IDatabaseOperation {
         return this;
     }
 
-    /// <summary>
-    /// groups the results by the specified fields
-    /// </summary>
-    /// <param name="fields">fields by which to group operation</param>
-    /// <returns>operation for fluid behavior</returns>
-    public LoadOperation GroupBy(params Expression<Func<object>>[] fields) {
+    /// <inheritdoc />
+    public ILoadOperation GroupBy(params Expression<Func<object>>[] fields) {
         return GroupBy(fields.Select(EntityField.Create).Cast<IDBField>().ToArray());
     }
 
-    /// <summary>
-    /// specifies a limited number of rows to return
-    /// </summary>
-    /// <param name="limit">number of rows to return</param>
-    public LoadOperation Limit(long limit) {
+    /// <inheritdoc />
+    public ILoadOperation Limit(long limit) {
         LimitStatement ??= new();
         LimitStatement.Limit = DB.Constant(limit);
         return this;
     }
 
-    /// <summary>
-    /// specifies a limited number of rows to return
-    /// </summary>
-    /// <param name="limit">number of rows to return</param>
-    public LoadOperation Limit(ISqlToken limit) {
+    /// <inheritdoc />
+    public ILoadOperation Limit(ISqlToken limit) {
         LimitStatement ??= new();
         LimitStatement.Limit = limit;
         return this;
     }
 
-    /// <summary>
-    /// specifies an offset from which on to return result rows
-    /// </summary>
-    /// <param name="offset">number of rows to skip</param>
-    public LoadOperation Offset(long offset) {
+    /// <inheritdoc />
+    public ILoadOperation Offset(long offset) {
         LimitStatement ??= new();
         LimitStatement.Offset = new ConstantValue(offset);
         return this;
     }
 
-    /// <summary>
-    /// specifies an offset from which on to return result rows
-    /// </summary>
-    /// <param name="offset">number of rows to skip</param>
-    public LoadOperation Offset(ISqlToken offset) {
+    /// <inheritdoc />
+    public ILoadOperation Offset(ISqlToken offset) {
         LimitStatement ??= new();
         LimitStatement.Offset = offset;
         return this;
     }
 
-    /// <summary>
-    /// joins another type to the operation
-    /// </summary>
-    /// <typeparam name="TJoin">type to join</typeparam>
-    /// <param name="criteria">join criteria</param>
-    /// <param name="alias">alias to use</param>
-    /// <returns>this load operation for fluent behavior</returns>
-    public LoadOperation Join<TJoin>(Expression<Func<TJoin, bool>> criteria, string alias = null) {
-        joinoperations.Add(new(typeof(TJoin), criteria, JoinOp.Inner, null, alias));
-        return new(this);
+    /// <inheritdoc />
+    public ILoadOperation Join<TJoin>(Expression<Func<TJoin, bool>> criteria, string joinAlias = null) {
+        joinoperations.Add(new(typeof(TJoin), criteria, JoinOp.Inner, null, joinAlias));
+        return new LoadOperation(this);
     }
 
-    /// <summary>
-    /// joins another type to the operation
-    /// </summary>
-    /// <param name="operation">operation to join</param>
-    /// <param name="criteria">join criteria</param>
-    /// <param name="alias">alias to use</param>
-    /// <returns>this load operation for fluent behavior</returns>
-    public LoadOperation Join(IDatabaseOperation operation, Expression<Func<bool>> criteria, string alias = null) {
-        joinoperations.Add(new(operation, criteria, JoinOp.Inner, null, alias));
-        return new(this);
+    /// <inheritdoc />
+    public ILoadOperation Join(IDatabaseOperation operation, Expression<Func<bool>> criteria, string joinAlias = null) {
+        joinoperations.Add(new(operation, criteria, JoinOp.Inner, null, joinAlias));
+        return new LoadOperation(this);
     }
 
-    /// <summary>
-    /// joins another type to the operation
-    /// </summary>
-    /// <typeparam name="TJoin">type to join</typeparam>
-    /// <param name="criteria">join criteria</param>
-    /// <param name="alias">alias to use</param>
-    /// <returns>this load operation for fluent behavior</returns>
-    public LoadOperation LeftJoin<TJoin>(Expression<Func<TJoin, bool>> criteria, string alias = null) {
-        joinoperations.Add(new(typeof(TJoin), criteria, JoinOp.Left, null, alias));
-        return new(this);
+    /// <inheritdoc />
+    public ILoadOperation LeftJoin<TJoin>(Expression<Func<TJoin, bool>> criteria, string joinAlias = null) {
+        joinoperations.Add(new(typeof(TJoin), criteria, JoinOp.Left, null, joinAlias));
+        return new LoadOperation(this);
     }
 
-    /// <summary>
-    /// joins another type to the operation
-    /// </summary>
-    /// <param name="operation">operation to join</param>
-    /// <param name="criteria">join criteria</param>
-    /// <param name="alias">alias to use</param>
-    /// <returns>this load operation for fluent behavior</returns>
-    public LoadOperation LeftJoin(IDatabaseOperation operation, Expression<Func<bool>> criteria, string alias = null) {
-        joinoperations.Add(new(operation, criteria, JoinOp.Left, null, alias));
-        return new(this);
+    /// <inheritdoc />
+    public ILoadOperation LeftJoin(IDatabaseOperation operation, Expression<Func<bool>> criteria, string joinAlias = null) {
+        joinoperations.Add(new(operation, criteria, JoinOp.Left, null, joinAlias));
+        return new LoadOperation(this);
     }
 
     /// <inheritdoc />
