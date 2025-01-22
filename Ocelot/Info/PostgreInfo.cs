@@ -836,6 +836,13 @@ public class PostgreInfo : DBInfo {
     }
 
     /// <inheritdoc />
+    public override void CreateMatchFragment(Expression value, Expression pattern, IOperationPreparator preparator, Func<Expression, Expression> visitor) {
+        visitor(value);
+        preparator.AppendText("~");
+        visitor(pattern);
+    }
+
+    /// <inheritdoc />
     public override object GenerateDefault(string type) {
         switch(type.ToLower()) {
             case "int8":

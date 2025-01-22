@@ -20,7 +20,7 @@ public class CriteriaVisitor : ExpressionVisitor {
     readonly Dictionary<string, string> aliases = new();
     readonly Func<Type, EntityDescriptor> descriptorgetter;
     readonly IOperationPreparator preparator;
-    readonly IDBInfo dbinfo;
+    readonly IDBInfo dbInfo;
 
     ExpressionType remainder = ExpressionType.Default;
 
@@ -33,13 +33,13 @@ public class CriteriaVisitor : ExpressionVisitor {
     /// </summary>
     /// <param name="descriptorgetter">func used to get entity models of types</param>
     /// <param name="preparator">preparator to fill with sql</param>
-    /// <param name="dbinfo">database specific implementation info</param>
+    /// <param name="dbInfo">database specific implementation info</param>
     /// <param name="isPredicateExpression">determines whether to use IS instead of = for null assignments or comparisions</param>
     /// <param name="aliases">known table aliases</param>
-    public CriteriaVisitor(Func<Type, EntityDescriptor> descriptorgetter, IOperationPreparator preparator, IDBInfo dbinfo, bool isPredicateExpression, params Tuple<string, string>[] aliases) {
+    public CriteriaVisitor(Func<Type, EntityDescriptor> descriptorgetter, IOperationPreparator preparator, IDBInfo dbInfo, bool isPredicateExpression, params Tuple<string, string>[] aliases) {
         xprtranslator = new XprTranslator(Visit);
         this.descriptorgetter = descriptorgetter;
-        this.dbinfo = dbinfo;
+        this.dbInfo = dbInfo;
         this.isPredicateExpression = isPredicateExpression;
         this.preparator = preparator;
         foreach(Tuple<string, string> alias in aliases)
@@ -92,8 +92,8 @@ public class CriteriaVisitor : ExpressionVisitor {
         EntityColumnDescriptor column = descriptor.GetColumnByProperty(info.Name);
 
         if(aliases.TryGetValue(parameter.Name, out string alias))
-            return string.Format("{1}.{0}", dbinfo.MaskColumn(column.Name), alias);
-        return dbinfo.MaskColumn(column.Name);
+            return string.Format("{1}.{0}", dbInfo.MaskColumn(column.Name), alias);
+        return dbInfo.MaskColumn(column.Name);
     }
 
     string GetOperant(ExpressionType type) {
@@ -219,7 +219,7 @@ public class CriteriaVisitor : ExpressionVisitor {
         else {
             AppendValueRemainder();
             if (value is Array array and not byte[]) {
-                if (dbinfo.SupportsArrayParameters) {
+                if (dbInfo.SupportsArrayParameters) {
                     preparator.AppendParameter(value);
                 }
                 else {
@@ -227,14 +227,14 @@ public class CriteriaVisitor : ExpressionVisitor {
                         if (i > 0)
                             preparator.AppendText(",");
                         object avalue = array.GetValue(i);
-                        preparator.AppendParameter(Converter.Convert(avalue, dbinfo.GetDBRepresentation(avalue.GetType())));
+                        preparator.AppendParameter(Converter.Convert(avalue, dbInfo.GetDBRepresentation(avalue.GetType())));
                     }
                 }
             }
             else if(value is IDBField field)
-                dbinfo.Append(field, preparator, descriptorgetter);
+                dbInfo.Append(field, preparator, descriptorgetter);
             else {
-                preparator.AppendParameter(Converter.Convert(value, dbinfo.GetDBRepresentation(value.GetType())));
+                preparator.AppendParameter(Converter.Convert(value, dbInfo.GetDBRepresentation(value.GetType())));
             }
         }
 
@@ -334,7 +334,7 @@ public class CriteriaVisitor : ExpressionVisitor {
             else if (declaringType != null && declaringType == typeof(string)) {
                 switch (member.Name) {
                     case "Length":
-                        dbinfo.Length(this, preparator, expression);
+                        dbInfo.Length(this, preparator, expression);
                         break;
                     default:
                         throw new InvalidOperationException($"Unknown member '{member.Name}' in string");
@@ -471,11 +471,11 @@ public class CriteriaVisitor : ExpressionVisitor {
             switch(node.Method.Name) {
                 case "Like":
                     Visit(node.Arguments[0]);
-                    preparator.AppendText(dbinfo.LikeTerm);
+                    preparator.AppendText(dbInfo.LikeTerm);
                     Visit(node.Arguments[1]);
                     break;
                 case "Replace":
-                    dbinfo.Replace(this, preparator, node.Arguments[0], node.Arguments[1], node.Arguments[2]);
+                    dbInfo.Replace(this, preparator, node.Arguments[0], node.Arguments[1], node.Arguments[2]);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -486,7 +486,7 @@ public class CriteriaVisitor : ExpressionVisitor {
         if(node.Method.DeclaringType == typeof(Enumerable)) {
             switch(node.Method.Name) {
                 case "Contains":
-                    dbinfo.CreateInFragment(node.Arguments[1], node.Arguments[0], preparator, Visit);
+                    dbInfo.CreateInFragment(node.Arguments[1], node.Arguments[0], preparator, Visit);
                     /*Visit(node.Arguments[1]);
                     preparator.AppendText("IN");
 
@@ -520,10 +520,10 @@ public class CriteriaVisitor : ExpressionVisitor {
         if(node.Method.DeclaringType == typeof(string)) {
             switch(node.Method.Name) {
                 case "ToUpper":
-                    dbinfo.ToUpper(this, preparator, node.Object);
+                    dbInfo.ToUpper(this, preparator, node.Object);
                     break;
                 case "ToLower":
-                    dbinfo.ToLower(this, preparator, node.Object);
+                    dbInfo.ToLower(this, preparator, node.Object);
                     break;
             }
             return node;
@@ -555,54 +555,52 @@ public class CriteriaVisitor : ExpressionVisitor {
             return node;
         }
 
-        if(node.Method.DeclaringType == typeof(DBFunction)) {
+        if (node.Method.DeclaringType == typeof(DBFunction)) {
 
-            switch(node.Method.Name) {
-                case "Min":
+            switch (node.Method.Name) {
+                case"Min":
                     preparator.AppendText("min(");
-                    break;
-                case "Max":
+                break;
+                case"Max":
                     preparator.AppendText("max(");
-                    break;
-                case "Average":
+                break;
+                case"Average":
                     preparator.AppendText("avg(");
-                    break;
-                case "Sum":
+                break;
+                case"Sum":
                     preparator.AppendText("sum(");
-                    break;
-                case "Total":
+                break;
+                case"Total":
                     preparator.AppendText("total(");
-                    break;
-                case "Count":
+                break;
+                case"Count":
                     preparator.AppendText("count(");
                     if (node.Arguments.Count == 0)
                         preparator.AppendText("*");
-                    break;
+                break;
             }
 
             ProcessExpressionList(node.Arguments, parameter => {
-                                                      if (parameter is NewArrayExpression arrayparameter) {
-                                                          ProcessExpressionList(arrayparameter.Expressions, arrayargument => {
-                                                                                                                Visit(arrayargument);
-                                                                                                            });
-                                                      }
-                                                      else {
-                                                          Visit(node.Arguments[0]);
-                                                      }
-                                                  });
-                
+                if (parameter is NewArrayExpression arrayparameter) {
+                    ProcessExpressionList(arrayparameter.Expressions, arrayargument => { Visit(arrayargument); });
+                }
+                else {
+                    Visit(node.Arguments[0]);
+                }
+            });
+
             preparator.AppendText(")");
             return node;
         }
 
         if (node.Method.DeclaringType == typeof(DB)) {
-            Expression result=dbinfo.Visit(this, node, preparator);
+            Expression result=dbInfo.Visit(this, node, preparator);
             if (result != null)
                 return result;
         }
 
         if (node.Method.DeclaringType == typeof(Math)) {
-            Expression result=dbinfo.Visit(this, node, preparator);
+            Expression result=dbInfo.Visit(this, node, preparator);
             if (result != null)
                 return result;
         }
@@ -612,13 +610,16 @@ public class CriteriaVisitor : ExpressionVisitor {
                 case nameof(Function.In):
                     if (node.Arguments.Count != 2)
                         throw new ArgumentException("Invalid method call, expected 2 arguments. First being value to check, second being collection");
-                    dbinfo.CreateInFragment(node.Arguments[0], node.Arguments[1], preparator, Visit);
+                    dbInfo.CreateInFragment(node.Arguments[0], node.Arguments[1], preparator, Visit);
                     break;
                 case nameof(Function.Contains):
                     if (node.Arguments.Count != 2)
                         throw new ArgumentException("Invalid method call, expected 2 arguments. First being range to check, second being value");
-                    dbinfo.CreateRangeContainsFragment(node.Arguments[0], node.Arguments[1], preparator, Visit);
+                    dbInfo.CreateRangeContainsFragment(node.Arguments[0], node.Arguments[1], preparator, Visit);
                     break;
+                case nameof(Function.Match):
+                    dbInfo.CreateMatchFragment(node.Arguments[0], node.Arguments[1], preparator, Visit);
+                break;
                 default:
                     throw new ArgumentException("Unsupported db function call");
             }

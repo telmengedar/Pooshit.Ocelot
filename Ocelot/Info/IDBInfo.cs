@@ -336,6 +336,15 @@ public interface IDBInfo {
     void CreateRangeContainsFragment(Expression lhs, Expression rhs, IOperationPreparator preparator, Func<Expression, Expression> visitor);
 
     /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="pattern"></param>
+    /// <param name="preparator"></param>
+    /// <param name="visitor"></param>
+    void CreateMatchFragment(Expression value, Expression pattern, IOperationPreparator preparator, Func<Expression, Expression> visitor);
+    
+    /// <summary>
     /// generates a default value for the specified type
     /// </summary>
     /// <param name="type">type for which to generate default value</param>

@@ -567,6 +567,11 @@ public abstract class DBInfo : IDBInfo {
     }
 
     /// <inheritdoc />
+    public virtual void CreateMatchFragment(Expression value, Expression pattern, IOperationPreparator preparator, Func<Expression, Expression> visitor) {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc />
     public abstract object GenerateDefault(string type);
 
     /// <inheritdoc />
