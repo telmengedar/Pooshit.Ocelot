@@ -140,11 +140,11 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
                         .Where(p => p.IsConstant && p.IsArray)
                         .Select(GetParameterValue).Cast<Array>().ToArray());
 
-            return new PreparedOperation(dbclient,
-                GetCommandText(dbclient.DBInfo),
-                tokens.OfType<ParameterToken>()
-                    .Where(p => p.IsConstant)
-                    .Select(GetParameterValue).ToArray(), dbPrepare);
+            return new(dbclient,
+                       GetCommandText(dbclient.DBInfo),
+                       tokens.OfType<ParameterToken>()
+                             .Where(p => p.IsConstant)
+                             .Select(GetParameterValue).ToArray(), dbPrepare);
         }
 
 
@@ -179,11 +179,11 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
                         .Where(p => p.IsConstant && p.IsArray)
                         .Select(GetParameterValue).Cast<Array>().ToArray());
 
-            return new PreparedLoadOperation(dbclient, modelcache,
-                GetCommandText(dbclient.DBInfo),
-                tokens.OfType<ParameterToken>()
-                    .Where(p => p.IsConstant)
-                    .Select(GetParameterValue).ToArray(), dbPrepare);
+            return new(dbclient, modelcache,
+                       GetCommandText(dbclient.DBInfo),
+                       tokens.OfType<ParameterToken>()
+                             .Where(p => p.IsConstant)
+                             .Select(GetParameterValue).ToArray(), dbPrepare);
         }
 
         /// <summary>

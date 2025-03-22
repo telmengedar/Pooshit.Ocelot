@@ -433,7 +433,7 @@ public static class DB {
     /// <typeparam name="T">type to use as expression parameter</typeparam>
     /// <returns>token to be used in statements</returns>
     public static ISqlToken Value<T>(Expression<Func<T, object>> valueExpression) {
-        return new ExpressionToken(valueExpression);
+        return new ExpressionToken(valueExpression, true);
     }
 
     /// <summary>

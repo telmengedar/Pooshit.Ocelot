@@ -144,26 +144,27 @@ public class CriteriaVisitor : ExpressionVisitor {
             case ExpressionType.LessThanOrEqual:
             case ExpressionType.GreaterThan:
             case ExpressionType.GreaterThanOrEqual:
-                return 3;
-            case ExpressionType.And:
                 return 4;
-            case ExpressionType.AndAlso:
-                return 7;
-            case ExpressionType.Or:
+            case ExpressionType.And:
                 return 5;
-            case ExpressionType.OrElse:
+            case ExpressionType.AndAlso:
                 return 8;
-            case ExpressionType.ExclusiveOr:
+            case ExpressionType.Or:
                 return 6;
+            case ExpressionType.OrElse:
+                return 9;
+            case ExpressionType.ExclusiveOr:
+                return 7;
             case ExpressionType.Add:
             case ExpressionType.Subtract:
-                return 1;
+                return 2;
             case ExpressionType.Multiply:
+                return 1;
             case ExpressionType.Divide:
                 return 0;
             case ExpressionType.Negate:
             case ExpressionType.Not:
-                return 2;
+                return 3;
             default:
                 throw new InvalidOperationException("Operant not supported");
         }

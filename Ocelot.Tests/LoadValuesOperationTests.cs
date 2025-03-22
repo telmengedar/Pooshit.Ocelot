@@ -38,7 +38,7 @@ public class LoadValuesOperationTests {
                                     .Where(v => v.Integer.In(DBParameter<int[]>.Value))
                                     .ExecuteSet<int>(new[] { 5, 75, 124 })
                                     .ToArray();
-        Assert.True(result.SequenceEqual(new[] { 5, 75, 124 }));
+        Assert.True(result.SequenceEqual([5, 75, 124]));
     }
 
     [Test, Parallelizable]
