@@ -25,9 +25,18 @@ public static class DB {
     /// <summary>
     /// used to create an alias for an expression
     /// </summary>
+    /// <param name="token">token for which to create an alias</param>
+    /// <param name="alias">alias to use</param>
+    /// <returns>token to be used for alias operations</returns>
+    public static AliasToken As(ISqlToken token, string alias) {
+        return new(token, alias);
+    }
+
+    /// <summary>
+    /// used to create an alias for an expression
+    /// </summary>
     /// <param name="value">value for which to create an alias</param>
     /// <param name="alias">alias to use</param>
-    /// <returns></returns>
     /// <exception cref="NotImplementedException">thrown when this method is used outside an expression tree</exception>
     public static ISqlToken As(object value, string alias) {
         throw new NotImplementedException("Only to be used in expressions");

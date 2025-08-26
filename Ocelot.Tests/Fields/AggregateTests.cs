@@ -149,7 +149,8 @@ public class AggregateTests {
                                                            new ValueModel { String = "B", Integer = 11 },
                                                            new ValueModel { String = "B", Integer = 7 });
 
-        IDatabaseOperation subSelect = entityManager.Load<ValueModel>(x=> x.String, x => DB.As(DB.Cast(DB.Count(DB.Distinct(x.Integer)), CastType.Float).Decimal / DB.Count().Decimal, "ratio"))
+        ISqlToken stringField = DB.Property<ValueModel>(m => m.String);
+        IDatabaseOperation subSelect = entityManager.Load<ValueModel>(x=> DB.As(stringField, "string"), x => DB.As(DB.Cast(DB.Count(DB.Distinct(x.Integer)), CastType.Float).Decimal / DB.Count().Decimal, "ratio"))
                                                     .GroupBy(v => v.String);
 
         Tuple<string, float>[] result = await entityManager.Load(() => DB.Column("ss", "string"), () => DB.Column("ss", "ratio"))
