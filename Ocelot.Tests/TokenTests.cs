@@ -1,4 +1,7 @@
-﻿using NUnit.Framework;
+﻿using System;
+using System.Linq;
+using NUnit.Framework;
+using Pooshit.Ocelot.Clients.Tables;
 using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Tests.Data;
@@ -103,4 +106,19 @@ public class TokenTests {
         Assert.AreEqual(4, count);
     }
 
+    [Test, Parallelizable]
+    public void RowNumberOver() {
+        IEntityManager database = TestData.CreateEntityManager();
+        database.UpdateSchema<ValueModel>();
+
+        PreparedOperation insert = database.Insert<ValueModel>().Columns(v => v.Integer, v => v.Single, v => v.Double).Prepare();
+
+        for (int i = 0; i < 16; ++i)
+            insert.Execute(i, 0.0f, 0.0);
+
+        Tuple<int, int>[] result = database.Load<ValueModel>(v => v.Integer, v => DB.RowNumber(v.Integer & 1, v.Integer, false))
+                                           .ExecuteTypes(row => new Tuple<int, int>(row.GetValue<int>(0), row.GetValue<int>(1)))
+                                           .ToArray();
+        Assert.AreEqual(16, result.Length);
+    }
 }

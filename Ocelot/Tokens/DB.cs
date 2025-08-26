@@ -6,6 +6,7 @@ using Pooshit.Ocelot.Fields;
 using Pooshit.Ocelot.Fields.Sql;
 using Pooshit.Ocelot.Tokens.Control;
 using Pooshit.Ocelot.Tokens.Functions;
+using Pooshit.Ocelot.Tokens.Partitions;
 using Pooshit.Ocelot.Tokens.Values;
 
 namespace Pooshit.Ocelot.Tokens;
@@ -76,6 +77,48 @@ public static class DB {
         throw new NotImplementedException("Only to be used in expressions");
     }
 
+    /// <summary>
+    /// compute row number over a set of rows
+    /// </summary>
+    /// <param name="orderBy">over expression</param>
+    /// <param name="ascending">whether to order in ascending order</param>
+    /// <returns>token representing statement</returns>
+    public static RowNumberOver RowNumber(object orderBy, bool ascending) {
+        throw new NotImplementedException("Only to be used in expressions");
+    }
+
+    /// <summary>
+    /// compute row number over a set of rows
+    /// </summary>
+    /// <param name="partitionBy">field to partition result by</param>
+    /// <param name="orderBy">over expression</param>
+    /// <param name="ascending">whether to order in ascending order</param>
+    /// <returns>token representing statement</returns>
+    public static RowNumberOver RowNumber(object partitionBy, object orderBy, bool ascending) {
+        throw new NotImplementedException("Only to be used in expressions");
+    }
+
+    /// <summary>
+    /// compute row number over a set of rows
+    /// </summary>
+    /// <param name="orderBy">over expression</param>
+    /// <param name="ascending">whether to order in ascending order</param>
+    /// <returns>token representing statement</returns>
+    public static RowNumberOver RowNumber(IDBField orderBy, bool ascending = true) {
+        return new(new(orderBy, ascending));
+    }
+
+    /// <summary>
+    /// compute row number over a set of rows
+    /// </summary>
+    /// <param name="partitionBy">field to partition result by</param>
+    /// <param name="orderBy">field to order result by</param>
+    /// <param name="ascending">whether to order in ascending order</param>
+    /// <returns>token representing statement</returns>
+    public static RowNumberOver RowNumber(IDBField partitionBy, IDBField orderBy, bool ascending = true) {
+        return new(partitionBy, new(orderBy, ascending));
+    }
+    
     /// <summary>
     /// sums up values
     /// </summary>
@@ -354,7 +397,7 @@ public static class DB {
     /// <param name="elsetoken">value to use if no case matches</param>
     /// <returns>case token</returns>
     public static CaseControl Case(When[] cases, ISqlToken elsetoken = null) {
-        return new CaseControl(cases, elsetoken);
+        return new(cases, elsetoken);
     }
 
     /// <summary>
@@ -364,7 +407,7 @@ public static class DB {
     /// <param name="elsevalue">value to use if no case matches</param>
     /// <returns>case token</returns>
     public static CaseControl Case(When[] cases, object elsevalue) {
-        return new CaseControl(cases, Constant(elsevalue));
+        return new(cases, Constant(elsevalue));
     }
 
     /// <summary>
@@ -374,7 +417,7 @@ public static class DB {
     /// <param name="value">value to use if condition evaluates to true</param>
     /// <returns>when token</returns>
     public static When When(ISqlToken condition, ISqlToken value) {
-        return new When(condition, value);
+        return new(condition, value);
     }
 
     /// <summary>
@@ -387,7 +430,7 @@ public static class DB {
     /// <param name="value">value to use if condition evaluates to true</param>
     /// <returns>when token</returns>
     public static When When(ISqlToken condition, object value) {
-        return new When(condition, Constant(value));
+        return new(condition, Constant(value));
     }
 
     /// <summary>
@@ -400,7 +443,7 @@ public static class DB {
     /// <param name="value">value to use if condition evaluates to true</param>
     /// <returns>when token</returns>
     public static When When(bool condition, ISqlToken value) {
-        return new When(Constant(condition), value);
+        return new(Constant(condition), value);
     }
 
     /// <summary>
@@ -605,5 +648,14 @@ public static class DB {
     /// <returns>token to be used in statements</returns>
     public static ISqlToken Operation(IDatabaseOperation operation) {
         return Value<object>(o => operation, true);
+    }
+
+    /// <summary>
+    /// creates a token of multiple related values
+    /// </summary>
+    /// <param name="values"></param>
+    /// <returns></returns>
+    public static TupleToken Tuple(params object[] values) {
+        return new(values);
     }
 }

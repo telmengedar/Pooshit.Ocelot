@@ -40,6 +40,7 @@ public abstract class DBInfo : IDBInfo {
         AddFieldLogic<EntityField>(AppendEntityField);
         AddFieldLogic<Aggregate>(AppendAggregate);
         AddFieldLogic<FieldToken>(AppendFieldToken);
+        AddFieldLogic<TupleToken>(AppendTupleToken);
     }
     
     /// <summary>
@@ -53,6 +54,14 @@ public abstract class DBInfo : IDBInfo {
 
     void AppendFieldToken(FieldToken field, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorGetter, string tableAlias) {
         preparator.AppendText(field.Field);
+    }
+
+    void AppendTupleToken(TupleToken tuple, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorGetter, string tableAlias) {
+        preparator.AppendText("(");
+        foreach (object value in tuple.Values) {
+            
+        }
+        preparator.AppendText(")");
     }
 
     void AppendAggregate(Aggregate aggregate, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
@@ -386,6 +395,27 @@ public abstract class DBInfo : IDBInfo {
                         }
                         operation.AppendText("END");
                         break;
+                    case "RowNumber":
+                        operation.AppendText("ROW_NUMBER() OVER(");
+                        int argumentIndex = 0;
+                        if (methodCall.Arguments.Count == 3) {
+                            if (methodCall.Arguments[0] is not ConstantExpression { Value: null }) {
+                                operation.AppendText("PARTITION BY");
+                                visitor.Visit(methodCall.Arguments[0]);
+                            }
+
+                            ++argumentIndex;
+                        }
+
+                        if (methodCall.Arguments[argumentIndex] is not ConstantExpression { Value: null }) {
+                            operation.AppendText("ORDER BY");
+                            visitor.Visit(methodCall.Arguments[argumentIndex++]);
+                            if (methodCall.Arguments[argumentIndex] is not ConstantExpression { Value: true })
+                                operation.AppendText("DESC");
+                        }
+
+                        operation.AppendText(")");
+                    break;
                     default:
                         return null;
                 }
