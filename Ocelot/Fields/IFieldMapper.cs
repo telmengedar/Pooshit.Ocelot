@@ -24,6 +24,11 @@ public interface IFieldMapper<TModel> {
 	IEnumerable<IDBField> DbFields { get; }
 
 	/// <summary>
+	/// names of fields
+	/// </summary>
+	IEnumerable<string> FieldNames { get; }
+	
+	/// <summary>
 	/// get fields from names
 	/// </summary>
 	/// <param name="names">field names</param>

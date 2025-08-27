@@ -56,6 +56,9 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
     /// <inheritdoc />
     public IEnumerable<IDBField> DbFields => mappings.Select(m => m.Field);
 
+    /// <inheritdoc />
+    public IEnumerable<string> FieldNames => fieldLookup.Keys;
+    
     Action<TModel, string[], IRowValues> InitializeEntity { get; }
     
     void BuildFieldLookup() {
