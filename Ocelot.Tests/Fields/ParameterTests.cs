@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities;
@@ -40,7 +41,7 @@ public class ParameterTests {
     [Test, Parallelizable]
     public void IndexedParametersMixedWithNull() {
         IDBClient dbclient = TestData.CreateDatabaseAccess();
-        EntityManager entitymanager = new EntityManager(dbclient);
+        EntityManager entitymanager = new(dbclient);
         entitymanager.UpdateSchema<ValueModel>();
         entitymanager.Insert<ValueModel>().Columns(v => v.Integer, v => v.NDatetime, v=>v.Single).Values(0, null, 0.5f).Execute();
         entitymanager.Update<ValueModel>()
@@ -50,6 +51,24 @@ public class ParameterTests {
                      .Where(v=>v.Integer==DBParameter.Index(1))
                      .Prepare().Execute(0,2);
         Assert.AreEqual(4.0f, entitymanager.Load<ValueModel>(v => v.Single).ExecuteScalar<int>());
+    }
+
+    [Test, Parallelizable]
+    public void AddToTimespan() {
+        IDBClient dbclient = TestData.CreateDatabaseAccess();
+        EntityManager entitymanager = new(dbclient);
+        entitymanager.UpdateSchema<ValueModel>();
+        DateTime now = new(2025, 01, 01);
+        DateTime later = new(2025, 01, 02);
+        entitymanager.Insert<ValueModel>()
+                     .Columns(v => v.Timespan, v=>v.NDatetime)
+                     .Values(TimeSpan.FromHours(0), now)
+                     .Execute();
+        entitymanager.Update<ValueModel>()
+                     .Set(v => v.Timespan == v.Timespan + (later - v.NDatetime))
+                     .Prepare()
+                     .Execute();
+        Assert.AreEqual(TimeSpan.FromDays(1), entitymanager.Load<ValueModel>(v => v.Timespan).ExecuteScalar<TimeSpan>());
     }
 
     [Test]

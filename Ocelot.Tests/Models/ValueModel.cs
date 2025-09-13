@@ -25,6 +25,8 @@ public class ValueModel {
     public string String { get; set; }
 
     public DateTime? NDatetime { get; set; }
-        
+
+    public TimeSpan Timespan { get; set; }
+    
     public byte[] Blob { get; set; }
 }
