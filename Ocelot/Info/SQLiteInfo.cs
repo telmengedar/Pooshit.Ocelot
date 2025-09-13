@@ -117,6 +117,9 @@ public class SQLiteInfo : DBInfo {
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText("AS TEXT)");
                                 break;
+                            case CastType.Ticks:
+                                visitor.Visit(methodCall.Arguments[0]);
+                            break;
                             default:
                                 throw new ArgumentException("Invalid cast target type");
                         }
