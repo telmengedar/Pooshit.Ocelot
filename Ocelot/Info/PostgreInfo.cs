@@ -199,7 +199,7 @@ public class PostgreInfo : DBInfo {
                             case CastType.Ticks:
                                 operation.AppendText("EXTRACT(EPOCH FROM");
                                 visitor.Visit(methodCall.Arguments[0]);
-                                operation.AppendText("* 10000000)");
+                                operation.AppendText(") * 10000000");
                             break;
                             default:
                                 throw new ArgumentException("Invalid cast target type");
