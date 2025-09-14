@@ -23,6 +23,7 @@ internal static class Converter {
         specificconverters[new(typeof(double), typeof(string))] = o => ((double)o).ToString(CultureInfo.InvariantCulture);
         specificconverters[new(typeof(string), typeof(int))] = o => int.Parse((string)o);
         specificconverters[new(typeof(string), typeof(int[]))] = o => ((string)o).Split(';').Select(int.Parse).ToArray();
+        specificconverters[new(typeof(decimal), typeof(TimeSpan))] = o => TimeSpan.FromTicks(decimal.ToInt64((decimal)o));
         specificconverters[new(typeof(long), typeof(TimeSpan))] = o => TimeSpan.FromTicks((long)o);
         specificconverters[new(typeof(TimeSpan), typeof(long))] = v => ((TimeSpan)v).Ticks;
         specificconverters[new(typeof(TimeSpan), typeof(int))] = v => (int)((TimeSpan)v).Ticks;
