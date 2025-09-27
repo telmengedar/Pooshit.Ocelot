@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.CustomTypes;
+using Pooshit.Ocelot.Entities.Attributes;
 using Pooshit.Ocelot.Entities.Descriptors;
 using Pooshit.Ocelot.Entities.Operations;
 using Pooshit.Ocelot.Entities.Operations.Expressions;
@@ -165,9 +166,10 @@ public abstract class DBInfo : IDBInfo {
     /// <summary>
     /// get db type of an application type
     /// </summary>
-    /// <param name="type"></param>
-    /// <returns></returns>
-    public string GetDBType(Type type) {
+    /// <param name="type">type info</param>
+    /// <param name="length">length of array type (optional)</param>
+    /// <returns>type used in database</returns>
+    public string GetDBType(Type type, int length=0) {
         if (type.IsGenericType) {
             if(type.GetGenericTypeDefinition() == typeof(Nullable<>))
                 type = Nullable.GetUnderlyingType(type);
@@ -186,12 +188,12 @@ public abstract class DBInfo : IDBInfo {
 
         if(type.IsEnum)
             return GetDBType(Types.Int);
-
-        return GetDBType(type.Name.ToLower());
+        
+        return GetDBType(type.Name.ToLower(), length);
     }
 
     /// <inheritdoc />
-    public abstract string GetDBType(string type);
+    public abstract string GetDBType(string type, int length=0);
 
     /// <inheritdoc />
     public virtual bool IsTypeEqual(string lhs, string rhs) {

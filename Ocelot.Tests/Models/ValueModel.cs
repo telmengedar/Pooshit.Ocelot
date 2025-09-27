@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using Pooshit.Ocelot.Entities.Attributes;
 
 namespace Pooshit.Ocelot.Tests.Models;
@@ -26,7 +27,11 @@ public class ValueModel {
 
     public DateTime? NDatetime { get; set; }
 
+    [DefaultValue(0)]
     public TimeSpan Timespan { get; set; }
     
     public byte[] Blob { get; set; }
+
+    [Size(16)]
+    public float[] FloatArray { get; set; }
 }

@@ -79,7 +79,7 @@ namespace Pooshit.Ocelot.Schemas {
                         }
 
                         if(!unique.TryGetValue(uniqueattr.Name, out List<string> columns))
-                            unique[uniqueattr.Name] = columns = new List<string>();
+                            unique[uniqueattr.Name] = columns = [];
                         columns.Add(columndescriptor.Name);
                     }
                 }
@@ -98,10 +98,10 @@ namespace Pooshit.Ocelot.Schemas {
             ColumnAttribute column = ColumnAttribute.Get(property);
             string columnname = column == null ? property.Name.ToLower() : column.Column;
 
-            ColumnDescriptor columndescriptor = new(columnname, dbInfo.GetDBType(property.PropertyType)) {
+            ColumnDescriptor columndescriptor = new(columnname, dbInfo.GetDBType(property.PropertyType, SizeAttribute.GetLength(property))) {
                 PrimaryKey = PrimaryKeyAttribute.IsPrimaryKey(property),
                 AutoIncrement = AutoIncrementAttribute.IsAutoIncrement(property),
-                NotNull = NotNullAttribute.HasNotNull(property) || (property.PropertyType.IsValueType && !(property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))),
+                NotNull = NotNullAttribute.HasNotNull(property) || (property.PropertyType.IsValueType && !(property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>)))
             };
 
             if(!columndescriptor.PrimaryKey)

@@ -85,9 +85,9 @@ namespace Pooshit.Ocelot.Entities.Schema {
 
             EntityDescriptor descriptor = modelcache.Get<T>();
 
-            List<EntityColumnDescriptor> missing = new();
-            List<EntityColumnDescriptor> altered = new();
-            List<string> obsolete = new();
+            List<EntityColumnDescriptor> missing = [];
+            List<EntityColumnDescriptor> altered = [];
+            List<string> obsolete = [];
 
             missing.AddRange(descriptor.Columns.Where(c => currentschema.Columns.All(sc => sc.Name != c.Name)));
             missing.ForEach(c => Logger.Info(this, $"Detected missing column '{c.Name}'"));
@@ -98,7 +98,7 @@ namespace Pooshit.Ocelot.Entities.Schema {
                     obsolete.Add(column.Name);
                 }
                 else {
-                    if(!client.DBInfo.IsTypeEqual(column.Type, client.DBInfo.GetDBType(entitycolumn.Property.PropertyType))
+                    if(!client.DBInfo.IsTypeEqual(column.Type, client.DBInfo.GetDBType(entitycolumn.Property.PropertyType, SizeAttribute.GetLength(entitycolumn.Property)))
                         || column.PrimaryKey != entitycolumn.PrimaryKey
                         || column.AutoIncrement != entitycolumn.AutoIncrement
                         || column.IsUnique != entitycolumn.IsUnique
@@ -106,7 +106,7 @@ namespace Pooshit.Ocelot.Entities.Schema {
                     /* default value is not evaluated for now
                    || column.DefaultValue != entitycolumn.DefaultValue*/
                     ) {
-                        Logger.Info(this, $"Detected altered column '{entitycolumn.Name}'", $"New -> {entitycolumn} {client.DBInfo.GetDBType(entitycolumn.Property.PropertyType)}\r\nOld -> {column} {column.Type}");
+                        Logger.Info(this, $"Detected altered column '{entitycolumn.Name}'", $"New -> {entitycolumn} {client.DBInfo.GetDBType(entitycolumn.Property.PropertyType, SizeAttribute.GetLength(entitycolumn.Property))}\r\nOld -> {column} {column.Type}");
                         altered.Add(entitycolumn);
                     }
                 }

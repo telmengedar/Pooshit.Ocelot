@@ -241,5 +241,10 @@ namespace Pooshit.Ocelot.Schemas {
         /// <see cref="Range{T}"/>
         /// </summary>
         public const string DateRange = "daterange";
+
+        /// <summary>
+        /// <see cref="float"/>[]
+        /// </summary>
+        public const string SingleArray = "single[]";
     }
 }

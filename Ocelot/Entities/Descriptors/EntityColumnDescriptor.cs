@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using Pooshit.Ocelot.Entities.Attributes;
 using Pooshit.Ocelot.Schemas;
 
 namespace Pooshit.Ocelot.Entities.Descriptors
@@ -24,6 +25,7 @@ namespace Pooshit.Ocelot.Entities.Descriptors
             if (property.PropertyType.IsEnum)
                 Type = Enum.GetUnderlyingType(property.PropertyType).Name.ToLower();
             else Type = !(property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>)) ? property.PropertyType.Name.ToLower() : property.PropertyType.GetGenericArguments()[0].Name.ToLower();
+            Length = SizeAttribute.GetLength(property);
             Property = property;
         }
 

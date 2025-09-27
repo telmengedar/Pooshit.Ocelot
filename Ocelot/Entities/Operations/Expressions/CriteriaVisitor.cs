@@ -96,7 +96,7 @@ public class CriteriaVisitor : ExpressionVisitor {
         return dbInfo.MaskColumn(column.Name);
     }
 
-    string GetOperant(ExpressionType type) {
+    string GetOperant(ExpressionType type, bool isBoolean) {
         switch(type) {
             case ExpressionType.Equal:
                 return "=";
@@ -130,7 +130,9 @@ public class CriteriaVisitor : ExpressionVisitor {
             case ExpressionType.Divide:
                 return "/";
             case ExpressionType.Not:
-                return "NOT";
+                if (isBoolean)
+                    return "NOT";
+                return "~";
             default:
                 throw new InvalidOperationException("Operant not supported");
         }
@@ -170,16 +172,16 @@ public class CriteriaVisitor : ExpressionVisitor {
         }
     }
         
-    void AddOperant(ExpressionType type) {
+    void AddOperant(ExpressionType type, bool isBoolean) {
         switch(type) {
             case ExpressionType.Equal:
             case ExpressionType.NotEqual:
                 if(isPredicateExpression)
                     remainder = type;
-                else preparator.AppendText(GetOperant(type)); 
+                else preparator.AppendText(GetOperant(type, isBoolean)); 
                 break;
             default:
-                preparator.AppendText(GetOperant(type));
+                preparator.AppendText(GetOperant(type, isBoolean));
                 break;
         }
     }
@@ -398,7 +400,7 @@ public class CriteriaVisitor : ExpressionVisitor {
 
         AppendValueRemainder();
         remainder = ExpressionType.Default;
-        AddOperant(node.NodeType);
+        AddOperant(node.NodeType, node.Operand.Type == typeof(bool));
         Visit(node.Operand);
         return node;
     }
@@ -420,7 +422,7 @@ public class CriteriaVisitor : ExpressionVisitor {
             preparator.AppendText("(");
         binarystack.Push(node.NodeType);
         Visit(node.Left);
-        AddOperant(node.NodeType);
+        AddOperant(node.NodeType, false);
         Visit(node.Right);
         binarystack.Pop();
         if(paranthesis)

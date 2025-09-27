@@ -113,7 +113,14 @@ public interface IFieldMapper<TModel> {
 	/// <param name="fields">expected fields in rows (optional)</param>
 	/// <returns>enumeration of entities</returns>
 	Task<TModel> EntityFromReader(Reader reader, params string[] fields);
-	
+
+	/// <summary>
+	/// creates a load operation to be used to load the entities from database
+	/// </summary>
+	/// <param name="database">database used to generate load operation</param>
+	/// <returns>load operation to use to load entities</returns>
+	LoadOperation<TModel> CreateOperation(IEntityManager database);
+
 	/// <summary>
 	/// creates a load operation to be used to load the entities from database
 	/// </summary>
@@ -121,13 +128,28 @@ public interface IFieldMapper<TModel> {
 	/// <param name="fields">selection of fields to load</param>
 	/// <returns>load operation to use to load entities</returns>
 	LoadOperation<TModel> CreateOperation(IEntityManager database, params string[] fields);
+
+	/// <summary>
+	/// creates a load operation to be used to load the entities from database
+	/// </summary>
+	/// <param name="database">database used to generate load operation</param>
+	/// <param name="fields">selection of fields to load</param>
+	/// <returns>load operation to use to load entities</returns>
+	LoadOperation<TModel> CreateOperation(IEntityManager database, params IDBField[] fields);
 }
 
 /// <summary>
 /// mapper for fields used to load entities from database
 /// </summary>
 public interface IFieldMapper<TModel, TEntity> : IFieldMapper<TModel> {
-	
+
+	/// <summary>
+	/// creates a load operation to be used to load the entities from database
+	/// </summary>
+	/// <param name="database">database used to generate load operation</param>
+	/// <returns>load operation to use to load entities</returns>
+	new LoadOperation<TEntity> CreateOperation(IEntityManager database);
+
 	/// <summary>
 	/// creates a load operation to be used to load the entities from database
 	/// </summary>
@@ -135,4 +157,12 @@ public interface IFieldMapper<TModel, TEntity> : IFieldMapper<TModel> {
 	/// <param name="fields">selection of fields to load</param>
 	/// <returns>load operation to use to load entities</returns>
 	new LoadOperation<TEntity> CreateOperation(IEntityManager database, params string[] fields);
+
+	/// <summary>
+	/// creates a load operation to be used to load the entities from database
+	/// </summary>
+	/// <param name="database">database used to generate load operation</param>
+	/// <param name="fields">selection of fields to load</param>
+	/// <returns>load operation to use to load entities</returns>
+	new LoadOperation<TEntity> CreateOperation(IEntityManager database, params IDBField[] fields);
 }

@@ -7,6 +7,7 @@ using System.Numerics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Pooshit.Ocelot.Clients;
+using Pooshit.Ocelot.Entities.Attributes;
 using Pooshit.Ocelot.Entities.Descriptors;
 using Pooshit.Ocelot.Entities.Operations.Expressions;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
@@ -45,78 +46,78 @@ public class SQLiteInfo : DBInfo {
         if (node is MethodCallExpression methodCall) {
             if (methodCall.Method.DeclaringType == typeof(DB)) {
                 switch (methodCall.Method.Name) {
-                    case "Cast":
+                    case"Cast":
                         switch ((CastType)visitor.GetHost(methodCall.Arguments[1])) {
                             case CastType.Date:
                                 operation.AppendText("date(strftime('%Y-%m-%d',");
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText("/10000000 - 62135596800, 'unixepoch'))");
-                                break;
+                            break;
                             case CastType.DateTime:
                                 operation.AppendText("datetime(strftime('%Y-%m-%d %H:%M:%S',");
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText("/10000000 - 62135596800, 'unixepoch'))");
-                                break;
+                            break;
                             case CastType.Year:
                                 operation.AppendText("strftime('%Y',");
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText("/10000000 - 62135596800, 'unixepoch')");
-                                break;
+                            break;
                             case CastType.Month:
                                 operation.AppendText("strftime('%m',");
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText("/10000000 - 62135596800, 'unixepoch')");
-                                break;
+                            break;
                             case CastType.DayOfMonth:
                                 operation.AppendText("strftime('%d',");
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText("/10000000 - 62135596800, 'unixepoch')");
-                                break;
+                            break;
                             case CastType.Hour:
                                 operation.AppendText("strftime('%H',");
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText("/10000000 - 62135596800, 'unixepoch')");
-                                break;
+                            break;
                             case CastType.Minute:
                                 operation.AppendText("strftime('%M',");
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText("/10000000 - 62135596800, 'unixepoch')");
-                                break;
+                            break;
                             case CastType.Second:
                                 operation.AppendText("strftime('%S',");
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText("/10000000 - 62135596800, 'unixepoch')");
-                                break;
+                            break;
                             case CastType.DayOfYear:
                                 operation.AppendText("strftime('%j',");
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText("/10000000 - 62135596800, 'unixepoch')");
-                                break;
+                            break;
                             case CastType.DayOfWeek:
                                 operation.AppendText("strftime('%w',");
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText("/10000000 - 62135596800, 'unixepoch')");
-                                break;
+                            break;
                             case CastType.WeekOfYear:
                                 operation.AppendText("strftime('%W',");
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText("/10000000 - 62135596800, 'unixepoch')");
-                                break;
+                            break;
                             case CastType.Integer:
                                 operation.AppendText("CAST(");
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText("AS INTEGER)");
-                                break;
+                            break;
                             case CastType.Float:
                                 operation.AppendText("CAST(");
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText("AS FLOAT)");
-                                break;
+                            break;
                             case CastType.Text:
                                 operation.AppendText("CAST(");
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText("AS TEXT)");
-                                break;
+                            break;
                             case CastType.Ticks:
                                 visitor.Visit(methodCall.Arguments[0]);
                             break;
@@ -128,6 +129,7 @@ public class SQLiteInfo : DBInfo {
                 }
             }
         }
+
         return null;
     }
 
@@ -333,7 +335,7 @@ public class SQLiteInfo : DBInfo {
     }
 
     /// <inheritdoc />
-    public override string GetDBType(string type) {
+    public override string GetDBType(string type, int length=0) {
         switch(type) {
             case Types.DateTime:
                 //return "TIMESTAMP";
@@ -373,6 +375,8 @@ public class SQLiteInfo : DBInfo {
             case Types.Decimal:
             case Types.BigInteger:
                 return "DECIMAL";
+            case Types.SingleArray:
+                return "TEXT";
             default:
                 throw new InvalidOperationException($"unsupported type '{type}");
         }
@@ -396,6 +400,8 @@ public class SQLiteInfo : DBInfo {
             return typeof(long);
         if(type == typeof(Guid))
             return typeof(string);
+        if (type == typeof(float[]))
+            return typeof(string);
         return type;
     }
 
@@ -417,7 +423,7 @@ public class SQLiteInfo : DBInfo {
     public override void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column) {
         CreateColumn(operation,
                      column.Name,
-                     GetDBType(column.Property.PropertyType),
+                     GetDBType(column.Property.PropertyType, SizeAttribute.GetLength(column.Property)),
                      column.PrimaryKey,
                      column.AutoIncrement,
                      column.IsUnique,
@@ -442,10 +448,10 @@ public class SQLiteInfo : DBInfo {
     IEnumerable<Schema> CreateSchemata(IDataReader reader) {
         using (reader) {
             while (reader.Read()) {
-                yield return new Schema {
-                                            Name = reader.GetString(0),
-                                            Type = Converter.Convert<SchemaType>(reader.GetString(1))
-                                        };
+                yield return new() {
+                    Name = reader.GetString(0),
+                    Type = Converter.Convert<SchemaType>(reader.GetString(1))
+                };
             }
         }
     }

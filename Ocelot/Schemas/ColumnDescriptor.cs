@@ -37,6 +37,11 @@ namespace Pooshit.Ocelot.Schemas {
         /// type of column
         /// </summary>
         public string Type { get; set; }
+
+        /// <summary>
+        /// size of array types
+        /// </summary>
+        public int Length { get; set; }
         
         /// <summary>
         /// determines whether the column is primary key

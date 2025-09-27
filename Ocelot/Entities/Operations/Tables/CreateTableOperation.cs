@@ -42,9 +42,10 @@ namespace Pooshit.Ocelot.Entities.Operations.Tables {
         /// <param name="primarykey">true if column is a primary key</param>
         /// <param name="autoincrement">true if column is auto incremented</param>
         /// <param name="defaultvalue">default value for column</param>
+        /// <param name="length">length of array</param>
         /// <returns>this operation for fluent behavior</returns>
-        public CreateTableOperation Column(string name, Type type = null, bool primarykey = false, bool autoincrement = false, object defaultvalue = null) {
-            ColumnDescriptor descriptor = new ColumnDescriptor(name) {
+        public CreateTableOperation Column(string name, Type type = null, bool primarykey = false, bool autoincrement = false, object defaultvalue = null, int length=0) {
+            ColumnDescriptor descriptor = new(name) {
                 Type = dbclient.DBInfo.GetDBType(type ?? typeof(string)),
                 PrimaryKey = primarykey,
                 AutoIncrement = autoincrement,

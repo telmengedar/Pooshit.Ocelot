@@ -21,8 +21,8 @@ namespace Pooshit.Ocelot.Tests {
 
         [SetUp]
         public void Setup() {
-            creator = new SchemaCreator(modelcache);
-            updater = new SchemaUpdater(modelcache);
+            creator = new(modelcache);
+            updater = new(modelcache);
         }
 
         [Test, Parallelizable]

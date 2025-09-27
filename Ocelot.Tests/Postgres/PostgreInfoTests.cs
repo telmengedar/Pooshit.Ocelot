@@ -32,13 +32,14 @@ public class PostgreInfoTests {
         PostgreInfo info = new();
         Mock<IDBClient> client = new();
         client.SetupGet(c => c.DBInfo).Returns(info);
-        client.Setup(c => c.Reader(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<IEnumerable<object>>())).Returns(
-                                                                                                                          new Reader(new FakeReader(
-                                                                                                                                                    new[] { "schemaname", "viewname", "viewowner", "definition" },
-                                                                                                                                                    new[] {
-                                                                                                                                                              new object[] { "public", "testview", "postgres", "SELECT whatever FROM something" }
-                                                                                                                                                          }), null, info)
-                                                                                                                         );
+        client.Setup(c => c.Reader(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<IEnumerable<object>>()))
+              .Returns(
+                       new Reader(new FakeReader(
+                                                 ["schemaname", "viewname", "viewowner", "definition"],
+                                                 [
+                                                     ["public", "testview", "postgres", "SELECT whatever FROM something"]
+                                                 ]), null, info)
+                      );
 
         ViewDescriptor descriptor = info.GetSchema(client.Object, "testview") as ViewDescriptor;
 
@@ -53,32 +54,32 @@ public class PostgreInfoTests {
 
         Mock<IDBClient> client = new();
         client.SetupGet(c => c.DBInfo).Returns(info);
-            
-        client.Setup(c=>c.Reader(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<IEnumerable<object>>())).Returns<Transaction, string, IEnumerable<object>>((tr, text, pr) => {
-                                                                                                                                                                      if(text.Contains(" information_schema.columns ")) {
-                                                                                                                                                                          return new Reader(new FakeReader(new[] { "table_catalog", "table_schema", "table_name", "column_name", "data_type", "is_nullable", "column_default" },
-                                                                                                                                                                                                           new[] {
-                                                                                                                                                                                                                     new object[] { "xx.io", "public", "companyaddress", "id", "bigint", false, "nextval('company_id_seq'::regclass)" },
-                                                                                                                                                                                                                     new object[] { "xx.io", "public", "companyaddress", "companyid", "bigint", false, DBNull.Value },
-                                                                                                                                                                                                                     new object[] { "xx.io", "public", "companyaddress", "country", "character varying", true, DBNull.Value },
-                                                                                                                                                                                                                     new object[] { "xx.io", "public", "companyaddress", "state", "character varying", true, DBNull.Value },
-                                                                                                                                                                                                                     new object[] { "xx.io", "public", "companyaddress", "city", "character varying", true, DBNull.Value },
-                                                                                                                                                                                                                     new object[] { "xx.io", "public", "companyaddress", "postalcode", "character varying", true, DBNull.Value },
-                                                                                                                                                                                                                     new object[] { "xx.io", "public", "companyaddress", "line", "character varying", true, DBNull.Value }
-                                                                                                                                                                                                                 }), null, info);
-                                                                                                                                                                      }
 
-                                                                                                                                                                      if(text.Contains(" pg_indexes ")) {
-                                                                                                                                                                          return new Reader(new FakeReader(new[] { "schemaname", "tablename", "indexname", "indexdef" },
-                                                                                                                                                                                                           new[] {
-                                                                                                                                                                                                                     new object[] { "public", "companyaddress", "companyaddress_pkey", "CREATE UNIQUE INDEX companyaddress_pkey ON public.companyaddress USING btree (id)" },
-                                                                                                                                                                                                                     new object[] { "public", "companyaddress", "companyaddress_country_state_city_postalcode_line_key", "CREATE UNIQUE INDEX companyaddress_country_state_city_postalcode_line_key ON public.companyaddress USING btree (country, state, city, postalcode, line)" },
-                                                                                                                                                                                                                     new object[] { "public", "companyaddress", "idx_companyaddress_company", "CREATE INDEX idx_companyaddress_company ON public.companyaddress USING btree (companyid)" }
-                                                                                                                                                                                                                 }), null, info);
-                                                                                                                                                                      }
+        client.Setup(c => c.Reader(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<IEnumerable<object>>())).Returns<Transaction, string, IEnumerable<object>>((tr, text, pr) => {
+            if (text.Contains(" information_schema.columns ")) {
+                return new(new FakeReader(["table_catalog", "table_schema", "table_name", "column_name", "data_type", "is_nullable", "column_default"],
+                [
+                    ["xx.io", "public", "companyaddress", "id", "bigint", false, "nextval('company_id_seq'::regclass)"],
+                    ["xx.io", "public", "companyaddress", "companyid", "bigint", false, DBNull.Value],
+                    ["xx.io", "public", "companyaddress", "country", "character varying", true, DBNull.Value],
+                    ["xx.io", "public", "companyaddress", "state", "character varying", true, DBNull.Value],
+                    ["xx.io", "public", "companyaddress", "city", "character varying", true, DBNull.Value],
+                    ["xx.io", "public", "companyaddress", "postalcode", "character varying", true, DBNull.Value],
+                    ["xx.io", "public", "companyaddress", "line", "character varying", true, DBNull.Value]
+                ]), null, info);
+            }
 
-                                                                                                                                                                      return new Reader(new FakeReader(Array.Empty<string>(), Array.Empty<object[]>()), null, info);
-                                                                                                                                                                  });
+            if (text.Contains(" pg_indexes ")) {
+                return new(new FakeReader(["schemaname", "tablename", "indexname", "indexdef"],
+                [
+                    ["public", "companyaddress", "companyaddress_pkey", "CREATE UNIQUE INDEX companyaddress_pkey ON public.companyaddress USING btree (id)"],
+                    ["public", "companyaddress", "companyaddress_country_state_city_postalcode_line_key", "CREATE UNIQUE INDEX companyaddress_country_state_city_postalcode_line_key ON public.companyaddress USING btree (country, state, city, postalcode, line)"],
+                    ["public", "companyaddress", "idx_companyaddress_company", "CREATE INDEX idx_companyaddress_company ON public.companyaddress USING btree (companyid)"]
+                ]), null, info);
+            }
+
+            return new(new FakeReader([], []), null, info);
+        });
 
         TableDescriptor descriptor = info.GetSchema(client.Object, "companyaddress") as TableDescriptor;
 
@@ -97,7 +98,7 @@ public class PostgreInfoTests {
         client.SetupGet(c => c.DBInfo).Returns(dbinfo);
 
 
-        PreparedLoadOperation loadop = new LoadOperation<PgView>(client.Object, type => new EntityDescriptor("test"), v=>DBFunction.Count()).Limit(7).Prepare();
+        PreparedLoadOperation loadop = new LoadOperation<PgView>(client.Object, type => new("test"), v=>DBFunction.Count()).Limit(7).Prepare();
 
         Assert.AreEqual("SELECT count( * ) FROM test LIMIT @1", loadop.CommandText);
     }
@@ -228,38 +229,40 @@ public class PostgreInfoTests {
 
         Mock<IDBClient> client = new Mock<IDBClient>();
         client.SetupGet(c => c.DBInfo).Returns(info);
-        client.Setup(c => c.Reader(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<IEnumerable<object>>())).Returns<Transaction, string, IEnumerable<object>>((tr, text, pr) => {
-                                                                                                                                                                        if(text.Contains(" information_schema.columns ")) {
-                                                                                                                                                                            return new Reader(new FakeReader(
-                                                                                                                                                                                                             new[] { "table_catalog", "table_schema", "table_name", "column_name", "data_type", "is_nullable", "column_default" },
-                                                                                                                                                                                                             new[] {
-                                                                                                                                                                                                                       new object[] { "xx.io", "public", "company", "id", "bigint", "NO", "nextval('company_id_seq1'::regclass)" },
-                                                                                                                                                                                                                       new object[] { "xx.io", "public", "company", "name", "character varying", "YES", DBNull.Value },
-                                                                                                                                                                                                                       new object[] { "xx.io", "public", "company", "url", "character varying", "YES", DBNull.Value }
-                                                                                                                                                                                                                   }), null, info);
-                                                                                                                                                                        }
+        client.Setup(c => c.Reader(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<IEnumerable<object>>()))
+              .Returns<Transaction, string, IEnumerable<object>>((tr, text, pr) => {
+                  if (text.Contains(" information_schema.columns ")) {
+                      return new Reader(new FakeReader(
+                                                       new[] { "table_catalog", "table_schema", "table_name", "column_name", "data_type", "is_nullable", "column_default" },
+                                                       new[] {
+                                                           new object[] { "xx.io", "public", "company", "id", "bigint", "NO", "nextval('company_id_seq1'::regclass)" },
+                                                           new object[] { "xx.io", "public", "company", "name", "character varying", "YES", DBNull.Value },
+                                                           new object[] { "xx.io", "public", "company", "url", "character varying", "YES", DBNull.Value }
+                                                       }), null, info);
+                  }
 
-                                                                                                                                                                        if(text.Contains(" pg_indexes ")) {
-                                                                                                                                                                            return new Reader(new FakeReader(
-                                                                                                                                                                                                             new[] { "schemaname", "tablename", "indexname", "indexdef" },
-                                                                                                                                                                                                             new[] {
-                                                                                                                                                                                                                       new object[] { "public", "company", "company_pkey1", "CREATE UNIQUE INDEX company_pkey1 ON public.company USING btree (id)" },
-                                                                                                                                                                                                                       new object[] { "public", "company", "company_name_key1", "CREATE UNIQUE INDEX company_name_key1 ON public.company USING btree (name)" },
-                                                                                                                                                                                                                       new object[] { "public", "company", "company_url_key1", "CREATE UNIQUE INDEX company_url_key1 ON public.company USING btree (url)" },
-                                                                                                                                                                                                                       new object[] { "public", "company", "idx_company_name", "CREATE INDEX idx_company_name ON public.company USING btree (name)" },
-                                                                                                                                                                                                                       new object[] { "public", "company", "idx_company_url", "CREATE INDEX idx_company_url ON public.company USING btree (url)" },
-                                                                                                                                                                                                                   }), null, info);
-                                                                                                                                                                        }
+                  if (text.Contains(" pg_indexes ")) {
+                      return new Reader(new FakeReader(
+                                                       new[] { "schemaname", "tablename", "indexname", "indexdef" },
+                                                       new[] {
+                                                           new object[] { "public", "company", "company_pkey1", "CREATE UNIQUE INDEX company_pkey1 ON public.company USING btree (id)" },
+                                                           new object[] { "public", "company", "company_name_key1", "CREATE UNIQUE INDEX company_name_key1 ON public.company USING btree (name)" },
+                                                           new object[] { "public", "company", "company_url_key1", "CREATE UNIQUE INDEX company_url_key1 ON public.company USING btree (url)" },
+                                                           new object[] { "public", "company", "idx_company_name", "CREATE INDEX idx_company_name ON public.company USING btree (name)" },
+                                                           new object[] { "public", "company", "idx_company_url", "CREATE INDEX idx_company_url ON public.company USING btree (url)" },
+                                                       }), null, info);
+                  }
 
-                                                                                                                                                                        return new Reader(new FakeReader(Array.Empty<string>(), Array.Empty<object[]>()), null, info);
-                                                                                                                                                                    });
-        client.Setup(c => c.NonQuery(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<object[]>())).Returns<Transaction, string, object[]>((tr, text, pr) => {
-                                                                                                                                                    if(text.StartsWith("ALTER") || text.StartsWith("DROP") || text.StartsWith("CREATE") || text.StartsWith("INSERT"))
-                                                                                                                                                        Assert.Fail();
-                                                                                                                                                    return 0;
-                                                                                                                                                });
+                  return new Reader(new FakeReader([], []), null, info);
+              });
+        client.Setup(c => c.NonQuery(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<object[]>()))
+              .Returns<Transaction, string, object[]>((tr, text, pr) => {
+                  if (text.StartsWith("ALTER") || text.StartsWith("DROP") || text.StartsWith("CREATE") || text.StartsWith("INSERT"))
+                      Assert.Fail();
+                  return 0;
+              });
         client.Setup(c => c.Scalar(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<object[]>())).Returns(1L);
-        SchemaUpdater updater = new(new EntityDescriptorCache());
+        SchemaUpdater updater = new(new());
         updater.Update<Company>(client.Object);
     }
 

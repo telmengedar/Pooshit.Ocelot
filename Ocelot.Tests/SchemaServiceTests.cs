@@ -22,18 +22,18 @@ public class SchemaServiceTests {
         SchemaService service = new(client);
 
         await service.CreateSchema(new TableSchema {
-                                                       Name = "testtable",
-                                                       Columns = new[] {
-                                                                           new ColumnDescriptor("moon") {
-                                                                                                            Type = "INTEGER"
-                                                                                                        },
-                                                                           new ColumnDescriptor("sun") {
-                                                                                                           Type = "TEXT",
-                                                                                                           NotNull = true,
-                                                                                                           DefaultValue = "foom"
-                                                                                                       }
-                                                                       }
-                                                   });
+            Name = "testtable",
+            Columns = [
+                new("moon") {
+                    Type = "INTEGER"
+                },
+                new("sun") {
+                    Type = "TEXT",
+                    NotNull = true,
+                    DefaultValue = "foom"
+                }
+            ]
+        });
 
         TableSchema created = await service.GetSchema("testtable") as TableSchema;
         Assert.NotNull(created);

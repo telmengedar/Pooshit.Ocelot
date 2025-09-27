@@ -17,7 +17,7 @@ namespace Pooshit.Ocelot.Tests.Entities
         public void MultiUniqueDoesntAffectSingleColumns()
         {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
-            EntityManager entitymanager = new EntityManager(dbclient);
+            EntityManager entitymanager = new(dbclient);
 
             entitymanager.Model<ValueModel>().Unique(u => u.Integer, u => u.String);
             entitymanager.UpdateSchema<ValueModel>();
@@ -39,7 +39,7 @@ namespace Pooshit.Ocelot.Tests.Entities
         public void MultiUniqueFailsOnDoubleInsert()
         {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
-            EntityManager entitymanager = new EntityManager(dbclient);
+            EntityManager entitymanager = new(dbclient);
 
             entitymanager.Model<ValueModel>().Unique(u => u.Integer, u => u.String);
             entitymanager.UpdateSchema<ValueModel>();

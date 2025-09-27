@@ -182,8 +182,18 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
     }
 
     /// <inheritdoc />
-    public virtual LoadOperation<TModel> CreateOperation(IEntityManager database, params string[] fields) {
-        return database.Load<TModel>(DbFieldsFromNames(fields).ToArray());
+    public LoadOperation<TModel> CreateOperation(IEntityManager database) {
+        return CreateOperation(database, DbFields.ToArray());
+    }
+
+    /// <inheritdoc />
+    public LoadOperation<TModel> CreateOperation(IEntityManager database, params string[] fields) {
+        return CreateOperation(database, DbFieldsFromNames(fields).ToArray());
+    }
+    
+    /// <inheritdoc />
+    public virtual LoadOperation<TModel> CreateOperation(IEntityManager database, params IDBField[] fields) {
+        return database.Load<TModel>(fields);
     }
 }
 
@@ -200,5 +210,17 @@ public abstract class FieldMapper<TModel, TEntity> : FieldMapper<TModel>, IField
     protected FieldMapper(IEnumerable<FieldMapping<TModel>> mappings, Action<TModel, string[], IRowValues> initializer = null) : base(mappings, initializer) { }
 
     /// <inheritdoc />
-    public new abstract LoadOperation<TEntity> CreateOperation(IEntityManager database, params string[] fields);
+    public new LoadOperation<TEntity> CreateOperation(IEntityManager database) {
+        return CreateOperation(database,  DbFields.ToArray());
+    }
+
+    /// <inheritdoc />
+    public new LoadOperation<TEntity> CreateOperation(IEntityManager database, params string[] fields) {
+        return CreateOperation(database, DbFieldsFromNames(fields).ToArray());
+    }
+
+    /// <inheritdoc />
+    public new virtual LoadOperation<TEntity> CreateOperation(IEntityManager database, params IDBField[] fields) {
+        return database.Load<TEntity>(fields);
+    }
 }

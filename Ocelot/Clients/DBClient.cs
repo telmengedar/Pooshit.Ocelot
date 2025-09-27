@@ -165,7 +165,7 @@ public class DBClient : ADbClient {
     public override Reader Reader(Transaction transaction, string command, IEnumerable<object> parameters) {
         PreparedCommand prepared = PrepareCommand(transaction, command, parameters, false);
         try {
-            return new Reader(prepared.Command.ExecuteReader(), prepared, DBInfo);
+            return new(prepared.Command.ExecuteReader(), prepared, DBInfo);
         }
         catch (Exception) {
             prepared.Dispose();
@@ -309,7 +309,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
-        PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
+        using PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
 
         DbDataReader reader;
         try {

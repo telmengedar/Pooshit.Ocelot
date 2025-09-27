@@ -6,6 +6,7 @@ using Pooshit.Ocelot.Entities.Operations;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Info;
 using Pooshit.Ocelot.Tests.Entities;
+using Pooshit.Ocelot.Tests.Models;
 
 namespace Pooshit.Ocelot.Tests.Postgres {
 
@@ -52,8 +53,22 @@ namespace Pooshit.Ocelot.Tests.Postgres {
         }
 
         [Test, Parallelizable]
+        public void AddColumnFloatArray() {
+            PostgreInfo info = new();
+            Mock<IDBClient> client = new();
+            client.SetupGet(c => c.DBInfo)
+                  .Returns(info);
+
+            AlterTableOperation operation = new(client.Object, "test");
+            operation.Add(new EntityColumnDescriptor("data", typeof(ValueModel).GetProperty("FloatArray")));
+
+            PreparedOperation statement = operation.Prepare();
+            Assert.AreEqual("ALTER TABLE test ADD COLUMN \"data\" real[16] ", statement.CommandText);
+        }
+
+        [Test, Parallelizable]
         public void AddColumns() {
-            PostgreInfo info = new PostgreInfo();
+            PostgreInfo info = new();
             Mock<IDBClient> client = new Mock<IDBClient>();
             client.SetupGet(c => c.DBInfo).Returns(info);
 

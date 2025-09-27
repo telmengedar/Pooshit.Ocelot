@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.CustomTypes;
+using Pooshit.Ocelot.Entities.Attributes;
 using Pooshit.Ocelot.Entities.Descriptors;
 using Pooshit.Ocelot.Entities.Operations;
 using Pooshit.Ocelot.Entities.Operations.Expressions;
@@ -201,6 +202,10 @@ public class PostgreInfo : DBInfo {
                                 visitor.Visit(methodCall.Arguments[0]);
                                 operation.AppendText(") * 10000000");
                             break;
+                            case CastType.Vector:
+                                visitor.Visit(methodCall.Arguments[0]);
+                                operation.AppendText("::vector");
+                            break;
                             default:
                                 throw new ArgumentException("Invalid cast target type");
                         }
@@ -297,6 +302,10 @@ public class PostgreInfo : DBInfo {
                 Append(cast.Field, preparator, descriptorgetter, tablealias);
                 preparator.AppendText("AS TEXT)");
                 break;
+            case CastType.Vector:
+                Append(cast.Field, preparator, descriptorgetter, tablealias);
+                preparator.AppendText("::vector");
+            break;
             default:
                 throw new ArgumentException("Invalid cast target type");
         }
@@ -421,7 +430,7 @@ public class PostgreInfo : DBInfo {
     }
 
     /// <inheritdoc />
-    public override string GetDBType(string type) {
+    public override string GetDBType(string type, int length=0) {
         if (type.StartsWith("timestamp"))
             return "timestamp";
             
@@ -484,6 +493,8 @@ public class PostgreInfo : DBInfo {
             case Types.LongRange:
             case Types.DateRange:
                 return type;
+            case Types.SingleArray:
+                return $"real[{length}]";
             default:
                 throw new InvalidOperationException($"unsupported type '{type}'");
         }
@@ -564,7 +575,7 @@ public class PostgreInfo : DBInfo {
     }
 
     void ColumnType(IOperationPreparator operation, ColumnDescriptor column) {
-        string pgtype = GetDBType(column.Type);
+        string pgtype = GetDBType(column.Type, column.Length);
         if(column.AutoIncrement) {
             if(pgtype == "int4")
                 operation.AppendText("serial4");
@@ -588,7 +599,7 @@ public class PostgreInfo : DBInfo {
                 throw new InvalidOperationException("Autoincrement with postgre only allowed with integer types");
         }
         else {
-            operation.AppendText(GetDBType(column.Property.PropertyType));
+            operation.AppendText(GetDBType(column.Property.PropertyType, SizeAttribute.GetLength(column.Property)));
         }
     }
 

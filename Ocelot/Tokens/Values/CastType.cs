@@ -79,5 +79,10 @@ public enum CastType {
     /// <summary>
     /// extracts number of ticks from an interval
     /// </summary>
-    Ticks
+    Ticks,
+    
+    /// <summary>
+    /// vector
+    /// </summary>
+    Vector
 }

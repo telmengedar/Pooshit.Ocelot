@@ -70,6 +70,32 @@ public class CriteriaVisitorTests {
     }
 
     [Test, Parallelizable]
+    public void ComplementForInteger() {
+        OperationPreparator preparator = new();
+        CriteriaVisitor visitor = new(EntityDescriptor.Create, preparator, new SQLiteInfo(), true);
+
+        Expression<Func<ValueModel, object>> predicate = m => DB.Value<ValueModel>(vm => ~vm.Integer);
+        visitor.Visit(predicate);
+
+        IDBClient client = TestData.CreateDatabaseAccess();
+        PreparedOperation operation = preparator.GetOperation(client, false);
+        Assert.AreEqual("( ~ [integer] )", operation.CommandText);
+    }
+
+    [Test, Parallelizable]
+    public void NotForBoolean() {
+        OperationPreparator preparator = new();
+        CriteriaVisitor visitor = new(EntityDescriptor.Create, preparator, new SQLiteInfo(), true);
+
+        Expression<Func<ValueModel, object>> predicate = m => DB.Value<ValueModel>(vm => !(vm.Integer==vm.Integer));
+        visitor.Visit(predicate);
+
+        IDBClient client = TestData.CreateDatabaseAccess();
+        PreparedOperation operation = preparator.GetOperation(client, false);
+        Assert.AreEqual("( NOT [integer] = [integer] )", operation.CommandText);
+    }
+
+    [Test, Parallelizable]
     public void ComplexParenthesis() {
         OperationPreparator preparator=new();
         CriteriaVisitor visitor = new(EntityDescriptor.Create, preparator, new SQLiteInfo(), true);
