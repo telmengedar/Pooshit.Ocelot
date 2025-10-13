@@ -91,6 +91,18 @@ namespace Pooshit.Ocelot.Tokens.Operations {
                 case Operand.ShiftRight:
                     preparator.AppendText(">>");
                     break;
+                case Operand.L1Distance:
+                    preparator.AppendText("<+>");
+                break;
+                case Operand.L2Distance:
+                    preparator.AppendText("<->");
+                break;
+                case Operand.CosineDistance:
+                    preparator.AppendText("<=>");
+                break;
+                case Operand.InnerProduct:
+                    preparator.AppendText("<#>");
+                break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

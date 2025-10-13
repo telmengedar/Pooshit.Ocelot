@@ -108,6 +108,26 @@ namespace Pooshit.Ocelot.Tokens.Operations {
         /// <summary>
         /// bitwise shift right
         /// </summary>
-        ShiftRight
+        ShiftRight,
+        
+        /// <summary>
+        /// l1 vector distance
+        /// </summary>
+        L1Distance,
+        
+        /// <summary>
+        /// l2 vector distance
+        /// </summary>
+        L2Distance,
+        
+        /// <summary>
+        /// cosine vector distance
+        /// </summary>
+        CosineDistance,
+        
+        /// <summary>
+        /// negative inner vector product
+        /// </summary>
+        InnerProduct
     }
 }

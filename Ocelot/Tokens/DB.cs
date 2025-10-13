@@ -6,6 +6,7 @@ using Pooshit.Ocelot.Fields;
 using Pooshit.Ocelot.Fields.Sql;
 using Pooshit.Ocelot.Tokens.Control;
 using Pooshit.Ocelot.Tokens.Functions;
+using Pooshit.Ocelot.Tokens.Operations;
 using Pooshit.Ocelot.Tokens.Partitions;
 using Pooshit.Ocelot.Tokens.Values;
 
@@ -666,5 +667,45 @@ public static class DB {
     /// <returns></returns>
     public static TupleToken Tuple(params object[] values) {
         return new(values);
+    }
+
+    /// <summary>
+    /// l1 vector distance of lhs to rhs
+    /// </summary>
+    /// <param name="lhs">left hand side vector</param>
+    /// <param name="rhs">right hand side vector</param>
+    /// <returns>vector operation</returns>
+    public static OperationToken VL1(ISqlToken lhs, ISqlToken rhs) {
+        return new(lhs, Operand.L1Distance, rhs);
+    }
+
+    /// <summary>
+    /// l2 vector distance of lhs to rhs
+    /// </summary>
+    /// <param name="lhs">left hand side vector</param>
+    /// <param name="rhs">right hand side vector</param>
+    /// <returns>vector operation</returns>
+    public static OperationToken VL2(ISqlToken lhs, ISqlToken rhs) {
+        return new(lhs, Operand.L2Distance, rhs);
+    }
+
+    /// <summary>
+    /// cosine vector distance of lhs to rhs
+    /// </summary>
+    /// <param name="lhs">left hand side vector</param>
+    /// <param name="rhs">right hand side vector</param>
+    /// <returns>vector operation</returns>
+    public static OperationToken VCos(ISqlToken lhs, ISqlToken rhs) {
+        return new(lhs, Operand.CosineDistance, rhs);
+    }
+
+    /// <summary>
+    /// inner vector product of lhs to rhs
+    /// </summary>
+    /// <param name="lhs">left hand side vector</param>
+    /// <param name="rhs">right hand side vector</param>
+    /// <returns>vector operation</returns>
+    public static OperationToken VProd(ISqlToken lhs, ISqlToken rhs) {
+        return new(lhs, Operand.InnerProduct, rhs);
     }
 }
