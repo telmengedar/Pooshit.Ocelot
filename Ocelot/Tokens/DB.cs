@@ -49,7 +49,7 @@ public static class DB {
     /// <param name="tokens">tokens to evaluate</param>
     /// <returns>token to be used in statements</returns>
     public static ISqlToken Coalesce(params ISqlToken[] tokens) {
-        return new AggregateFunction("COALESCE", tokens);
+        return new DatabaseFunction("COALESCE", tokens);
     }
 
     /// <summary>
@@ -75,7 +75,7 @@ public static class DB {
     /// <param name="token">token of which to get absolute</param>
     /// <returns>token representing this statement</returns>
     public static ISqlToken Abs(ISqlToken token) {
-        return new AggregateFunction("ABS", token);
+        return new DatabaseFunction("ABS", token);
     }
 
     /// <summary>
@@ -135,7 +135,7 @@ public static class DB {
     /// <param name="token">token identifying values to sum</param>
     /// <returns>token to be used in statements</returns>
     public static ISqlToken Sum(ISqlToken token) {
-        return new AggregateFunction("SUM", token);
+        return new DatabaseFunction("SUM", token);
     }
 
     /// <summary>
@@ -153,7 +153,7 @@ public static class DB {
     /// <param name="token">token identifying values to sum</param>
     /// <returns>token to be used in statements</returns>
     public static ISqlToken Avg(ISqlToken token) {
-        return new AggregateFunction("AVG", token);
+        return new DatabaseFunction("AVG", token);
     }
 
     /// <summary>
@@ -171,7 +171,7 @@ public static class DB {
     /// <param name="token">token identifying values of which to get minimum</param>
     /// <returns>token to be used in statements</returns>
     public static ISqlToken Min(ISqlToken token) {
-        return new AggregateFunction("MIN", token);
+        return new DatabaseFunction("MIN", token);
     }
 
     /// <summary>
@@ -198,7 +198,7 @@ public static class DB {
     /// <param name="token">token identifying values of which to get maximum</param>
     /// <returns>token to be used in statements</returns>
     public static ISqlToken Max(ISqlToken token) {
-        return new AggregateFunction("MAX", token);
+        return new DatabaseFunction("MAX", token);
     }
 
     /// <summary>
@@ -243,7 +243,7 @@ public static class DB {
     /// <param name="token">token identifying values of which to get maximum</param>
     /// <returns>token to be used in statements</returns>
     public static ISqlToken Floor(ISqlToken token) {
-        return new AggregateFunction("FLOOR", token);
+        return new DatabaseFunction("FLOOR", token);
     }
 
     /// <summary>
@@ -261,7 +261,7 @@ public static class DB {
     /// <param name="token">token identifying values of which to get maximum</param>
     /// <returns>token to be used in statements</returns>
     public static ISqlToken Ceiling(ISqlToken token) {
-        return new AggregateFunction("CEILING", token);
+        return new DatabaseFunction("CEILING", token);
     }
 
     /// <summary>
@@ -279,7 +279,7 @@ public static class DB {
     /// <param name="token">token identifying values of which to get maximum</param>
     /// <returns>token to be used in statements</returns>
     public static ISqlToken Concat(ISqlToken token) {
-        return new AggregateFunction("CONCAT", token);
+        return new DatabaseFunction("CONCAT", token);
     }
 
     /// <summary>
@@ -308,7 +308,7 @@ public static class DB {
     /// <param name="token">token specifying column to count</param>
     /// <returns>token to be used in statements</returns>
     public static ISqlToken Count(ISqlToken token) {
-        return new AggregateFunction("COUNT", token);
+        return new DatabaseFunction("COUNT", token);
     }
 
     /// <summary>
@@ -707,5 +707,15 @@ public static class DB {
     /// <returns>vector operation</returns>
     public static OperationToken VProd(ISqlToken lhs, ISqlToken rhs) {
         return new(lhs, Operand.InnerProduct, rhs);
+    }
+
+    /// <summary>
+    /// calls a custom function
+    /// </summary>
+    /// <param name="functionName">name of function to call</param>
+    /// <param name="tokens">function arguments</param>
+    /// <returns>function call</returns>
+    public static DatabaseFunction CustomFunction(string functionName, params ISqlToken[] tokens) {
+        return new(functionName, tokens);
     }
 }

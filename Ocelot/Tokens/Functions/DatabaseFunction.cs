@@ -9,22 +9,22 @@ namespace Pooshit.Ocelot.Tokens.Functions;
 /// <summary>
 /// aggregate function
 /// </summary>
-public class AggregateFunction : SqlToken {
+public class DatabaseFunction : SqlToken {
         
     /// <summary>
     /// creates a new <see cref="Aggregate"/>
     /// </summary>
-    /// <param name="method">aggregate method</param>
+    /// <param name="functionName">aggregate method</param>
     /// <param name="arguments">arguments for method</param>
-    internal AggregateFunction(string method, params ISqlToken[] arguments) {
-        Method = method;
+    internal DatabaseFunction(string functionName, params ISqlToken[] arguments) {
+        FunctionName = functionName;
         Arguments = arguments;
     }
 
     /// <summary>
     /// method name
     /// </summary>
-    public string Method { get; }
+    public string FunctionName { get; }
 
     /// <summary>
     /// content of the function
@@ -33,7 +33,7 @@ public class AggregateFunction : SqlToken {
 
     /// <inheritdoc />
     public override void ToSql(IDBInfo dbinfo, IOperationPreparator preparator, Func<Type, EntityDescriptor> models, string tablealias) {
-        preparator.AppendText(Method);
+        preparator.AppendText(FunctionName);
         preparator.AppendText("(");
         bool first = true;
         foreach (ISqlToken argument in Arguments) {
