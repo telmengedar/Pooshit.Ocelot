@@ -1,5 +1,6 @@
 ﻿using System;
 using Pooshit.Ocelot.Entities.Descriptors;
+using Pooshit.Ocelot.Entities.Operations.Expressions;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Fields;
 using Pooshit.Ocelot.Info;
@@ -16,7 +17,7 @@ public class DatabaseFunction : SqlToken {
     /// </summary>
     /// <param name="functionName">aggregate method</param>
     /// <param name="arguments">arguments for method</param>
-    internal DatabaseFunction(string functionName, params ISqlToken[] arguments) {
+    internal DatabaseFunction(string functionName, params IDBField[] arguments) {
         FunctionName = functionName;
         Arguments = arguments;
     }
@@ -29,18 +30,19 @@ public class DatabaseFunction : SqlToken {
     /// <summary>
     /// content of the function
     /// </summary>
-    public ISqlToken[] Arguments { get; }
+    public IDBField[] Arguments { get; }
 
     /// <inheritdoc />
     public override void ToSql(IDBInfo dbinfo, IOperationPreparator preparator, Func<Type, EntityDescriptor> models, string tablealias) {
         preparator.AppendText(FunctionName);
         preparator.AppendText("(");
         bool first = true;
-        foreach (ISqlToken argument in Arguments) {
+        foreach (IDBField argument in Arguments) {
             if (first)
                 first = false;
             else preparator.AppendText(",");
-            argument.ToSql(dbinfo, preparator, models, tablealias);
+
+            dbinfo.Append(argument, preparator, models, tablealias);
         }
         preparator.AppendText(")");
     }

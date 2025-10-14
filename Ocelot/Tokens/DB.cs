@@ -715,7 +715,7 @@ public static class DB {
     /// <param name="functionName">name of function to call</param>
     /// <param name="tokens">function arguments</param>
     /// <returns>function call</returns>
-    public static DatabaseFunction CustomFunction(string functionName, params ISqlToken[] tokens) {
+    public static DatabaseFunction CustomFunction(string functionName, params IDBField[] tokens) {
         return new(functionName, tokens);
     }
 }
