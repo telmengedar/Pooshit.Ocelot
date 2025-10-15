@@ -264,7 +264,7 @@ namespace Pooshit.Ocelot.Tests.Entities {
         [Test, Parallelizable]
         public void LimitExpression() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
-            EntityManager entitymanager = new EntityManager(dbclient);
+            EntityManager entitymanager = new(dbclient);
             entitymanager.Create<TestEntityWithoutAnySpecifications>();
 
             TestEntityWithoutAnySpecifications[] source = TestEntities.ToArray();

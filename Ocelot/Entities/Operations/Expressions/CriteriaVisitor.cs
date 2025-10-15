@@ -630,7 +630,7 @@ public class CriteriaVisitor : ExpressionVisitor {
             return node;
         }
 
-        if (node.Method.DeclaringType == typeof(IDBField)) {
+        if (node.Method.DeclaringType == typeof(IDBField) || node.Method.DeclaringType == typeof(DBField) || node.Method.DeclaringType == typeof(SqlToken)) {
             AppendConstantValue(GetHost(node.Object));
             return node;
         }

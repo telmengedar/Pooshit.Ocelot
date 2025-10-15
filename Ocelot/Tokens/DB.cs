@@ -48,8 +48,8 @@ public static class DB {
     /// </summary>
     /// <param name="tokens">tokens to evaluate</param>
     /// <returns>token to be used in statements</returns>
-    public static ISqlToken Coalesce(params ISqlToken[] tokens) {
-        return new DatabaseFunction("COALESCE", tokens);
+    public static DatabaseFunction Coalesce(params ISqlToken[] tokens) {
+        return new("COALESCE", tokens);
     }
 
     /// <summary>
@@ -74,8 +74,8 @@ public static class DB {
     /// </summary>
     /// <param name="token">token of which to get absolute</param>
     /// <returns>token representing this statement</returns>
-    public static ISqlToken Abs(ISqlToken token) {
-        return new DatabaseFunction("ABS", token);
+    public static DatabaseFunction Abs(ISqlToken token) {
+        return new("ABS", token);
     }
 
     /// <summary>
@@ -134,8 +134,8 @@ public static class DB {
     /// </summary>
     /// <param name="token">token identifying values to sum</param>
     /// <returns>token to be used in statements</returns>
-    public static ISqlToken Sum(ISqlToken token) {
-        return new DatabaseFunction("SUM", token);
+    public static DatabaseFunction Sum(ISqlToken token) {
+        return new("SUM", token);
     }
 
     /// <summary>
@@ -152,8 +152,8 @@ public static class DB {
     /// </summary>
     /// <param name="token">token identifying values to sum</param>
     /// <returns>token to be used in statements</returns>
-    public static ISqlToken Avg(ISqlToken token) {
-        return new DatabaseFunction("AVG", token);
+    public static DatabaseFunction Avg(ISqlToken token) {
+        return new("AVG", token);
     }
 
     /// <summary>
@@ -170,8 +170,8 @@ public static class DB {
     /// </summary>
     /// <param name="token">token identifying values of which to get minimum</param>
     /// <returns>token to be used in statements</returns>
-    public static ISqlToken Min(ISqlToken token) {
-        return new DatabaseFunction("MIN", token);
+    public static DatabaseFunction Min(ISqlToken token) {
+        return new("MIN", token);
     }
 
     /// <summary>
@@ -197,8 +197,8 @@ public static class DB {
     /// </summary>
     /// <param name="token">token identifying values of which to get maximum</param>
     /// <returns>token to be used in statements</returns>
-    public static ISqlToken Max(ISqlToken token) {
-        return new DatabaseFunction("MAX", token);
+    public static DatabaseFunction Max(ISqlToken token) {
+        return new("MAX", token);
     }
 
     /// <summary>
@@ -242,8 +242,8 @@ public static class DB {
     /// </summary>
     /// <param name="token">token identifying values of which to get maximum</param>
     /// <returns>token to be used in statements</returns>
-    public static ISqlToken Floor(ISqlToken token) {
-        return new DatabaseFunction("FLOOR", token);
+    public static DatabaseFunction Floor(ISqlToken token) {
+        return new("FLOOR", token);
     }
 
     /// <summary>
@@ -260,8 +260,8 @@ public static class DB {
     /// </summary>
     /// <param name="token">token identifying values of which to get maximum</param>
     /// <returns>token to be used in statements</returns>
-    public static ISqlToken Ceiling(ISqlToken token) {
-        return new DatabaseFunction("CEILING", token);
+    public static DatabaseFunction Ceiling(ISqlToken token) {
+        return new("CEILING", token);
     }
 
     /// <summary>
@@ -278,8 +278,8 @@ public static class DB {
     /// </summary>
     /// <param name="token">token identifying values of which to get maximum</param>
     /// <returns>token to be used in statements</returns>
-    public static ISqlToken Concat(ISqlToken token) {
-        return new DatabaseFunction("CONCAT", token);
+    public static DatabaseFunction Concat(ISqlToken token) {
+        return new("CONCAT", token);
     }
 
     /// <summary>
@@ -295,7 +295,7 @@ public static class DB {
     /// counts values of a column which are not null
     /// </summary>
     /// <returns>token to be used in statements</returns>
-    public static ISqlToken Count() {
+    public static DatabaseFunction Count() {
         return Count(All);
     }
 
@@ -307,8 +307,8 @@ public static class DB {
     /// </remarks>
     /// <param name="token">token specifying column to count</param>
     /// <returns>token to be used in statements</returns>
-    public static ISqlToken Count(ISqlToken token) {
-        return new DatabaseFunction("COUNT", token);
+    public static DatabaseFunction Count(ISqlToken token) {
+        return new("COUNT", token);
     }
 
     /// <summary>
@@ -715,7 +715,7 @@ public static class DB {
     /// <param name="functionName">name of function to call</param>
     /// <param name="tokens">function arguments</param>
     /// <returns>function call</returns>
-    public static DatabaseFunction CustomFunction(string functionName, params IDBField[] tokens) {
+    public static DatabaseFunction CustomFunction(string functionName, params ISqlToken[] tokens) {
         return new(functionName, tokens);
     }
 }
