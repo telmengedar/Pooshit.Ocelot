@@ -494,7 +494,10 @@ public class PostgreInfo : DBInfo {
             case Types.DateRange:
                 return type;
             case Types.SingleArray:
-                return $"real[{length}]";
+            case Types.RealArray:
+                if(length>=0)
+                    return $"real[{length}]";
+                return "real[]";
             default:
                 throw new InvalidOperationException($"unsupported type '{type}'");
         }
@@ -684,25 +687,37 @@ public class PostgreInfo : DBInfo {
         return createStatement.ProcessCreateStatement();
     }
 
+    Tuple<string, int> AnalyseType(string type) {
+        int indexOf = type.IndexOf("[", StringComparison.Ordinal);
+
+        if (indexOf < 0)
+            return new(type, 0);
+
+        int.TryParse(type.Substring(indexOf+1, type.Length - indexOf - 2), out int result);
+        return new(type.Substring(0, indexOf) + "[]", result);
+    }
+    
     /// <inheritdoc />
     public override SchemaDescriptor GetSchema(IDBClient client, string name) {
         PgView view = new LoadOperation<PgView>(client, EntityDescriptor.Create, DB.All).Where(p => p.Name == name).ExecuteEntity();
-        if(view != null)
+        if (view != null)
             return new ViewDescriptor(name) {
-                                                SQL = view.Definition
-                                            };
+                SQL = view.Definition
+            };
 
         Dictionary<string, ColumnDescriptor> columns = new();
         foreach(PgColumn column in new LoadOperation<PgColumn>(client, EntityDescriptor.Create, DB.All).Where(c => c.Table == name).ExecuteEntities()) {
+            Tuple<string, int> type = AnalyseType(column.DataType);
             columns[column.Column] = new(column.Column) {
-                                                            Type = column.DataType,
-                                                            NotNull = column.IsNullable == "NO",
-                                                            AutoIncrement = column.Default?.StartsWith("nextval") ?? false
-                                                        };
+                Type = type.Item1,
+                NotNull = column.IsNullable == "NO",
+                AutoIncrement = column.Default?.StartsWith("nextval") ?? false,
+                Length = type.Item2
+            };
         }
 
-        List<UniqueDescriptor> uniques = new();
-        List<IndexDescriptor> indices = new();
+        List<UniqueDescriptor> uniques = [];
+        List<IndexDescriptor> indices = [];
         foreach(PgIndex index in new LoadOperation<PgIndex>(client, EntityDescriptor.Create, DB.All).Where(i => i.Table == name).ExecuteEntities()) {
             Match match = Regex.Match(index.Definition, "^CREATE (?<unique>UNIQUE )?INDEX (?<name>[^ ]+) ON (?<table>[^ ]+)( USING (?<type>[a-zA-Z]+))? \\((?<columns>.+)\\)");
             if(!match.Success)

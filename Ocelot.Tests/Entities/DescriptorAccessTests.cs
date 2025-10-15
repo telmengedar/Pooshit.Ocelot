@@ -17,7 +17,7 @@ namespace Pooshit.Ocelot.Tests.Entities {
         [Test, Parallelizable]
         public void SetAutoIncrementingPrimaryKey() {
             IDBClient dbclient = TestData.CreateDatabaseAccess();
-            EntityManager entitymanager = new EntityManager(dbclient);
+            EntityManager entitymanager = new(dbclient);
 
             entitymanager.Model<ValueModel>().PrimaryKey(m => m.Integer).AutoIncrement(m => m.Integer);
 
