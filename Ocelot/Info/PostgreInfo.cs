@@ -762,19 +762,23 @@ public class PostgreInfo : DBInfo {
     /// <inheritdoc />
     public override async Task<Schema> GetSchemaAsync(IDBClient client, string name, Transaction transaction=null) {
         PgView view = await new LoadOperation<PgView>(client, EntityDescriptor.Create, DB.All).Where(p => p.Name == name).ExecuteEntityAsync();
-        if(view != null)
+        if (view != null)
             return new ViewSchema {
-                                      Name = name,
-                                      Definition = view.Definition
-                                  };
+                Name = name,
+                Definition = view.Definition
+            };
 
         Dictionary<string, ColumnDescriptor> columns = new();
-        await foreach(PgColumn column in new LoadOperation<PgColumn>(client, EntityDescriptor.Create, DB.All).Where(c => c.Table == name).ExecuteEntitiesAsync()) {
+        await foreach (PgColumn column in new LoadOperation<PgColumn>(client, EntityDescriptor.Create, DB.All).Where(c => c.Table == name).ExecuteEntitiesAsync()) {
+            string type = column.DataType;
+            if (column.DataType == "ARRAY")
+                type = column.ItemType.Substring(1) + "[]";
+
             columns[column.Column] = new(column.Column) {
-                                                            Type = column.DataType,
-                                                            NotNull = column.IsNullable == "NO",
-                                                            AutoIncrement = column.Default?.StartsWith("nextval") ?? false
-                                                        };
+                Type = type,
+                NotNull = column.IsNullable == "NO",
+                AutoIncrement = column.Default?.StartsWith("nextval") ?? false
+            };
         }
 
         List<UniqueDescriptor> uniques = [];
