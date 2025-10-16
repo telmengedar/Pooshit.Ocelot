@@ -51,7 +51,7 @@ namespace Pooshit.Ocelot.Entities.Schema {
             else if(schema is TableDescriptor tableDescriptor)
                 UpdateTable<T>(client, tableDescriptor);
             else
-                throw new Exception("Invalid descriptor type");
+                throw new("Invalid descriptor type");
         }
 
         string NormalizedSqlHash(string text) {

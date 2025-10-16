@@ -429,8 +429,19 @@ public class PostgreInfo : DBInfo {
         return lhs == rhs;
     }
 
+    string StripLength(ReadOnlySpan<char> type) {
+        int indexOf = type.IndexOf("[");
+        if (indexOf < 0)
+            return new(type);
+
+        return new string(type[..indexOf]) + "[]";
+    }
+    
     /// <inheritdoc />
-    public override string GetDBType(string type, int length=0) {
+    public override string GetDBType(string type, int length=-1) {
+        if (length == -1)
+            type = StripLength(type);
+        
         if (type.StartsWith("timestamp"))
             return "timestamp";
             
@@ -686,16 +697,6 @@ public class PostgreInfo : DBInfo {
         string createStatement = Converter.Convert<string>(await client.ScalarAsync(statement));
         return createStatement.ProcessCreateStatement();
     }
-
-    Tuple<string, int> AnalyseType(string type) {
-        int indexOf = type.IndexOf("[", StringComparison.Ordinal);
-
-        if (indexOf < 0)
-            return new(type, 0);
-
-        int.TryParse(type.Substring(indexOf+1, type.Length - indexOf - 2), out int result);
-        return new(type.Substring(0, indexOf) + "[]", result);
-    }
     
     /// <inheritdoc />
     public override SchemaDescriptor GetSchema(IDBClient client, string name) {
@@ -707,12 +708,14 @@ public class PostgreInfo : DBInfo {
 
         Dictionary<string, ColumnDescriptor> columns = new();
         foreach(PgColumn column in new LoadOperation<PgColumn>(client, EntityDescriptor.Create, DB.All).Where(c => c.Table == name).ExecuteEntities()) {
-            Tuple<string, int> type = AnalyseType(column.DataType);
+            string type = column.DataType;
+            if (column.DataType == "ARRAY")
+                type = column.ItemType.Substring(1) + "[]";
+            
             columns[column.Column] = new(column.Column) {
-                Type = type.Item1,
+                Type = type,
                 NotNull = column.IsNullable == "NO",
-                AutoIncrement = column.Default?.StartsWith("nextval") ?? false,
-                Length = type.Item2
+                AutoIncrement = column.Default?.StartsWith("nextval") ?? false
             };
         }
 

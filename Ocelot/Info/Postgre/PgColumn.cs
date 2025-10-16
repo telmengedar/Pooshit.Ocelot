@@ -49,5 +49,11 @@ namespace Pooshit.Ocelot.Info.Postgre {
         /// </summary>
         [Column("column_default")]
         public string Default { get; set; }
+
+        /// <summary>
+        /// type of item when data type is array
+        /// </summary>
+        [Column("udt_name")]
+        public string ItemType { get; set; }
     }
 }

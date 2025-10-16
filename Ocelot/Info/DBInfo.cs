@@ -169,7 +169,7 @@ public abstract class DBInfo : IDBInfo {
     /// <param name="type">type info</param>
     /// <param name="length">length of array type (optional)</param>
     /// <returns>type used in database</returns>
-    public string GetDBType(Type type, int length=0) {
+    public string GetDBType(Type type, int length=-1) {
         if (type.IsGenericType) {
             if(type.GetGenericTypeDefinition() == typeof(Nullable<>))
                 type = Nullable.GetUnderlyingType(type);
@@ -193,7 +193,7 @@ public abstract class DBInfo : IDBInfo {
     }
 
     /// <inheritdoc />
-    public abstract string GetDBType(string type, int length=0);
+    public abstract string GetDBType(string type, int length=-1);
 
     /// <inheritdoc />
     public virtual bool IsTypeEqual(string lhs, string rhs) {

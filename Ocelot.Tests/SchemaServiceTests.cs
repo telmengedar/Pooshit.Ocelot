@@ -264,54 +264,54 @@ public class SchemaServiceTests {
 
         SchemaService service = new(client.Object);
         await service.UpdateSchema("neuvooclick", new TableSchema {
-                                                                      Name = "neuvooclick",
-                                                                      Columns = new[] {
-                                                                                          new ColumnDescriptor("clickid", "string") {
-                                                                                                                                        PrimaryKey = true,
-                                                                                                                                        NotNull = true
-                                                                                                                                    },
-                                                                                          new ColumnDescriptor("timestamp", "int64") {
-                                                                                                                                         NotNull = true
-                                                                                                                                     },
-                                                                                          new ColumnDescriptor("dateest", "datetime") {
-                                                                                                                                          NotNull = true
-                                                                                                                                      },
-                                                                                          new ColumnDescriptor("ip", "string"),
-                                                                                          new ColumnDescriptor("jobid", "string"),
-                                                                                          new ColumnDescriptor("jobtitle", "string"),
-                                                                                          new ColumnDescriptor("empcode", "string"),
-                                                                                          new ColumnDescriptor("company", "string"),
-                                                                                          new ColumnDescriptor("cost", "decimal"),
-                                                                                          new ColumnDescriptor("currency", "string"),
-                                                                                          new ColumnDescriptor("redirectto", "string"),
-                                                                                          new ColumnDescriptor("clientjobid", "string"),
-                                                                                          new ColumnDescriptor("campaignid", "int64") {
-                                                                                                                                          DefaultValue = 0,
-                                                                                                                                          NotNull = true
-                                                                                                                                      },
-                                                                                          new ColumnDescriptor("itemid", "int64") {
-                                                                                                                                      DefaultValue = 0,
-                                                                                                                                      NotNull = true
-                                                                                                                                  },
-                                                                                          new ColumnDescriptor("targetid", "int64") {
-                                                                                                                                        DefaultValue = 0,
-                                                                                                                                        NotNull = true
-                                                                                                                                    },
-                                                                                          new ColumnDescriptor("mamgojobid", "int64") {
-                                                                                                                                          DefaultValue = 0,
-                                                                                                                                          NotNull = true
-                                                                                                                                      },
-                                                                                          new ColumnDescriptor("cpc", "decimal")
-                                                                                      },
-                                                                      Index = new[] {
-                                                                                        new IndexDescriptor("timestamp", new[] { "timestamp" }, null),
-                                                                                        new IndexDescriptor("jobid", new[] { "clientjobid" }, null),
-                                                                                        new IndexDescriptor("campaign", new[] { "campaignid" }, null),
-                                                                                        new IndexDescriptor("item", new[] { "itemid" }, null),
-                                                                                        new IndexDescriptor("target", new[] { "targetid" }, null),
-                                                                                        new IndexDescriptor("job", new[] { "mamgojobid" }, null)
-                                                                                    }
-                                                                  });
+            Name = "neuvooclick",
+            Columns = [
+                new("clickid", "string") {
+                    PrimaryKey = true,
+                    NotNull = true
+                },
+                new("timestamp", "int64") {
+                    NotNull = true
+                },
+                new("dateest", "datetime") {
+                    NotNull = true
+                },
+                new("ip", "string"),
+                new("jobid", "string"),
+                new("jobtitle", "string"),
+                new("empcode", "string"),
+                new("company", "string"),
+                new("cost", "decimal"),
+                new("currency", "string"),
+                new("redirectto", "string"),
+                new("clientjobid", "string"),
+                new("campaignid", "int64") {
+                    DefaultValue = 0,
+                    NotNull = true
+                },
+                new("itemid", "int64") {
+                    DefaultValue = 0,
+                    NotNull = true
+                },
+                new("targetid", "int64") {
+                    DefaultValue = 0,
+                    NotNull = true
+                },
+                new("mamgojobid", "int64") {
+                    DefaultValue = 0,
+                    NotNull = true
+                },
+                new("cpc", "decimal")
+            ],
+            Index = [
+                new("timestamp", ["timestamp"], null),
+                new("jobid", ["clientjobid"], null),
+                new("campaign", ["campaignid"], null),
+                new("item", ["itemid"], null),
+                new("target", ["targetid"], null),
+                new("job", ["mamgojobid"], null)
+            ]
+        });
 
         client.Verify(s => s.NonQueryAsync(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<IEnumerable<object>>()), Times.Never);
     }

@@ -113,7 +113,7 @@ public interface IDBInfo {
     /// <param name="type">type for which to get db type</param>
     /// <param name="length">length of array type (optional)</param>
     /// <returns>text representation of type</returns>
-    string GetDBType(Type type, int length=0);
+    string GetDBType(Type type, int length=-1);
 
     /// <summary>
     /// get db type of an application type
@@ -121,7 +121,7 @@ public interface IDBInfo {
     /// <param name="type">type for which to get db type</param>
     /// <param name="length">length of array type (optional)</param>
     /// <returns>text representation of type</returns>
-    string GetDBType(string type, int length=0);
+    string GetDBType(string type, int length=-1);
         
     /// <summary>
     /// determines whether two types are equal
