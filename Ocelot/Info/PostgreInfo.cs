@@ -506,6 +506,7 @@ public class PostgreInfo : DBInfo {
                 return type;
             case Types.SingleArray:
             case Types.RealArray:
+            case Types.Float4Array:
                 if(length>=0)
                     return $"real[{length}]";
                 return "real[]";

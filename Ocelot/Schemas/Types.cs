@@ -255,6 +255,6 @@ namespace Pooshit.Ocelot.Schemas {
         /// <summary>
         /// <see cref="float"/>[]
         /// </summary>
-        public const string Float4Array = "real[]";
+        public const string Float4Array = "float4[]";
     }
 }
