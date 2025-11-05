@@ -284,7 +284,8 @@ public class CriteriaVisitor : ExpressionVisitor {
                 array.SetValue(GetHost(ex), index++);
             return array;
         }
-        throw new NotImplementedException();
+        
+        throw new NotImplementedException($"'{expression.Type}' not supported to get host of: {expression}");
     }
 
     object GetValue(Expression node) {
