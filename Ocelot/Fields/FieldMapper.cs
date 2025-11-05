@@ -28,6 +28,7 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
     /// </summary>
     /// <param name="mappings">mappings to initialize mapper with</param>
     /// <param name="initializer">initializer used to initialize entities before processing mappings</param>
+    /// <param name="postprocess">action to execute after entity was filled with data</param>
     public FieldMapper(FieldMapping<TModel>[] mappings, Action<TModel, string[], IRowValues> initializer=null, Action<TModel, string[]> postprocess=null) 
     : this((IEnumerable<FieldMapping<TModel>>)mappings, initializer, postprocess)
     {
@@ -38,6 +39,7 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
     /// </summary>
     /// <param name="initializer">initializer used to initialize entities before processing mappings</param>
     /// <param name="mappings">mappings to initialize mapper with</param>
+    /// <param name="postprocess">action to execute after entity was filled with data</param>
     public FieldMapper(IEnumerable<FieldMapping<TModel>> mappings, Action<TModel, string[], IRowValues> initializer=null, Action<TModel, string[]> postprocess=null) {
         this.mappings.AddRange(mappings);
         InitializeEntity = initializer;
@@ -208,10 +210,12 @@ public abstract class FieldMapper<TModel, TEntity> : FieldMapper<TModel>, IField
     protected FieldMapper(params FieldMapping<TModel>[] mappings) : base(mappings) { }
 
     /// <inheritdoc />
-    protected FieldMapper(FieldMapping<TModel>[] mappings, Action<TModel, string[], IRowValues> initializer = null) : base(mappings, initializer) { }
+    protected FieldMapper(FieldMapping<TModel>[] mappings, Action<TModel, string[], IRowValues> initializer = null, Action<TModel, string[]> postprocess=null) 
+        : base(mappings, initializer, postprocess) { }
 
     /// <inheritdoc />
-    protected FieldMapper(IEnumerable<FieldMapping<TModel>> mappings, Action<TModel, string[], IRowValues> initializer = null) : base(mappings, initializer) { }
+    protected FieldMapper(IEnumerable<FieldMapping<TModel>> mappings, Action<TModel, string[], IRowValues> initializer = null, Action<TModel, string[]> postprocess=null) 
+        : base(mappings, initializer, postprocess) { }
 
     /// <inheritdoc />
     public new LoadOperation<TEntity> CreateOperation(IEntityManager database) {
