@@ -28,8 +28,8 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
     /// </summary>
     /// <param name="mappings">mappings to initialize mapper with</param>
     /// <param name="initializer">initializer used to initialize entities before processing mappings</param>
-    public FieldMapper(FieldMapping<TModel>[] mappings, Action<TModel, string[], IRowValues> initializer=null) 
-    : this((IEnumerable<FieldMapping<TModel>>)mappings, initializer)
+    public FieldMapper(FieldMapping<TModel>[] mappings, Action<TModel, string[], IRowValues> initializer=null, Action<TModel, string[]> postprocess=null) 
+    : this((IEnumerable<FieldMapping<TModel>>)mappings, initializer, postprocess)
     {
     }
 
@@ -38,9 +38,10 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
     /// </summary>
     /// <param name="initializer">initializer used to initialize entities before processing mappings</param>
     /// <param name="mappings">mappings to initialize mapper with</param>
-    public FieldMapper(IEnumerable<FieldMapping<TModel>> mappings, Action<TModel, string[], IRowValues> initializer=null) {
+    public FieldMapper(IEnumerable<FieldMapping<TModel>> mappings, Action<TModel, string[], IRowValues> initializer=null, Action<TModel, string[]> postprocess=null) {
         this.mappings.AddRange(mappings);
         InitializeEntity = initializer;
+        PostProcessEntity = postprocess;
         BuildFieldLookup();
     }
 
@@ -60,6 +61,8 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
     public IEnumerable<string> FieldNames => fieldLookup.Keys;
     
     Action<TModel, string[], IRowValues> InitializeEntity { get; }
+    
+    Action<TModel, string[]> PostProcessEntity { get; }
     
     void BuildFieldLookup() {
         fieldLookup = new();
@@ -113,6 +116,7 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
                 field.SetValue(entity, row.GetValue<object>(index++));
         }
 
+        PostProcessEntity?.Invoke(entity, fields);
         return entity;
     }
 
@@ -147,7 +151,7 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
             foreach (FieldMapping<TModel> field in mappings)
                 field.SetValue(entity, reader.GetValue<object>(index++));
         }
-
+        PostProcessEntity?.Invoke(entity, fields);
         return entity;
     }
 
