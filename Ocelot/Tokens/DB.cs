@@ -718,4 +718,12 @@ public static class DB {
     public static DatabaseFunction CustomFunction(string functionName, params ISqlToken[] tokens) {
         return new(functionName, tokens);
     }
+
+    /// <summary>
+    /// current time
+    /// </summary>
+    /// <returns>token used to reference current time</returns>
+    public static NowToken Now() {
+        return new();
+    }
 }

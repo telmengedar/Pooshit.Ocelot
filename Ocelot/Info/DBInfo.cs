@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.CustomTypes;
-using Pooshit.Ocelot.Entities.Attributes;
 using Pooshit.Ocelot.Entities.Descriptors;
 using Pooshit.Ocelot.Entities.Operations;
 using Pooshit.Ocelot.Entities.Operations.Expressions;
@@ -42,6 +41,7 @@ public abstract class DBInfo : IDBInfo {
         AddFieldLogic<Aggregate>(AppendAggregate);
         AddFieldLogic<FieldToken>(AppendFieldToken);
         AddFieldLogic<TupleToken>(AppendTupleToken);
+        AddFieldLogic<NowToken>(AppendNowToken);
     }
     
     /// <summary>
@@ -51,6 +51,10 @@ public abstract class DBInfo : IDBInfo {
     /// <param name="logic">logic to use when generating code</param>
     protected void AddFieldLogic<T>(Action<T, IOperationPreparator, Func<Type, EntityDescriptor>, string> logic) {
         fieldlogic[typeof(T)] = (field, preparator, getter, alias) => logic((T)field, preparator, getter, alias);
+    }
+
+    void AppendNowToken(NowToken field, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptor, string alias) {
+        preparator.AppendText("NOW()");
     }
 
     void AppendFieldToken(FieldToken field, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorGetter, string tableAlias) {

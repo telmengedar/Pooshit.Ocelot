@@ -36,6 +36,7 @@ public class SQLiteInfo : DBInfo {
         AddFieldLogic<DBFunction>(AppendFunction);
         AddFieldLogic<LimitField>(AppendLimit);
         AddFieldLogic<CastToken>(AppendCast);
+        AddFieldLogic<NowToken>(AppendNowToken);
     }
 
     public override Expression Visit(CriteriaVisitor visitor, Expression node, IOperationPreparator operation) {
@@ -46,7 +47,7 @@ public class SQLiteInfo : DBInfo {
         if (node is MethodCallExpression methodCall) {
             if (methodCall.Method.DeclaringType == typeof(DB)) {
                 switch (methodCall.Method.Name) {
-                    case"Cast":
+                    case "Cast":
                         switch ((CastType)visitor.GetHost(methodCall.Arguments[1])) {
                             case CastType.Date:
                                 operation.AppendText("date(strftime('%Y-%m-%d',");
@@ -222,6 +223,10 @@ public class SQLiteInfo : DBInfo {
         // ReSharper disable once PossibleInvalidOperationException
         else
             preparator.AppendField(limit.Limit, this, descriptorgetter, tablealias);
+    }
+
+    void AppendNowToken(NowToken field, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptor, string alias) {
+        preparator.AppendText("now");
     }
 
     void AppendFunction(DBFunction function, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {
