@@ -226,7 +226,7 @@ public class SQLiteInfo : DBInfo {
     }
 
     void AppendNowToken(NowToken field, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptor, string alias) {
-        preparator.AppendText("now");
+        preparator.AppendText("datetime('now')");
     }
 
     void AppendFunction(DBFunction function, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias) {

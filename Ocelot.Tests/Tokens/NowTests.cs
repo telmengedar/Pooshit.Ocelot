@@ -31,7 +31,7 @@ public class NowTests {
 		CriteriaVisitor.GetCriteriaText(predicate, EntityDescriptor.Create, client.DBInfo, preparator);
 
 		PreparedOperation operation = preparator.GetOperation(client, false);
-		Assert.AreEqual("now", operation.CommandText);
+		Assert.AreEqual("datetime('now')", operation.CommandText);
 
 	}
 
