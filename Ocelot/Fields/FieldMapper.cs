@@ -201,6 +201,12 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
     public virtual LoadOperation<TModel> CreateOperation(IEntityManager database, params IDBField[] fields) {
         return database.Load<TModel>(fields);
     }
+
+    /// <inheritdoc />
+    public virtual string[] DefaultFields => [];
+
+    /// <inheritdoc />
+    public virtual string[] DefaultListFields => [];
 }
 
 /// <inheritdoc cref="IFieldMapper{TModel,TEntity}"/> />

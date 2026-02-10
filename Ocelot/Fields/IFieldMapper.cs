@@ -136,6 +136,16 @@ public interface IFieldMapper<TModel> {
 	/// <param name="fields">selection of fields to load</param>
 	/// <returns>load operation to use to load entities</returns>
 	LoadOperation<TModel> CreateOperation(IEntityManager database, params IDBField[] fields);
+
+	/// <summary>
+	/// default fields to load when loading single items
+	/// </summary>
+	public string[] DefaultFields { get; }
+
+	/// <summary>
+	/// default fields to load when loading list items
+	/// </summary>
+	public string[] DefaultListFields { get; }
 }
 
 /// <summary>
