@@ -55,5 +55,11 @@ namespace Pooshit.Ocelot.Info.Postgre {
         /// </summary>
         [Column("udt_name")]
         public string ItemType { get; set; }
+
+        /// <summary>
+        /// determines whether column is identity column (AutoIncrement)
+        /// </summary>
+        [Column("is_identity")]
+        public bool IsIdentity { get; set; }
     }
 }

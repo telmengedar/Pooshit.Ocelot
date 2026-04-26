@@ -778,7 +778,7 @@ public class PostgreInfo : DBInfo {
             columns[column.Column] = new(column.Column) {
                 Type = type,
                 NotNull = column.IsNullable == "NO",
-                AutoIncrement = column.Default?.StartsWith("nextval") ?? false
+                AutoIncrement = column.Default?.StartsWith("nextval") ?? column.IsIdentity
             };
         }
 
