@@ -192,13 +192,12 @@ public class EntityDescriptor {
 
             if(propertyinfo.GetCustomAttributes(typeof(UniqueAttribute), true) is UniqueAttribute[] ua) {
                 foreach(UniqueAttribute uniqueattr in ua) {
-                    if(uniqueattr.Name == null) {
+                    string uniquename = uniqueattr.Name ?? columndescriptor.Name;
+                    if(uniqueattr.Name == null)
                         columndescriptor.IsUnique = true;
-                        continue;
-                    }
 
-                    if(!unique.TryGetValue(uniqueattr.Name, out List<string> columns))
-                        unique[uniqueattr.Name] = columns = new List<string>();
+                    if(!unique.TryGetValue(uniquename, out List<string> columns))
+                        unique[uniquename] = columns = new List<string>();
                     columns.Add(columndescriptor.Name);
                 }
             }

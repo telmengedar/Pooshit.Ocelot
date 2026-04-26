@@ -739,8 +739,7 @@ public class PostgreInfo : DBInfo {
                     if(columns.TryGetValue(columnnames[0], out ColumnDescriptor desc))
                         desc.IsUnique = true;
                 }
-                else
-                    uniques.Add(new(index.Name, columnnames));
+                uniques.Add(new(index.Name, columnnames));
             }
             else {
                 match = Regex.Match(index.Name, $"^idx_{name}_(?<indexname>.+)$");
@@ -801,8 +800,7 @@ public class PostgreInfo : DBInfo {
                     if(columns.TryGetValue(columnnames[0], out ColumnDescriptor desc))
                         desc.IsUnique = true;
                 }
-                else
-                    uniques.Add(new(index.Name, columnnames));
+                uniques.Add(new(index.Name, columnnames));
             }
             else {
                 match = Regex.Match(index.Name, $"^idx_{name}_(?<indexname>.+)$");
@@ -815,10 +813,10 @@ public class PostgreInfo : DBInfo {
 
         return new TableSchema {
                                    Name = name,
-                                   Columns = columns.Values.ToArray(),
-                                   Unique = uniques.ToArray(),
-                                   Index = indices.ToArray()
-                               };
+                                   Columns = [.. columns.Values],
+                                   Unique = [.. uniques],
+                                   Index = [.. indices]
+        };
     }
 
     /// <inheritdoc />
