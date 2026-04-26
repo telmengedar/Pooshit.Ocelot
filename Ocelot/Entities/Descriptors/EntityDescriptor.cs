@@ -209,6 +209,8 @@ public class EntityDescriptor {
             descriptor.AddIndex(new IndexDescriptor(kvp.Key, kvp.Value.Columns, kvp.Value.Type));
         foreach(KeyValuePair<string, List<string>> kvp in unique) {
             descriptor.AddUnique(new UniqueDescriptor(kvp.Key, kvp.Value));
+            if(kvp.Value.Count == 1 && descriptor.TryGetColumn(kvp.Value[0]) is { } col)
+                col.IsUnique = true;
         }
 
         return descriptor;

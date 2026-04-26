@@ -88,8 +88,15 @@ namespace Pooshit.Ocelot.Schemas {
 
             schema.Columns = schemaColumns.ToArray();
             schema.Index = indices.Select(kvp => new IndexDescriptor(kvp.Key, kvp.Value.Columns, kvp.Value.Type)).ToArray();
-            schema.Unique = unique.Select(kvp => new UniqueDescriptor(kvp.Key, kvp.Value)).ToArray();
-            
+
+            List<UniqueDescriptor> uniqueDescriptors = [];
+            foreach(KeyValuePair<string, List<string>> kvp in unique) {
+                uniqueDescriptors.Add(new UniqueDescriptor(kvp.Key, kvp.Value));
+                if(kvp.Value.Count == 1 && schemaColumns.FirstOrDefault(c => c.Name == kvp.Value[0]) is { } col)
+                    col.IsUnique = true;
+            }
+            schema.Unique = [..uniqueDescriptors];
+
             return schema;
         }
 
