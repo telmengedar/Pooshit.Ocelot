@@ -238,6 +238,17 @@ public class Reader : IDataReader {
     public Task<bool> ReadAsync() {
         return reader.ReadAsync();
     }
+
+    /// <summary>
+    /// fetches the next row in an async read with cancellation support
+    /// </summary>
+    /// <param name="cancellationToken">token used to cancel the operation</param>
+    /// <returns>
+    /// true if there are more rows; otherwise, false.
+    /// </returns>
+    public Task<bool> ReadAsync(CancellationToken cancellationToken) {
+        return reader.ReadAsync(cancellationToken);
+    }
     
     /// <inheritdoc />
     public int Depth => reader.Depth;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Clients.Tables;
@@ -19,6 +20,11 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared;
 /// </summary>
 public class PreparedLoadOperation : PreparedOperation {
     readonly Func<Type, EntityDescriptor> modelcache;
+
+    /// <summary>
+    /// access to the entity model cache (for use by typed subclasses)
+    /// </summary>
+    protected Func<Type, EntityDescriptor> ModelDescriptorCache => modelcache;
 
     /// <summary>
     /// creates a new <see cref="PreparedLoadOperation"/>
@@ -655,5 +661,273 @@ public class PreparedLoadOperation<T> : PreparedLoadOperation {
     /// <returns>created entities</returns>
     public virtual T ExecuteEntity(params object[] parameters) {
         return ExecuteEntity<T>(null, parameters);
+    }
+
+    /// <summary>
+    /// executes the operation as a single-statement paged load, returning both the page items and the total matching count
+    /// without a second SQL round trip.
+    /// </summary>
+    /// <remarks>
+    /// Injects <c>COUNT(*) OVER () AS __total</c> into the projection. Requires the underlying database to support
+    /// <c>COUNT(*) OVER ()</c>: SQLite 3.25+, PostgreSQL 8.4+, MSSQL 2005+, MySQL 8.0+ / MariaDB 10.2+.
+    /// Older engines will fail with a <see cref="Pooshit.Ocelot.Errors.StatementException"/> wrapping a SQL-syntax error.
+    /// The alias <c>__total</c> is reserved; entity properties with that name will receive the windowed count value.
+    /// Any prior <c>.Limit()</c> / <c>.Offset()</c> on the operation are overridden by <paramref name="limit"/> and <paramref name="offset"/>.
+    /// </remarks>
+    /// <param name="limit">number of rows to return (must be &gt;= 0)</param>
+    /// <param name="offset">number of rows to skip (must be &gt;= 0)</param>
+    /// <param name="cancellationToken">token used to cancel the operation</param>
+    /// <returns>
+    /// a <see cref="PagedResult{T}"/> whose <see cref="PagedResult{T}.Total"/> is already resolved
+    /// and whose <see cref="PagedResult{T}.Items"/> is ready to iterate when the returned task completes
+    /// </returns>
+    public virtual Task<PagedResult<T>> ExecutePagedAsync(int limit, int offset, CancellationToken cancellationToken = default) {
+        return ExecutePagedAsync(null, limit, offset, cancellationToken);
+    }
+
+    /// <summary>
+    /// executes the operation as a single-statement paged load, returning both the page items and the total matching count
+    /// without a second SQL round trip.
+    /// </summary>
+    /// <remarks>
+    /// Injects <c>COUNT(*) OVER () AS __total</c> into the projection. Requires the underlying database to support
+    /// <c>COUNT(*) OVER ()</c>: SQLite 3.25+, PostgreSQL 8.4+, MSSQL 2005+, MySQL 8.0+ / MariaDB 10.2+.
+    /// Older engines will fail with a <see cref="Pooshit.Ocelot.Errors.StatementException"/> wrapping a SQL-syntax error.
+    /// The alias <c>__total</c> is reserved; entity properties with that name will receive the windowed count value.
+    /// Any prior <c>.Limit()</c> / <c>.Offset()</c> on the operation are overridden by <paramref name="limit"/> and <paramref name="offset"/>.
+    /// </remarks>
+    /// <param name="transaction">transaction to use (optional)</param>
+    /// <param name="limit">number of rows to return (must be &gt;= 0)</param>
+    /// <param name="offset">number of rows to skip (must be &gt;= 0)</param>
+    /// <param name="cancellationToken">token used to cancel the operation</param>
+    /// <returns>
+    /// a <see cref="PagedResult{T}"/> whose <see cref="PagedResult{T}.Total"/> is already resolved
+    /// and whose <see cref="PagedResult{T}.Items"/> is ready to iterate when the returned task completes
+    /// </returns>
+    public virtual async Task<PagedResult<T>> ExecutePagedAsync(Transaction transaction, int limit, int offset, CancellationToken cancellationToken = default) {
+        if (limit < 0)
+            throw new ArgumentOutOfRangeException(nameof(limit), "limit must be >= 0");
+        if (offset < 0)
+            throw new ArgumentOutOfRangeException(nameof(offset), "offset must be >= 0");
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Build a new SQL string injecting COUNT(*) OVER() AS __total and overriding LIMIT/OFFSET.
+        string pagedCommandText = InjectTotalColumn(CommandText, limit, offset, DBClient.DBInfo.GetType().Name);
+
+        object[] allParams = ConstantParameters.ToArray();
+
+        Reader reader;
+        if (DBPrepare && DBClient.DBInfo.PreparationSupported)
+            reader = await DBClient.ReaderPreparedAsync(transaction, pagedCommandText, allParams, cancellationToken);
+        else
+            reader = await DBClient.ReaderAsync(transaction, pagedCommandText, allParams, cancellationToken);
+
+        // Read first row eagerly so Total resolves before Task<PagedResult<T>> returns
+        TaskCompletionSource<long> totalTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        EntityDescriptor descriptor = ModelDescriptorCache(typeof(T));
+
+        List<PropertyInfo> setters = null;
+        int totalOrdinal = -1;
+
+        T firstRow = default;
+        bool hasFirstRow = false;
+
+        try {
+            if (await reader.ReadAsync(cancellationToken)) {
+                // Initialize column mapping on first row (includes __total column)
+                setters = BuildSetters(reader, descriptor, out totalOrdinal);
+                long total = ExtractTotal(reader, totalOrdinal);
+                totalTcs.TrySetResult(total);
+                firstRow = await ToObjectPagedAsync(reader, setters, totalOrdinal);
+                hasFirstRow = true;
+            }
+            else {
+                // Zero rows — total is 0, stream is empty
+                setters = [];
+                totalOrdinal = -1;
+                totalTcs.TrySetResult(0L);
+            }
+        }
+        catch (OperationCanceledException ex) {
+            totalTcs.TrySetException(ex);
+            reader.Dispose();
+            throw;
+        }
+        catch (Exception ex) {
+            totalTcs.TrySetException(ex);
+            reader.Dispose();
+            throw;
+        }
+
+        // On single-connection dialects (SQLite) buffer all remaining rows immediately, then release the semaphore
+        if (!DBClient.DBInfo.MultipleConnectionsSupported) {
+            List<T> buffer = [];
+            if (hasFirstRow)
+                buffer.Add(firstRow);
+
+            try {
+                while (await reader.ReadAsync(cancellationToken)) {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    buffer.Add(await ToObjectPagedAsync(reader, setters, totalOrdinal));
+                }
+            }
+            catch (OperationCanceledException) {
+                reader.Dispose();
+                throw;
+            }
+            catch {
+                reader.Dispose();
+                throw;
+            }
+
+            reader.Dispose();
+
+            return new PagedResult<T>(ToAsyncEnumerable(buffer), totalTcs.Task);
+        }
+
+        // Multi-connection path: stream rows through the open reader
+        return new PagedResult<T>(StreamRemaining(reader, firstRow, hasFirstRow, setters, totalOrdinal, cancellationToken), totalTcs.Task);
+    }
+
+    static string InjectTotalColumn(string commandText, int limit, int offset, string dialectTypeName) {
+        // Insert ", COUNT(*) OVER() AS __total" just before the first "FROM" keyword (case-insensitive, word boundary).
+        // Strip any existing LIMIT/OFFSET and re-append the caller-supplied values in dialect-appropriate syntax.
+        // This works because LoadOperation<T>.Prepare always produces "SELECT ... FROM ..." shape.
+        int fromIdx = FindFromKeyword(commandText);
+        string baseText;
+        if (fromIdx < 0)
+            baseText = commandText + ", COUNT(*) OVER() AS __total";
+        else
+            baseText = commandText[..fromIdx].TrimEnd() + ", COUNT(*) OVER() AS __total " + commandText[fromIdx..];
+
+        // Strip trailing LIMIT/OFFSET clause that may have been baked in already,
+        // then re-append with the caller-supplied values.
+        baseText = StripLimitOffset(baseText);
+
+        // MSSQL uses OFFSET x ROWS FETCH NEXT y ROWS ONLY; all others use LIMIT y OFFSET x
+        if (dialectTypeName == "MsSqlInfo") {
+            if (!baseText.Contains("ORDER BY", StringComparison.OrdinalIgnoreCase))
+                baseText += " ORDER BY(SELECT NULL)";
+            return baseText + $" OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY";
+        }
+
+        return baseText + $" LIMIT {limit} OFFSET {offset}";
+    }
+
+    static string StripLimitOffset(string sql) {
+        // Find the last top-level LIMIT or OFFSET keyword and strip from there
+        int lastLimit = FindLastTopLevelKeyword(sql, "LIMIT");
+        int lastOffset = FindLastTopLevelKeyword(sql, "OFFSET");
+        int cutAt = -1;
+        if (lastLimit >= 0) cutAt = lastLimit;
+        if (lastOffset >= 0 && (cutAt < 0 || lastOffset < cutAt)) cutAt = lastOffset;
+        if (cutAt < 0) return sql;
+        return sql[..cutAt].TrimEnd();
+    }
+
+    static int FindLastTopLevelKeyword(string sql, string keyword) {
+        int result = -1;
+        int depth = 0;
+        for (int i = 0; i < sql.Length; i++) {
+            if (sql[i] == '(') { depth++; continue; }
+            if (sql[i] == ')') { depth--; continue; }
+            if (depth > 0) continue;
+            if (i + keyword.Length <= sql.Length && string.Compare(sql, i, keyword, 0, keyword.Length, StringComparison.OrdinalIgnoreCase) == 0) {
+                bool afterOk = i + keyword.Length >= sql.Length || !char.IsLetterOrDigit(sql[i + keyword.Length]);
+                bool beforeOk = i == 0 || char.IsWhiteSpace(sql[i - 1]);
+                if (beforeOk && afterOk)
+                    result = i;
+            }
+        }
+        return result;
+    }
+
+    static int FindFromKeyword(string sql) {
+        // Walk from left to find first top-level FROM not inside parentheses
+        int depth = 0;
+        for (int i = 0; i < sql.Length; i++) {
+            if (sql[i] == '(') { depth++; continue; }
+            if (sql[i] == ')') { depth--; continue; }
+            if (depth > 0) continue;
+            if (i + 4 <= sql.Length && string.Compare(sql, i, "FROM", 0, 4, StringComparison.OrdinalIgnoreCase) == 0) {
+                // Ensure it's a word boundary
+                bool afterOk = i + 4 >= sql.Length || !char.IsLetterOrDigit(sql[i + 4]);
+                bool beforeOk = i == 0 || char.IsWhiteSpace(sql[i - 1]);
+                if (beforeOk && afterOk)
+                    return i;
+            }
+        }
+        return -1;
+    }
+
+    static List<PropertyInfo> BuildSetters(Reader reader, EntityDescriptor descriptor, out int totalOrdinal) {
+        List<PropertyInfo> setters = [];
+        totalOrdinal = -1;
+        for (int i = 0; i < reader.FieldCount; ++i) {
+            string colName = reader.GetName(i);
+            if (colName == "__total") {
+                totalOrdinal = i;
+                setters.Add(null); // skip mapping for __total
+            }
+            else {
+                EntityColumnDescriptor column = descriptor.TryGetColumn(colName);
+                setters.Add(column?.Property);
+            }
+        }
+        return setters;
+    }
+
+    static long ExtractTotal(Reader reader, int ordinal) {
+        if (ordinal < 0) return 0L;
+        object raw = reader.GetValue(ordinal);
+        return Converter.Convert<long>(raw, true);
+    }
+
+    async Task<T> ToObjectPagedAsync(Reader reader, List<PropertyInfo> properties, int totalOrdinal) {
+        T obj = (T)Activator.CreateInstance(typeof(T), true);
+        for (int i = 0; i < reader.FieldCount; ++i) {
+            if (i == totalOrdinal) continue; // skip __total
+            PropertyInfo pi = properties[i];
+            if (pi == null) continue;
+
+            object dbvalue;
+            try {
+                dbvalue = await DBClient.DBInfo.ValueFromReaderAsync(reader, i, pi.PropertyType);
+            }
+            catch (Exception e) {
+                Logger.Warning(this, $"Unable to read property '{pi.Name}'", e.ToString());
+                continue;
+            }
+
+            if (dbvalue is null or DBNull) continue;
+
+            if (pi.PropertyType.IsEnum) {
+                int index = Converter.Convert<int>(dbvalue, true);
+                pi.SetValue(obj, Enum.ToObject(pi.PropertyType, index), null);
+            }
+            else if (dbvalue.GetType() == pi.PropertyType)
+                pi.SetValue(obj, dbvalue, null);
+            else
+                pi.SetValue(obj, Converter.Convert(dbvalue, pi.PropertyType), null);
+        }
+        return obj;
+    }
+
+    static async IAsyncEnumerable<T> ToAsyncEnumerable(List<T> items) {
+        foreach (T item in items)
+            yield return item;
+        await Task.CompletedTask;
+    }
+
+    async IAsyncEnumerable<T> StreamRemaining(Reader reader, T firstRow, bool hasFirstRow, List<PropertyInfo> setters, int totalOrdinal, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken) {
+        using (reader) {
+            if (hasFirstRow)
+                yield return firstRow;
+            while (await reader.ReadAsync(cancellationToken)) {
+                cancellationToken.ThrowIfCancellationRequested();
+                yield return await ToObjectPagedAsync(reader, setters, totalOrdinal);
+            }
+        }
     }
 }

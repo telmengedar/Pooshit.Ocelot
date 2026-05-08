@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Clients.Tables;
@@ -553,13 +554,50 @@ public class LoadOperation<T> : IDatabaseOperation {
         ((IDatabaseOperation)this).Prepare(preparator);
         return preparator.GetLoadValuesOperation<T>(dbclient, descriptorgetter, dbPrepare);
     }
-        
+
     /// <summary>
     /// prepares the operation for execution
     /// </summary>
     /// <returns>operation used to load data</returns>
     public PreparedLoadOperation<T> Prepare() {
         return Prepare(true);
+    }
+
+    /// <summary>
+    /// executes the operation as a single-statement paged load, returning both the page items and the total matching count
+    /// without a second SQL round trip.
+    /// </summary>
+    /// <remarks>
+    /// Overrides any prior <c>.Limit()</c> / <c>.Offset()</c> settings on this operation.
+    /// Requires the underlying database to support <c>COUNT(*) OVER ()</c>:
+    /// SQLite 3.25+, PostgreSQL 8.4+, MSSQL 2005+, MySQL 8.0+ / MariaDB 10.2+.
+    /// </remarks>
+    /// <param name="limit">number of rows to return (must be &gt;= 0)</param>
+    /// <param name="offset">number of rows to skip (must be &gt;= 0)</param>
+    /// <param name="cancellationToken">token used to cancel the operation</param>
+    /// <returns>paged result containing page items and total row count</returns>
+    public Task<PagedResult<T>> ExecutePagedAsync(int limit, int offset, CancellationToken cancellationToken = default) {
+        return ExecutePagedAsync(null, limit, offset, cancellationToken);
+    }
+
+    /// <summary>
+    /// executes the operation as a single-statement paged load, returning both the page items and the total matching count
+    /// without a second SQL round trip.
+    /// </summary>
+    /// <remarks>
+    /// Overrides any prior <c>.Limit()</c> / <c>.Offset()</c> settings on this operation.
+    /// Requires the underlying database to support <c>COUNT(*) OVER ()</c>:
+    /// SQLite 3.25+, PostgreSQL 8.4+, MSSQL 2005+, MySQL 8.0+ / MariaDB 10.2+.
+    /// </remarks>
+    /// <param name="transaction">transaction to use (optional)</param>
+    /// <param name="limit">number of rows to return (must be &gt;= 0)</param>
+    /// <param name="offset">number of rows to skip (must be &gt;= 0)</param>
+    /// <param name="cancellationToken">token used to cancel the operation</param>
+    /// <returns>paged result containing page items and total row count</returns>
+    public Task<PagedResult<T>> ExecutePagedAsync(Transaction transaction, int limit, int offset, CancellationToken cancellationToken = default) {
+        Limit(limit);
+        Offset(offset);
+        return Prepare(false).ExecutePagedAsync(transaction, limit, offset, cancellationToken);
     }
 
     /// <summary>

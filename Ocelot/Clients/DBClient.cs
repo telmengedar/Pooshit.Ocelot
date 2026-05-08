@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Pooshit.Ocelot.Errors;
 using Pooshit.Ocelot.Extensions;
@@ -104,10 +105,13 @@ public class DBClient : ADbClient {
     }
 
     /// <inheritdoc />
-    public override Task<int> NonQueryPreparedAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
+    public override Task<int> NonQueryPreparedAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         using PreparedCommand command = PrepareCommand(transaction, commandstring, parameters, true);
         try {
-            return command.Command.ExecuteNonQueryAsync();
+            return command.Command.ExecuteNonQueryAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) {
+            throw;
         }
         catch (Exception e) {
             throw new StatementException(commandstring, command.Command.Parameters.Cast<object>().ToArray(), e);
@@ -115,23 +119,29 @@ public class DBClient : ADbClient {
     }
 
     /// <inheritdoc />
-    public override async Task<DataTable> QueryPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+    public override async Task<DataTable> QueryPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         using PreparedCommand command = PrepareCommand(transaction, query, parameters, true);
 
         try {
-            using IDataReader reader = await command.Command.ExecuteReaderAsync();
+            using IDataReader reader = await command.Command.ExecuteReaderAsync(cancellationToken);
             return CreateTable(reader);
         }
+        catch (OperationCanceledException) {
+            throw;
+        }
         catch (Exception e) {
             throw new StatementException(query, command.Command.Parameters.Cast<object>().ToArray(), e);
         }
     }
 
     /// <inheritdoc />
-    public override async Task<object> ScalarPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+    public override async Task<object> ScalarPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         using PreparedCommand command = PrepareCommand(transaction, query, parameters, true);
         try {
-            return await command.Command.ExecuteScalarAsync();
+            return await command.Command.ExecuteScalarAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) {
+            throw;
         }
         catch (Exception e) {
             throw new StatementException(query, command.Command.Parameters.Cast<object>().ToArray(), e);
@@ -139,25 +149,30 @@ public class DBClient : ADbClient {
     }
 
     /// <inheritdoc />
-    public override async IAsyncEnumerable<object> SetPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+    public override async IAsyncEnumerable<object> SetPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken) {
         PreparedCommand command = PrepareCommand(transaction, query, parameters, true);
 
         DbDataReader reader;
         try {
-            reader = await command.Command.ExecuteReaderAsync();
+            reader = await command.Command.ExecuteReaderAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) {
+            command.Dispose();
+            throw;
         }
         catch (Exception e) {
+            command.Dispose();
             throw new StatementException(query, command.Command.Parameters.Cast<object>().ToArray(), e);
         }
 
         Reader wrapper = new(reader, command, DBInfo);
         if (DBInfo.MultipleConnectionsSupported) {
-            await foreach (object item in ReadSetAsync(wrapper))
+            await foreach (object item in ReadSetAsync(wrapper, cancellationToken))
                 yield return item;
             yield break;
         }
 
-        await foreach (object item in ReadSetAsync(wrapper).Buffer())
+        await foreach (object item in ReadSetAsync(wrapper, cancellationToken).Buffer())
             yield return item;
     }
 
@@ -174,10 +189,10 @@ public class DBClient : ADbClient {
     }
 
     /// <inheritdoc />
-    public override async Task<Reader> ReaderAsync(Transaction transaction, string command, IEnumerable<object> parameters) {
+    public override async Task<Reader> ReaderAsync(Transaction transaction, string command, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         PreparedCommand prepared = PrepareCommand(transaction, command, parameters, false);
         try {
-            return new(await prepared.Command.ExecuteReaderAsync(), prepared, DBInfo);
+            return new(await prepared.Command.ExecuteReaderAsync(cancellationToken), prepared, DBInfo);
         }
         catch (Exception) {
             prepared.Dispose();
@@ -198,10 +213,10 @@ public class DBClient : ADbClient {
     }
 
     /// <inheritdoc />
-    public override async Task<Reader> ReaderPreparedAsync(Transaction transaction, string command, IEnumerable<object> parameters) {
+    public override async Task<Reader> ReaderPreparedAsync(Transaction transaction, string command, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         PreparedCommand prepared = PrepareCommand(transaction, command, parameters, true);
         try {
-            return new Reader(await prepared.Command.ExecuteReaderAsync(), prepared, DBInfo);
+            return new Reader(await prepared.Command.ExecuteReaderAsync(cancellationToken), prepared, DBInfo);
         }
         catch (Exception) {
             prepared.Dispose();
@@ -233,10 +248,13 @@ public class DBClient : ADbClient {
     }
 
     /// <inheritdoc />
-    public override async Task<int> NonQueryAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
+    public override async Task<int> NonQueryAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         using PreparedCommand command = PrepareCommand(transaction, commandstring, parameters, false);
         try {
-            return await command.Command.ExecuteNonQueryAsync();
+            return await command.Command.ExecuteNonQueryAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) {
+            throw;
         }
         catch (Exception e) {
             throw new StatementException(commandstring, command.Command.Parameters.Cast<object>().ToArray(), e);
@@ -256,11 +274,14 @@ public class DBClient : ADbClient {
     }
 
     /// <inheritdoc />
-    public override async Task<DataTable> QueryAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+    public override async Task<DataTable> QueryAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         using PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
         try {
-            using IDataReader reader = await command.Command.ExecuteReaderAsync();
+            using IDataReader reader = await command.Command.ExecuteReaderAsync(cancellationToken);
             return CreateTable(reader);
+        }
+        catch (OperationCanceledException) {
+            throw;
         }
         catch (Exception e) {
             throw new StatementException(query, command.Command.Parameters.Cast<object>().ToArray(), e);
@@ -279,10 +300,13 @@ public class DBClient : ADbClient {
     }
 
     /// <inheritdoc />
-    public override async Task<object> ScalarAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+    public override async Task<object> ScalarAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         using PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
         try {
-            return await command.Command.ExecuteScalarAsync();
+            return await command.Command.ExecuteScalarAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) {
+            throw;
         }
         catch (Exception e) {
             throw new StatementException(query, command.Command.Parameters.Cast<object>().ToArray(), e);
@@ -308,12 +332,15 @@ public class DBClient : ADbClient {
     }
 
     /// <inheritdoc />
-    public override async IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+    public override async IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken) {
         using PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
 
         DbDataReader reader;
         try {
-            reader = await command.Command.ExecuteReaderAsync();
+            reader = await command.Command.ExecuteReaderAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) {
+            throw;
         }
         catch (Exception e) {
             throw new StatementException(query, command.Command.Parameters.Cast<object>().ToArray(), e);
@@ -321,12 +348,12 @@ public class DBClient : ADbClient {
 
         Reader wrapper = new(reader, command, DBInfo);
         if (DBInfo.MultipleConnectionsSupported) {
-            await foreach (object item in ReadSetAsync(wrapper))
+            await foreach (object item in ReadSetAsync(wrapper, cancellationToken))
                 yield return item;
             yield break;
         }
 
-        await foreach (object item in ReadSetAsync(wrapper).Buffer())
+        await foreach (object item in ReadSetAsync(wrapper, cancellationToken).Buffer())
             yield return item;
     }
 
@@ -338,10 +365,12 @@ public class DBClient : ADbClient {
         }
     }
     
-    async IAsyncEnumerable<object> ReadSetAsync(Reader reader) {
+    async IAsyncEnumerable<object> ReadSetAsync(Reader reader, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default) {
         using (reader) {
-            while (await reader.ReadAsync())
+            while (await reader.ReadAsync(cancellationToken)) {
+                cancellationToken.ThrowIfCancellationRequested();
                 yield return await reader.FieldValueAsync<object>(0);
+            }
             await reader.CloseAsync();
         }
     }

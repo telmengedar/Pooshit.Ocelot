@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Pooshit.Ocelot.Info;
 
@@ -282,6 +283,104 @@ namespace Pooshit.Ocelot.Clients {
         /// <param name="parameters">parameters for command</param>
         /// <returns>resulting set of values</returns>
         IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters);
+
+        /// <summary>
+        /// executes a non query with cancellation support
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="commandstring">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <param name="cancellationToken">token used to cancel the operation</param>
+        Task<int> NonQueryAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// executes a query with cancellation support
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <param name="cancellationToken">token used to cancel the operation</param>
+        /// <returns>table containing result data</returns>
+        Task<Tables.DataTable> QueryAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// executes a query returning a scalar with cancellation support
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <param name="cancellationToken">token used to cancel the operation</param>
+        /// <returns>resulting scalar</returns>
+        Task<object> ScalarAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// executes a query returning a set of values with cancellation support
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <param name="cancellationToken">token used to cancel the operation</param>
+        /// <returns>resulting set of values</returns>
+        IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// executes a non query (prepared) with cancellation support
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="commandstring">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <param name="cancellationToken">token used to cancel the operation</param>
+        Task<int> NonQueryPreparedAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// executes a query (prepared) with cancellation support
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <param name="cancellationToken">token used to cancel the operation</param>
+        /// <returns>table containing result data</returns>
+        Task<Tables.DataTable> QueryPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// executes a query (prepared) returning a scalar with cancellation support
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <param name="cancellationToken">token used to cancel the operation</param>
+        /// <returns>resulting scalar</returns>
+        Task<object> ScalarPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// executes a query (prepared) returning a set of values with cancellation support
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="query">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <param name="cancellationToken">token used to cancel the operation</param>
+        /// <returns>resulting set of values</returns>
+        IAsyncEnumerable<object> SetPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// executes a command returning a data reader with cancellation support
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="command">command to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <param name="cancellationToken">token used to cancel the operation</param>
+        /// <returns>data reader used to read command result</returns>
+        Task<Reader> ReaderAsync(Transaction transaction, string command, IEnumerable<object> parameters, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// executes a prepared command returning a data reader with cancellation support
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="command">command to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <param name="cancellationToken">token used to cancel the operation</param>
+        /// <returns>data reader used to read command result</returns>
+        Task<Reader> ReaderPreparedAsync(Transaction transaction, string command, IEnumerable<object> parameters, CancellationToken cancellationToken);
 
         /// <summary>
         /// begins a transaction
