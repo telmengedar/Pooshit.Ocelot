@@ -716,6 +716,68 @@ public class PreparedLoadOperation<T> : PreparedLoadOperation {
     }
 
     /// <summary>
+    /// executes the operation with a windowed aggregate injected into the projection and returns an open reader
+    /// positioned before the first row, together with a task that resolves to the windowed-aggregate value
+    /// once the consumer reads the first row. The caller owns the reader and must dispose it.
+    /// </summary>
+    /// <remarks>
+    /// This is a low-level primitive for consumers (e.g. <c>FieldMapper</c>) that need to materialize rows
+    /// themselves. Use <see cref="ExecuteWindowedAsync{TWindow}(Pooshit.Ocelot.Tokens.Partitions.WindowedAggregate,System.Threading.CancellationToken)"/>
+    /// for the higher-level descriptor-based path.
+    /// </remarks>
+    /// <param name="windowedAggregate">the windowed aggregate to inject (e.g. <c>DB.CountOver()</c>, <c>DB.MaxOver(...)</c>)</param>
+    /// <param name="cancellationToken">token used to cancel the operation</param>
+    /// <returns>
+    /// a <see cref="WindowReader{TWindow}"/> whose <see cref="WindowReader{TWindow}.Reader"/> is open and unread,
+    /// and whose <see cref="WindowReader{TWindow}.WindowValue"/> resolves after the first <c>ReadAsync</c> on the reader
+    /// </returns>
+    public virtual Task<WindowReader<TWindow>> ExecuteWindowedReaderAsync<TWindow>(WindowedAggregate windowedAggregate, CancellationToken cancellationToken = default) {
+        return ExecuteWindowedReaderAsync<TWindow>(null, windowedAggregate, cancellationToken);
+    }
+
+    /// <summary>
+    /// executes the operation with a windowed aggregate injected into the projection and returns an open reader
+    /// positioned before the first row, together with a task that resolves to the windowed-aggregate value
+    /// once the consumer reads the first row. The caller owns the reader and must dispose it.
+    /// </summary>
+    /// <param name="transaction">transaction to use (optional)</param>
+    /// <param name="windowedAggregate">the windowed aggregate to inject</param>
+    /// <param name="cancellationToken">token used to cancel the operation</param>
+    /// <returns>
+    /// a <see cref="WindowReader{TWindow}"/> whose <see cref="WindowReader{TWindow}.Reader"/> is open and unread,
+    /// and whose <see cref="WindowReader{TWindow}.WindowValue"/> resolves after the first <c>ReadAsync</c> on the reader
+    /// </returns>
+    public virtual async Task<WindowReader<TWindow>> ExecuteWindowedReaderAsync<TWindow>(Transaction transaction, WindowedAggregate windowedAggregate, CancellationToken cancellationToken = default) {
+        if (windowedAggregate == null)
+            throw new ArgumentNullException(nameof(windowedAggregate));
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Resolve alias: use caller-supplied alias verbatim if non-empty, else fallback to __window
+        string alias = string.IsNullOrEmpty(windowedAggregate.Alias) ? "__window" : windowedAggregate.Alias;
+        WindowedAggregate aggregate = string.IsNullOrEmpty(windowedAggregate.Alias)
+            ? new WindowedAggregate(windowedAggregate.AggregateExpression, windowedAggregate.PartitionBy, windowedAggregate.OrderBy, "__window")
+            : windowedAggregate;
+
+        string aggregateSql = RenderWindowedAggregateSql(aggregate);
+        string windowedCommandText = InjectWindowedColumn(CommandText, aggregateSql, null, null, DBClient.DBInfo.GetType().Name);
+
+        object[] allParams = ConstantParameters.ToArray();
+
+        Reader rawReader;
+        if (DBPrepare && DBClient.DBInfo.PreparationSupported)
+            rawReader = await DBClient.ReaderPreparedAsync(transaction, windowedCommandText, allParams, cancellationToken);
+        else
+            rawReader = await DBClient.ReaderAsync(transaction, windowedCommandText, allParams, cancellationToken);
+
+        TaskCompletionSource<TWindow> windowTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        WindowReader<TWindow> carrier = new(windowTcs.Task);
+        WindowedReader<TWindow> proxy = new(rawReader, windowTcs, alias, carrier);
+        carrier.Reader = proxy;
+        return carrier;
+    }
+
+    /// <summary>
     /// executes the operation as a single-statement paged load, returning both the page items and the total matching count
     /// without a second SQL round trip. Sugar over <see cref="ExecuteWindowedAsync{TWindow}"/> using <c>DB.CountOver()</c>.
     /// </summary>
