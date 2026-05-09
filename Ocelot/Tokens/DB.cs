@@ -726,4 +726,68 @@ public static class DB {
     public static NowToken Now() {
         return new();
     }
+
+    /// <summary>
+    /// <c>COUNT(*) OVER ()</c> windowed aggregate — returns the total number of rows matching the current WHERE clause,
+    /// computed once per row without a second SQL round trip.
+    /// </summary>
+    /// <remarks>
+    /// Requires the underlying database to support window functions: SQLite 3.25+, PostgreSQL 8.4+, MSSQL 2005+,
+    /// MySQL 8.0+ / MariaDB 10.2+. Older engines will fail with a <c>StatementException</c> wrapping a SQL-syntax error.
+    /// </remarks>
+    /// <param name="partitionBy">optional field to partition the window by</param>
+    /// <param name="orderBy">optional order-by criterion for the window</param>
+    /// <param name="alias">optional SQL alias</param>
+    /// <returns>windowed aggregate token</returns>
+    public static WindowedAggregate CountOver(IDBField partitionBy = null, OrderByCriteria orderBy = null, string alias = null) {
+        return new(Count(All), partitionBy, orderBy, alias);
+    }
+
+    /// <summary>
+    /// <c>SUM(&lt;field&gt;) OVER ([PARTITION BY ...] [ORDER BY ...])</c> windowed aggregate.
+    /// </summary>
+    /// <param name="field">field to sum</param>
+    /// <param name="partitionBy">optional field to partition the window by</param>
+    /// <param name="orderBy">optional order-by criterion for the window</param>
+    /// <param name="alias">optional SQL alias</param>
+    /// <returns>windowed aggregate token</returns>
+    public static WindowedAggregate SumOver(ISqlToken field, IDBField partitionBy = null, OrderByCriteria orderBy = null, string alias = null) {
+        return new(Sum(field), partitionBy, orderBy, alias);
+    }
+
+    /// <summary>
+    /// <c>AVG(&lt;field&gt;) OVER ([PARTITION BY ...] [ORDER BY ...])</c> windowed aggregate.
+    /// </summary>
+    /// <param name="field">field to average</param>
+    /// <param name="partitionBy">optional field to partition the window by</param>
+    /// <param name="orderBy">optional order-by criterion for the window</param>
+    /// <param name="alias">optional SQL alias</param>
+    /// <returns>windowed aggregate token</returns>
+    public static WindowedAggregate AvgOver(ISqlToken field, IDBField partitionBy = null, OrderByCriteria orderBy = null, string alias = null) {
+        return new(Avg(field), partitionBy, orderBy, alias);
+    }
+
+    /// <summary>
+    /// <c>MIN(&lt;field&gt;) OVER ([PARTITION BY ...] [ORDER BY ...])</c> windowed aggregate.
+    /// </summary>
+    /// <param name="field">field to minimize</param>
+    /// <param name="partitionBy">optional field to partition the window by</param>
+    /// <param name="orderBy">optional order-by criterion for the window</param>
+    /// <param name="alias">optional SQL alias</param>
+    /// <returns>windowed aggregate token</returns>
+    public static WindowedAggregate MinOver(ISqlToken field, IDBField partitionBy = null, OrderByCriteria orderBy = null, string alias = null) {
+        return new(Min(field), partitionBy, orderBy, alias);
+    }
+
+    /// <summary>
+    /// <c>MAX(&lt;field&gt;) OVER ([PARTITION BY ...] [ORDER BY ...])</c> windowed aggregate.
+    /// </summary>
+    /// <param name="field">field to maximize</param>
+    /// <param name="partitionBy">optional field to partition the window by</param>
+    /// <param name="orderBy">optional order-by criterion for the window</param>
+    /// <param name="alias">optional SQL alias</param>
+    /// <returns>windowed aggregate token</returns>
+    public static WindowedAggregate MaxOver(ISqlToken field, IDBField partitionBy = null, OrderByCriteria orderBy = null, string alias = null) {
+        return new(Max(field), partitionBy, orderBy, alias);
+    }
 }

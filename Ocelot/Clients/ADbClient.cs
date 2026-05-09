@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Pooshit.Ocelot.Clients.Tables;
 using Pooshit.Ocelot.Info;
 
-namespace Pooshit.Ocelot.Clients; 
+namespace Pooshit.Ocelot.Clients;
 
 /// <summary>
 /// abstract implementation providing basic functionality to all db clients
@@ -73,7 +74,10 @@ public abstract class ADbClient : IDBClient {
     public Task<int> NonQueryAsync(Transaction transaction, string commandstring, params object[] parameters) => NonQueryAsync(transaction, commandstring, (IEnumerable<object>)parameters);
 
     /// <inheritdoc />
-    public abstract Task<int> NonQueryAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters);
+    public Task<int> NonQueryAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters) => NonQueryAsync(transaction, commandstring, parameters, CancellationToken.None);
+
+    /// <inheritdoc />
+    public abstract Task<int> NonQueryAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters, CancellationToken cancellationToken);
 
     /// <inheritdoc />
     public Task<DataTable> QueryAsync(string query, params object[] parameters) => QueryAsync(null, query, (IEnumerable<object>)parameters);
@@ -85,7 +89,10 @@ public abstract class ADbClient : IDBClient {
     public Task<DataTable> QueryAsync(Transaction transaction, string query, params object[] parameters) => QueryAsync(transaction, query, (IEnumerable<object>)parameters);
 
     /// <inheritdoc />
-    public abstract Task<DataTable> QueryAsync(Transaction transaction, string query, IEnumerable<object> parameters);
+    public Task<DataTable> QueryAsync(Transaction transaction, string query, IEnumerable<object> parameters) => QueryAsync(transaction, query, parameters, CancellationToken.None);
+
+    /// <inheritdoc />
+    public abstract Task<DataTable> QueryAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken);
 
     /// <inheritdoc />
     public Task<object> ScalarAsync(string query, params object[] parameters) => ScalarAsync(null, query, (IEnumerable<object>)parameters);
@@ -97,7 +104,10 @@ public abstract class ADbClient : IDBClient {
     public Task<object> ScalarAsync(Transaction transaction, string query, params object[] parameters) => ScalarAsync(transaction, query, (IEnumerable<object>)parameters);
 
     /// <inheritdoc />
-    public abstract Task<object> ScalarAsync(Transaction transaction, string query, IEnumerable<object> parameters);
+    public Task<object> ScalarAsync(Transaction transaction, string query, IEnumerable<object> parameters) => ScalarAsync(transaction, query, parameters, CancellationToken.None);
+
+    /// <inheritdoc />
+    public abstract Task<object> ScalarAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken);
 
     /// <inheritdoc />
     public IAsyncEnumerable<object> SetAsync(string query, params object[] parameters) => SetAsync(null, query, (IEnumerable<object>)parameters);
@@ -109,7 +119,10 @@ public abstract class ADbClient : IDBClient {
     public IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, params object[] parameters) => SetAsync(transaction, query, (IEnumerable<object>)parameters);
 
     /// <inheritdoc />
-    public abstract IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters);
+    public IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters) => SetAsync(transaction, query, parameters, CancellationToken.None);
+
+    /// <inheritdoc />
+    public abstract IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken);
 
     /// <inheritdoc />
     public abstract Transaction Transaction();
@@ -172,7 +185,10 @@ public abstract class ADbClient : IDBClient {
     public Task<int> NonQueryPreparedAsync(Transaction transaction, string commandstring, params object[] parameters) => NonQueryPreparedAsync(transaction, commandstring, (IEnumerable<object>)parameters);
 
     /// <inheritdoc />
-    public abstract Task<int> NonQueryPreparedAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters);
+    public Task<int> NonQueryPreparedAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters) => NonQueryPreparedAsync(transaction, commandstring, parameters, CancellationToken.None);
+
+    /// <inheritdoc />
+    public abstract Task<int> NonQueryPreparedAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters, CancellationToken cancellationToken);
 
     /// <inheritdoc />
     public Task<DataTable> QueryPreparedAsync(string query, params object[] parameters) => QueryPreparedAsync(null, query, (IEnumerable<object>)parameters);
@@ -184,7 +200,10 @@ public abstract class ADbClient : IDBClient {
     public Task<DataTable> QueryPreparedAsync(Transaction transaction, string query, params object[] parameters) => QueryPreparedAsync(transaction, query, (IEnumerable<object>)parameters);
 
     /// <inheritdoc />
-    public abstract Task<DataTable> QueryPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters);
+    public Task<DataTable> QueryPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters) => QueryPreparedAsync(transaction, query, parameters, CancellationToken.None);
+
+    /// <inheritdoc />
+    public abstract Task<DataTable> QueryPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken);
 
     /// <inheritdoc />
     public Task<object> ScalarPreparedAsync(string query, params object[] parameters) => ScalarPreparedAsync(null, query, (IEnumerable<object>)parameters);
@@ -196,7 +215,10 @@ public abstract class ADbClient : IDBClient {
     public Task<object> ScalarPreparedAsync(Transaction transaction, string query, params object[] parameters) => ScalarPreparedAsync(transaction, query, (IEnumerable<object>)parameters);
 
     /// <inheritdoc />
-    public abstract Task<object> ScalarPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters);
+    public Task<object> ScalarPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters) => ScalarPreparedAsync(transaction, query, parameters, CancellationToken.None);
+
+    /// <inheritdoc />
+    public abstract Task<object> ScalarPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken);
 
     /// <inheritdoc />
     public IAsyncEnumerable<object> SetPreparedAsync(string query, params object[] parameters) => SetPreparedAsync(null, query, (IEnumerable<object>)parameters);
@@ -208,7 +230,10 @@ public abstract class ADbClient : IDBClient {
     public IAsyncEnumerable<object> SetPreparedAsync(Transaction transaction, string query, params object[] parameters) => SetPreparedAsync(transaction, query, (IEnumerable<object>)parameters);
 
     /// <inheritdoc />
-    public abstract IAsyncEnumerable<object> SetPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters);
+    public IAsyncEnumerable<object> SetPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters) => SetPreparedAsync(transaction, query, parameters, CancellationToken.None);
+
+    /// <inheritdoc />
+    public abstract IAsyncEnumerable<object> SetPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken);
 
     /// <inheritdoc />
     public abstract Reader Reader(Transaction transaction, string command, IEnumerable<object> parameters);
@@ -223,7 +248,10 @@ public abstract class ADbClient : IDBClient {
     public Reader Reader(string command, params object[] parameters) => Reader(null, command, (IEnumerable<object>)parameters);
 
     /// <inheritdoc />
-    public abstract Task<Reader> ReaderAsync(Transaction transaction, string command, IEnumerable<object> parameters);
+    public Task<Reader> ReaderAsync(Transaction transaction, string command, IEnumerable<object> parameters) => ReaderAsync(transaction, command, parameters, CancellationToken.None);
+
+    /// <inheritdoc />
+    public abstract Task<Reader> ReaderAsync(Transaction transaction, string command, IEnumerable<object> parameters, CancellationToken cancellationToken);
 
     /// <inheritdoc />
     public Task<Reader> ReaderAsync(Transaction transaction, string command, params object[] parameters) => ReaderAsync(transaction, command, (IEnumerable<object>)parameters);
@@ -247,7 +275,10 @@ public abstract class ADbClient : IDBClient {
     public Reader ReaderPrepared(string command, params object[] parameters) => ReaderPrepared(null, command, (IEnumerable<object>)parameters);
 
     /// <inheritdoc />
-    public abstract Task<Reader> ReaderPreparedAsync(Transaction transaction, string command, IEnumerable<object> parameters);
+    public Task<Reader> ReaderPreparedAsync(Transaction transaction, string command, IEnumerable<object> parameters) => ReaderPreparedAsync(transaction, command, parameters, CancellationToken.None);
+
+    /// <inheritdoc />
+    public abstract Task<Reader> ReaderPreparedAsync(Transaction transaction, string command, IEnumerable<object> parameters, CancellationToken cancellationToken);
 
     /// <inheritdoc />
     public Task<Reader> ReaderPreparedAsync(Transaction transaction, string command, params object[] parameters) => ReaderPreparedAsync(transaction, command, (IEnumerable<object>)parameters);

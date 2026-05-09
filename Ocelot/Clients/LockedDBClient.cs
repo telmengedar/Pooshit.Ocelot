@@ -89,63 +89,63 @@ public class LockedDBClient : ADbClient {
     }
 
     /// <inheritdoc />
-    public override async Task<int> NonQueryAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
+    public override async Task<int> NonQueryAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         if(transaction == null) {
-            await connectionlock.WaitAsync();
+            await connectionlock.WaitAsync(cancellationToken);
             try {
-                return await baseclient.NonQueryAsync(null, commandstring, parameters);
+                return await baseclient.NonQueryAsync(null, commandstring, parameters, cancellationToken);
             }
             finally {
                 connectionlock.Release();
             }
         }
 
-        return await baseclient.NonQueryAsync(transaction, commandstring, parameters);
+        return await baseclient.NonQueryAsync(transaction, commandstring, parameters, cancellationToken);
     }
         
     /// <inheritdoc />
-    public override async Task<DataTable> QueryAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+    public override async Task<DataTable> QueryAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         if(transaction == null) {
-            await connectionlock.WaitAsync();
+            await connectionlock.WaitAsync(cancellationToken);
             try {
-                return await baseclient.QueryAsync(null, query, parameters);
+                return await baseclient.QueryAsync(null, query, parameters, cancellationToken);
             }
             finally {
                 connectionlock.Release();
             }
         }
 
-        return await baseclient.QueryAsync(transaction, query, parameters);
+        return await baseclient.QueryAsync(transaction, query, parameters, cancellationToken);
     }
 
     /// <inheritdoc />
-    public override async Task<object> ScalarAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+    public override async Task<object> ScalarAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         if(transaction == null) {
-            await connectionlock.WaitAsync();
+            await connectionlock.WaitAsync(cancellationToken);
             try {
-                return await baseclient.ScalarAsync(null, query, parameters);
+                return await baseclient.ScalarAsync(null, query, parameters, cancellationToken);
             }
             finally {
                 connectionlock.Release();
             }
         }
 
-        return await baseclient.ScalarAsync(transaction, query, parameters);
+        return await baseclient.ScalarAsync(transaction, query, parameters, cancellationToken);
     }
 
     /// <inheritdoc />
-    public override IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+    public override IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         if(transaction == null) {
-            connectionlock.Wait();
+            connectionlock.Wait(cancellationToken);
             try {
-                return baseclient.SetAsync(null, query, parameters);
+                return baseclient.SetAsync(null, query, parameters, cancellationToken);
             }
             finally {
                 connectionlock.Release();
             }
         }
 
-        return baseclient.SetAsync(transaction, query, parameters);
+        return baseclient.SetAsync(transaction, query, parameters, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -214,63 +214,63 @@ public class LockedDBClient : ADbClient {
     }
 
     /// <inheritdoc />
-    public override async Task<int> NonQueryPreparedAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
+    public override async Task<int> NonQueryPreparedAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         if(transaction == null) {
-            await connectionlock.WaitAsync();
+            await connectionlock.WaitAsync(cancellationToken);
             try {
-                return await baseclient.NonQueryPreparedAsync(null, commandstring, parameters);
+                return await baseclient.NonQueryPreparedAsync(null, commandstring, parameters, cancellationToken);
             }
             finally {
                 connectionlock.Release();
             }
         }
 
-        return await baseclient.NonQueryPreparedAsync(transaction, commandstring, parameters);
+        return await baseclient.NonQueryPreparedAsync(transaction, commandstring, parameters, cancellationToken);
     }
 
     /// <inheritdoc />
-    public override async Task<DataTable> QueryPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+    public override async Task<DataTable> QueryPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         if(transaction == null) {
-            await connectionlock.WaitAsync();
+            await connectionlock.WaitAsync(cancellationToken);
             try {
-                return await baseclient.QueryPreparedAsync(null, query, parameters);
+                return await baseclient.QueryPreparedAsync(null, query, parameters, cancellationToken);
             }
             finally {
                 connectionlock.Release();
             }
         }
 
-        return await baseclient.QueryPreparedAsync(transaction, query, parameters);
+        return await baseclient.QueryPreparedAsync(transaction, query, parameters, cancellationToken);
     }
 
     /// <inheritdoc />
-    public override async Task<object> ScalarPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+    public override async Task<object> ScalarPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         if(transaction == null) {
-            await connectionlock.WaitAsync();
+            await connectionlock.WaitAsync(cancellationToken);
             try {
-                return await baseclient.ScalarPreparedAsync(null, query, parameters);
+                return await baseclient.ScalarPreparedAsync(null, query, parameters, cancellationToken);
             }
             finally {
                 connectionlock.Release();
             }
         }
 
-        return await baseclient.ScalarPreparedAsync(transaction, query, parameters);
+        return await baseclient.ScalarPreparedAsync(transaction, query, parameters, cancellationToken);
     }
 
     /// <inheritdoc />
-    public override IAsyncEnumerable<object> SetPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters) {
+    public override IAsyncEnumerable<object> SetPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         if(transaction == null) {
-            connectionlock.Wait();
+            connectionlock.Wait(cancellationToken);
             try {
-                return baseclient.SetPreparedAsync(null, query, parameters);
+                return baseclient.SetPreparedAsync(null, query, parameters, cancellationToken);
             }
             finally {
                 connectionlock.Release();
             }
         }
 
-        return baseclient.SetPreparedAsync(transaction, query, parameters);
+        return baseclient.SetPreparedAsync(transaction, query, parameters, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -292,11 +292,11 @@ public class LockedDBClient : ADbClient {
     }
 
     /// <inheritdoc />
-    public override async Task<Reader> ReaderAsync(Transaction transaction, string command, IEnumerable<object> parameters) {
+    public override async Task<Reader> ReaderAsync(Transaction transaction, string command, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         if(transaction == null) {
-            await connectionlock.WaitAsync();
+            await connectionlock.WaitAsync(cancellationToken);
             try {
-                Reader reader = await baseclient.ReaderAsync(null, command, parameters);
+                Reader reader = await baseclient.ReaderAsync(null, command, parameters, cancellationToken);
                 reader.Semaphore = connectionlock;
                 return reader;
             }
@@ -306,7 +306,7 @@ public class LockedDBClient : ADbClient {
             }
         }
 
-        return await baseclient.ReaderAsync(transaction, command, parameters);
+        return await baseclient.ReaderAsync(transaction, command, parameters, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -328,11 +328,11 @@ public class LockedDBClient : ADbClient {
     }
 
     /// <inheritdoc />
-    public override async Task<Reader> ReaderPreparedAsync(Transaction transaction, string command, IEnumerable<object> parameters) {
+    public override async Task<Reader> ReaderPreparedAsync(Transaction transaction, string command, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         if(transaction == null) {
-            await connectionlock.WaitAsync();
+            await connectionlock.WaitAsync(cancellationToken);
             try {
-                Reader reader = await baseclient.ReaderPreparedAsync(null, command, parameters);
+                Reader reader = await baseclient.ReaderPreparedAsync(null, command, parameters, cancellationToken);
                 reader.Semaphore = connectionlock;
                 return reader;
             }
@@ -342,6 +342,6 @@ public class LockedDBClient : ADbClient {
             }
         }
 
-        return await baseclient.ReaderPreparedAsync(transaction, command, parameters);
+        return await baseclient.ReaderPreparedAsync(transaction, command, parameters, cancellationToken);
     }
 }
