@@ -134,8 +134,8 @@ public class LockedDBClientCancellationTests {
         }
 
         // Semaphore must be free — normal call must complete without deadlock
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 0);
-        long total = await result.Total;
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 0);
+        long total = await result.WindowValue;
         Assert.AreEqual(5L, total, "Operation after canceled ExecutePagedAsync must succeed");
     }
 

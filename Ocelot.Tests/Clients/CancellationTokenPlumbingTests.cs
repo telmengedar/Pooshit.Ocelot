@@ -145,9 +145,9 @@ public class CancellationTokenPlumbingTests {
         em.UpdateSchema<ValueModel>();
         await InsertRows(em, 8);
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(5, 0, CancellationToken.None);
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(5, 0, CancellationToken.None);
 
-        long total = await result.Total;
+        long total = await result.WindowValue;
         Assert.AreEqual(8L, total);
 
         int count = 0;

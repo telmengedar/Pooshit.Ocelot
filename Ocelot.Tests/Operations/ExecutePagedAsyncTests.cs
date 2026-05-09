@@ -27,9 +27,9 @@ public class ExecutePagedAsyncTests {
         IEntityManager em = CreateEntityManager();
         em.UpdateSchema<ValueModel>();
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 0);
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 0);
 
-        long total = await result.Total;
+        long total = await result.WindowValue;
         Assert.AreEqual(0L, total);
 
         List<ValueModel> items = [];
@@ -44,9 +44,9 @@ public class ExecutePagedAsyncTests {
         em.UpdateSchema<ValueModel>();
         await InsertRows(em, 1);
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 0);
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 0);
 
-        long total = await result.Total;
+        long total = await result.WindowValue;
         Assert.AreEqual(1L, total);
 
         List<ValueModel> items = [];
@@ -61,9 +61,9 @@ public class ExecutePagedAsyncTests {
         em.UpdateSchema<ValueModel>();
         await InsertRows(em, 5);
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
 
-        long total = await result.Total;
+        long total = await result.WindowValue;
         Assert.AreEqual(5L, total);
 
         int count = 0;
@@ -79,9 +79,9 @@ public class ExecutePagedAsyncTests {
         await InsertRows(em, 15);
 
         // Request page of 5 from 15 total rows
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
 
-        long total = await result.Total;
+        long total = await result.WindowValue;
         Assert.AreEqual(15L, total);
 
         int count = 0;
@@ -96,9 +96,9 @@ public class ExecutePagedAsyncTests {
         em.UpdateSchema<ValueModel>();
         await InsertRows(em, 5);
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 100);
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 100);
 
-        long total = await result.Total;
+        long total = await result.WindowValue;
         // Window function count is per-row; if no rows returned, total = 0 (empty set)
         Assert.AreEqual(0L, total);
 
@@ -115,8 +115,8 @@ public class ExecutePagedAsyncTests {
         await InsertRows(em, 20);
 
         // Get paged result with page size smaller than total
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(7, 0);
-        long pagedTotal = await result.Total;
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(7, 0);
+        long pagedTotal = await result.WindowValue;
 
         // Drain items so reader is closed
         await foreach (ValueModel _ in result.Items) { }
@@ -132,10 +132,10 @@ public class ExecutePagedAsyncTests {
         em.UpdateSchema<ValueModel>();
         await InsertRows(em, 8);
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
 
-        // Await Total BEFORE iterating Items — must already be set
-        long total = await result.Total;
+        // Await WindowValue BEFORE iterating Items — must already be set
+        long total = await result.WindowValue;
         Assert.AreEqual(8L, total);
 
         int count = 0;
@@ -182,11 +182,11 @@ public class ExecutePagedAsyncTests {
         for (int i = 0; i < 10; i++)
             await em.Insert<ValueModel>().Columns(v => v.Integer).ExecuteAsync(i);
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>()
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>()
             .Where(v => v.Integer < 5)
             .ExecutePagedAsync(10, 0);
 
-        long total = await result.Total;
+        long total = await result.WindowValue;
         Assert.AreEqual(5L, total);
     }
 
@@ -196,9 +196,9 @@ public class ExecutePagedAsyncTests {
         em.UpdateSchema<ValueModel>();
         await em.Insert<ValueModel>().Columns(v => v.Integer, v => v.String).ExecuteAsync(42, "hello");
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 0);
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 0);
 
-        await result.Total;
+        await result.WindowValue;
         ValueModel item = null;
         await foreach (ValueModel v in result.Items)
             item = v;

@@ -50,9 +50,9 @@ public class PostgresExecutePagedAsyncTests {
 
     [Test]
     public async Task ZeroRows_TotalIsZero_ItemsIsEmpty() {
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 0);
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 0);
 
-        long total = await result.Total;
+        long total = await result.WindowValue;
         Assert.AreEqual(0L, total);
 
         List<ValueModel> items = [];
@@ -65,9 +65,9 @@ public class PostgresExecutePagedAsyncTests {
     public async Task OneRow_TotalIsOne_ItemsHasOneItem() {
         await InsertRows(em, 1);
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 0);
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 0);
 
-        long total = await result.Total;
+        long total = await result.WindowValue;
         Assert.AreEqual(1L, total);
 
         List<ValueModel> items = [];
@@ -80,9 +80,9 @@ public class PostgresExecutePagedAsyncTests {
     public async Task PartialPage_TotalIsFullCount_ItemsIsPage() {
         await InsertRows(em, 15);
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
 
-        long total = await result.Total;
+        long total = await result.WindowValue;
         Assert.AreEqual(15L, total);
 
         int count = 0;
@@ -95,9 +95,9 @@ public class PostgresExecutePagedAsyncTests {
     public async Task OffsetBeyondData_TotalIsZero_ItemsIsEmpty() {
         await InsertRows(em, 5);
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 100);
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 100);
 
-        long total = await result.Total;
+        long total = await result.WindowValue;
         // Window function over empty result — zero rows returned
         Assert.AreEqual(0L, total);
 
@@ -111,8 +111,8 @@ public class PostgresExecutePagedAsyncTests {
     public async Task Total_MatchesSeparateCountQuery() {
         await InsertRows(em, 20);
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(7, 0);
-        long pagedTotal = await result.Total;
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(7, 0);
+        long pagedTotal = await result.WindowValue;
 
         await foreach (ValueModel _ in result.Items) { }
 
@@ -124,10 +124,10 @@ public class PostgresExecutePagedAsyncTests {
     public async Task EagerAwaitTotal_BeforeIteratingItems_Works() {
         await InsertRows(em, 8);
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
 
-        // On Postgres (multi-connection) Total is resolved from row 1 during ExecutePagedAsync
-        long total = await result.Total;
+        // On Postgres (multi-connection) WindowValue is resolved from row 1 during ExecutePagedAsync
+        long total = await result.WindowValue;
         Assert.AreEqual(8L, total);
 
         int count = 0;
@@ -144,11 +144,11 @@ public class PostgresExecutePagedAsyncTests {
     public async Task Streaming_ItemsArrivedInOrder() {
         await InsertRows(em, 6);
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>()
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>()
             .OrderBy(v => v.Integer)
             .ExecutePagedAsync(6, 0);
 
-        await result.Total; // already resolved
+        await result.WindowValue; // already resolved
         List<int> values = [];
         await foreach (ValueModel item in result.Items)
             values.Add(item.Integer);
@@ -166,11 +166,11 @@ public class PostgresExecutePagedAsyncTests {
     public async Task WithPredicate_TotalReflectsFilteredCount() {
         await InsertRows(em, 10);
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>()
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>()
             .Where(v => v.Integer < 5)
             .ExecutePagedAsync(10, 0);
 
-        long total = await result.Total;
+        long total = await result.WindowValue;
         Assert.AreEqual(5L, total);
     }
 
@@ -211,8 +211,8 @@ public class PostgresExecutePagedAsyncTests {
     public async Task ItemsMappedCorrectly_EntityPropertiesSet() {
         await em.Insert<ValueModel>().Columns(v => v.Integer, v => v.String).ExecuteAsync(42, "hello");
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 0);
-        await result.Total;
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 0);
+        await result.WindowValue;
 
         ValueModel item = null;
         await foreach (ValueModel v in result.Items)
