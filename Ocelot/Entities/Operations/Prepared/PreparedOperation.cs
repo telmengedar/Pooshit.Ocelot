@@ -32,10 +32,7 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
         /// <summary>
         /// access to database
         /// </summary>
-        /// <remarks>
-        /// this usually is used to execute the operation
-        /// </remarks>
-        protected IDBClient DBClient { get; }
+        public IDBClient DBClient { get; }
 
         /// <summary>
         /// text to execute

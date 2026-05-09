@@ -550,7 +550,12 @@ public class LoadOperation<T> : IDatabaseOperation {
     public Task<Reader> ExecuteReaderAsync(params object[] parameters) {
         return ExecuteReaderAsync(null, parameters);
     }
-    PreparedLoadOperation<T> Prepare(bool dbPrepare) {
+    /// <summary>
+    /// prepares the operation for execution
+    /// </summary>
+    /// <param name="dbPrepare">whether to prepare the statement at the database level</param>
+    /// <returns>operation used to load data</returns>
+    public PreparedLoadOperation<T> Prepare(bool dbPrepare) {
         OperationPreparator preparator = new();
         ((IDatabaseOperation)this).Prepare(preparator);
         return preparator.GetLoadValuesOperation<T>(dbclient, descriptorgetter, dbPrepare);
