@@ -12,6 +12,7 @@ using Pooshit.Ocelot.Entities.Operations.Expressions;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Fields;
 using Pooshit.Ocelot.Tokens;
+using Pooshit.Ocelot.Tokens.Partitions;
 using Pooshit.Ocelot.Tokens.Values;
 
 namespace Pooshit.Ocelot.Entities.Operations;
@@ -564,40 +565,55 @@ public class LoadOperation<T> : IDatabaseOperation {
     }
 
     /// <summary>
-    /// executes the operation as a single-statement paged load, returning both the page items and the total matching count
-    /// without a second SQL round trip.
+    /// executes the operation with an arbitrary windowed aggregate expression injected into the projection,
+    /// returning both the items and the windowed value without a second SQL round trip.
     /// </summary>
-    /// <remarks>
-    /// Overrides any prior <c>.Limit()</c> / <c>.Offset()</c> settings on this operation.
-    /// Requires the underlying database to support <c>COUNT(*) OVER ()</c>:
-    /// SQLite 3.25+, PostgreSQL 8.4+, MSSQL 2005+, MySQL 8.0+ / MariaDB 10.2+.
-    /// </remarks>
+    /// <param name="windowedAggregate">the windowed aggregate to inject (e.g. <c>DB.CountOver()</c>, <c>DB.MaxOver(...)</c>)</param>
+    /// <param name="cancellationToken">token used to cancel the operation</param>
+    /// <returns>windowed result containing items and the aggregate value</returns>
+    public Task<WindowResult<T, TWindow>> ExecuteWindowedAsync<TWindow>(WindowedAggregate windowedAggregate, CancellationToken cancellationToken = default) {
+        return ExecuteWindowedAsync<TWindow>(null, windowedAggregate, cancellationToken);
+    }
+
+    /// <summary>
+    /// executes the operation with an arbitrary windowed aggregate expression injected into the projection,
+    /// returning both the items and the windowed value without a second SQL round trip.
+    /// </summary>
+    /// <param name="transaction">transaction to use (optional)</param>
+    /// <param name="windowedAggregate">the windowed aggregate to inject (e.g. <c>DB.CountOver()</c>, <c>DB.MaxOver(...)</c>)</param>
+    /// <param name="cancellationToken">token used to cancel the operation</param>
+    /// <returns>windowed result containing items and the aggregate value</returns>
+    public Task<WindowResult<T, TWindow>> ExecuteWindowedAsync<TWindow>(Transaction transaction, WindowedAggregate windowedAggregate, CancellationToken cancellationToken = default) {
+        return Prepare(false).ExecuteWindowedAsync<TWindow>(transaction, windowedAggregate, cancellationToken);
+    }
+
+    /// <summary>
+    /// executes the operation as a single-statement paged load, returning both the page items and the total matching count
+    /// without a second SQL round trip. Sugar over <see cref="ExecuteWindowedAsync{TWindow}"/> using <c>DB.CountOver()</c>.
+    /// </summary>
     /// <param name="limit">number of rows to return (must be &gt;= 0)</param>
     /// <param name="offset">number of rows to skip (must be &gt;= 0)</param>
     /// <param name="cancellationToken">token used to cancel the operation</param>
     /// <returns>paged result containing page items and total row count</returns>
-    public Task<PagedResult<T>> ExecutePagedAsync(int limit, int offset, CancellationToken cancellationToken = default) {
+    public Task<WindowResult<T, long>> ExecutePagedAsync(int limit, int offset, CancellationToken cancellationToken = default) {
         return ExecutePagedAsync(null, limit, offset, cancellationToken);
     }
 
     /// <summary>
     /// executes the operation as a single-statement paged load, returning both the page items and the total matching count
-    /// without a second SQL round trip.
+    /// without a second SQL round trip. Sugar over <see cref="ExecuteWindowedAsync{TWindow}"/> using <c>DB.CountOver()</c>.
     /// </summary>
-    /// <remarks>
-    /// Overrides any prior <c>.Limit()</c> / <c>.Offset()</c> settings on this operation.
-    /// Requires the underlying database to support <c>COUNT(*) OVER ()</c>:
-    /// SQLite 3.25+, PostgreSQL 8.4+, MSSQL 2005+, MySQL 8.0+ / MariaDB 10.2+.
-    /// </remarks>
     /// <param name="transaction">transaction to use (optional)</param>
     /// <param name="limit">number of rows to return (must be &gt;= 0)</param>
     /// <param name="offset">number of rows to skip (must be &gt;= 0)</param>
     /// <param name="cancellationToken">token used to cancel the operation</param>
     /// <returns>paged result containing page items and total row count</returns>
-    public Task<PagedResult<T>> ExecutePagedAsync(Transaction transaction, int limit, int offset, CancellationToken cancellationToken = default) {
+    public Task<WindowResult<T, long>> ExecutePagedAsync(Transaction transaction, int limit, int offset, CancellationToken cancellationToken = default) {
+        if (limit < 0) throw new ArgumentOutOfRangeException(nameof(limit), "limit must be >= 0");
+        if (offset < 0) throw new ArgumentOutOfRangeException(nameof(offset), "offset must be >= 0");
         Limit(limit);
         Offset(offset);
-        return Prepare(false).ExecutePagedAsync(transaction, limit, offset, cancellationToken);
+        return Prepare(false).ExecuteWindowedAsync<long>(transaction, DB.CountOver(), cancellationToken);
     }
 
     /// <summary>

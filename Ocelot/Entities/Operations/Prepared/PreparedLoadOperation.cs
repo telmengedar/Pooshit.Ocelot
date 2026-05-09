@@ -10,6 +10,7 @@ using Pooshit.Ocelot.Clients.Tables;
 using Pooshit.Ocelot.Entities.Descriptors;
 using Pooshit.Ocelot.Extensions;
 using Pooshit.Ocelot.Extern;
+using Pooshit.Ocelot.Tokens.Partitions;
 using Converter = Pooshit.Ocelot.Extern.Converter;
 using DataTable = Pooshit.Ocelot.Clients.Tables.DataTable;
 
@@ -664,47 +665,84 @@ public class PreparedLoadOperation<T> : PreparedLoadOperation {
     }
 
     /// <summary>
-    /// executes the operation as a single-statement paged load, returning both the page items and the total matching count
-    /// without a second SQL round trip.
+    /// executes the operation with an arbitrary windowed aggregate expression injected into the projection,
+    /// returning both the page items and the windowed value without a second SQL round trip.
     /// </summary>
-    /// <remarks>
-    /// Injects <c>COUNT(*) OVER () AS __total</c> into the projection. Requires the underlying database to support
-    /// <c>COUNT(*) OVER ()</c>: SQLite 3.25+, PostgreSQL 8.4+, MSSQL 2005+, MySQL 8.0+ / MariaDB 10.2+.
-    /// Older engines will fail with a <see cref="Pooshit.Ocelot.Errors.StatementException"/> wrapping a SQL-syntax error.
-    /// The alias <c>__total</c> is reserved; entity properties with that name will receive the windowed count value.
-    /// Any prior <c>.Limit()</c> / <c>.Offset()</c> on the operation are overridden by <paramref name="limit"/> and <paramref name="offset"/>.
-    /// </remarks>
+    /// <param name="windowedAggregate">the windowed aggregate to inject (e.g. <c>DB.CountOver()</c>, <c>DB.MaxOver(...)</c>)</param>
+    /// <param name="cancellationToken">token used to cancel the operation</param>
+    /// <returns>
+    /// a <see cref="WindowResult{TItem,TWindow}"/> whose <see cref="WindowResult{TItem,TWindow}.WindowValue"/> is already
+    /// resolved from the first row and whose <see cref="WindowResult{TItem,TWindow}.Items"/> is ready to iterate
+    /// </returns>
+    public virtual Task<WindowResult<T, TWindow>> ExecuteWindowedAsync<TWindow>(WindowedAggregate windowedAggregate, CancellationToken cancellationToken = default) {
+        return ExecuteWindowedAsync<TWindow>(null, windowedAggregate, cancellationToken);
+    }
+
+    /// <summary>
+    /// executes the operation with an arbitrary windowed aggregate expression injected into the projection,
+    /// returning both the page items and the windowed value without a second SQL round trip.
+    /// </summary>
+    /// <param name="transaction">transaction to use (optional)</param>
+    /// <param name="windowedAggregate">the windowed aggregate to inject (e.g. <c>DB.CountOver()</c>, <c>DB.MaxOver(...)</c>)</param>
+    /// <param name="cancellationToken">token used to cancel the operation</param>
+    /// <returns>
+    /// a <see cref="WindowResult{TItem,TWindow}"/> whose <see cref="WindowResult{TItem,TWindow}.WindowValue"/> is already
+    /// resolved from the first row and whose <see cref="WindowResult{TItem,TWindow}.Items"/> is ready to iterate
+    /// </returns>
+    public virtual async Task<WindowResult<T, TWindow>> ExecuteWindowedAsync<TWindow>(Transaction transaction, WindowedAggregate windowedAggregate, CancellationToken cancellationToken = default) {
+        if (windowedAggregate == null)
+            throw new ArgumentNullException(nameof(windowedAggregate));
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Resolve alias: use caller-supplied alias verbatim if non-empty, else fallback to __window
+        string alias = string.IsNullOrEmpty(windowedAggregate.Alias) ? "__window" : windowedAggregate.Alias;
+        WindowedAggregate aggregate = string.IsNullOrEmpty(windowedAggregate.Alias)
+            ? new WindowedAggregate(windowedAggregate.AggregateExpression, windowedAggregate.PartitionBy, windowedAggregate.OrderBy, "__window")
+            : windowedAggregate;
+
+        string aggregateSql = RenderWindowedAggregateSql(aggregate);
+        string windowedCommandText = InjectWindowedColumn(CommandText, aggregateSql, null, null, DBClient.DBInfo.GetType().Name);
+
+        object[] allParams = ConstantParameters.ToArray();
+
+        Reader reader;
+        if (DBPrepare && DBClient.DBInfo.PreparationSupported)
+            reader = await DBClient.ReaderPreparedAsync(transaction, windowedCommandText, allParams, cancellationToken);
+        else
+            reader = await DBClient.ReaderAsync(transaction, windowedCommandText, allParams, cancellationToken);
+
+        return await ReadWindowedResult<TWindow>(reader, alias, cancellationToken);
+    }
+
+    /// <summary>
+    /// executes the operation as a single-statement paged load, returning both the page items and the total matching count
+    /// without a second SQL round trip. Sugar over <see cref="ExecuteWindowedAsync{TWindow}"/> using <c>DB.CountOver()</c>.
+    /// </summary>
     /// <param name="limit">number of rows to return (must be &gt;= 0)</param>
     /// <param name="offset">number of rows to skip (must be &gt;= 0)</param>
     /// <param name="cancellationToken">token used to cancel the operation</param>
     /// <returns>
-    /// a <see cref="PagedResult{T}"/> whose <see cref="PagedResult{T}.Total"/> is already resolved
-    /// and whose <see cref="PagedResult{T}.Items"/> is ready to iterate when the returned task completes
+    /// a <see cref="WindowResult{TItem,TWindow}"/> whose <see cref="WindowResult{TItem,TWindow}.WindowValue"/> resolves
+    /// to the total unfiltered row count and whose <see cref="WindowResult{TItem,TWindow}.Items"/> contains the page
     /// </returns>
-    public virtual Task<PagedResult<T>> ExecutePagedAsync(int limit, int offset, CancellationToken cancellationToken = default) {
+    public virtual Task<WindowResult<T, long>> ExecutePagedAsync(int limit, int offset, CancellationToken cancellationToken = default) {
         return ExecutePagedAsync(null, limit, offset, cancellationToken);
     }
 
     /// <summary>
     /// executes the operation as a single-statement paged load, returning both the page items and the total matching count
-    /// without a second SQL round trip.
+    /// without a second SQL round trip. Sugar over <see cref="ExecuteWindowedAsync{TWindow}"/> using <c>DB.CountOver()</c>.
     /// </summary>
-    /// <remarks>
-    /// Injects <c>COUNT(*) OVER () AS __total</c> into the projection. Requires the underlying database to support
-    /// <c>COUNT(*) OVER ()</c>: SQLite 3.25+, PostgreSQL 8.4+, MSSQL 2005+, MySQL 8.0+ / MariaDB 10.2+.
-    /// Older engines will fail with a <see cref="Pooshit.Ocelot.Errors.StatementException"/> wrapping a SQL-syntax error.
-    /// The alias <c>__total</c> is reserved; entity properties with that name will receive the windowed count value.
-    /// Any prior <c>.Limit()</c> / <c>.Offset()</c> on the operation are overridden by <paramref name="limit"/> and <paramref name="offset"/>.
-    /// </remarks>
     /// <param name="transaction">transaction to use (optional)</param>
     /// <param name="limit">number of rows to return (must be &gt;= 0)</param>
     /// <param name="offset">number of rows to skip (must be &gt;= 0)</param>
     /// <param name="cancellationToken">token used to cancel the operation</param>
     /// <returns>
-    /// a <see cref="PagedResult{T}"/> whose <see cref="PagedResult{T}.Total"/> is already resolved
-    /// and whose <see cref="PagedResult{T}.Items"/> is ready to iterate when the returned task completes
+    /// a <see cref="WindowResult{TItem,TWindow}"/> whose <see cref="WindowResult{TItem,TWindow}.WindowValue"/> resolves
+    /// to the total unfiltered row count and whose <see cref="WindowResult{TItem,TWindow}.Items"/> contains the page
     /// </returns>
-    public virtual async Task<PagedResult<T>> ExecutePagedAsync(Transaction transaction, int limit, int offset, CancellationToken cancellationToken = default) {
+    public virtual async Task<WindowResult<T, long>> ExecutePagedAsync(Transaction transaction, int limit, int offset, CancellationToken cancellationToken = default) {
         if (limit < 0)
             throw new ArgumentOutOfRangeException(nameof(limit), "limit must be >= 0");
         if (offset < 0)
@@ -712,8 +750,8 @@ public class PreparedLoadOperation<T> : PreparedLoadOperation {
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        // Build a new SQL string injecting COUNT(*) OVER() AS __total and overriding LIMIT/OFFSET.
-        string pagedCommandText = InjectTotalColumn(CommandText, limit, offset, DBClient.DBInfo.GetType().Name);
+        string aggregateSql = RenderWindowedAggregateSql(new WindowedAggregate(Tokens.DB.Count(Tokens.DB.All), alias: "__window"));
+        string pagedCommandText = InjectWindowedColumn(CommandText, aggregateSql, limit, offset, DBClient.DBInfo.GetType().Name);
 
         object[] allParams = ConstantParameters.ToArray();
 
@@ -723,39 +761,43 @@ public class PreparedLoadOperation<T> : PreparedLoadOperation {
         else
             reader = await DBClient.ReaderAsync(transaction, pagedCommandText, allParams, cancellationToken);
 
-        // Read first row eagerly so Total resolves before Task<PagedResult<T>> returns
-        TaskCompletionSource<long> totalTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        return await ReadWindowedResult<long>(reader, "__window", cancellationToken);
+    }
+
+    /// <summary>
+    /// shared reader logic for all windowed load paths
+    /// </summary>
+    async Task<WindowResult<T, TWindow>> ReadWindowedResult<TWindow>(Reader reader, string alias, CancellationToken cancellationToken) {
+        TaskCompletionSource<TWindow> windowTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
         EntityDescriptor descriptor = ModelDescriptorCache(typeof(T));
 
         List<PropertyInfo> setters = null;
-        int totalOrdinal = -1;
+        int windowOrdinal = -1;
 
         T firstRow = default;
         bool hasFirstRow = false;
 
         try {
             if (await reader.ReadAsync(cancellationToken)) {
-                // Initialize column mapping on first row (includes __total column)
-                setters = BuildSetters(reader, descriptor, out totalOrdinal);
-                long total = ExtractTotal(reader, totalOrdinal);
-                totalTcs.TrySetResult(total);
-                firstRow = await ToObjectPagedAsync(reader, setters, totalOrdinal);
+                setters = BuildSetters(reader, descriptor, alias, out windowOrdinal);
+                TWindow windowValue = ExtractWindowValue<TWindow>(reader, windowOrdinal);
+                windowTcs.TrySetResult(windowValue);
+                firstRow = await ToObjectWindowedAsync(reader, setters, windowOrdinal);
                 hasFirstRow = true;
             }
             else {
-                // Zero rows — total is 0, stream is empty
                 setters = [];
-                totalOrdinal = -1;
-                totalTcs.TrySetResult(0L);
+                windowOrdinal = -1;
+                windowTcs.TrySetResult(default);
             }
         }
         catch (OperationCanceledException ex) {
-            totalTcs.TrySetException(ex);
+            windowTcs.TrySetException(ex);
             reader.Dispose();
             throw;
         }
         catch (Exception ex) {
-            totalTcs.TrySetException(ex);
+            windowTcs.TrySetException(ex);
             reader.Dispose();
             throw;
         }
@@ -769,7 +811,7 @@ public class PreparedLoadOperation<T> : PreparedLoadOperation {
             try {
                 while (await reader.ReadAsync(cancellationToken)) {
                     cancellationToken.ThrowIfCancellationRequested();
-                    buffer.Add(await ToObjectPagedAsync(reader, setters, totalOrdinal));
+                    buffer.Add(await ToObjectWindowedAsync(reader, setters, windowOrdinal));
                 }
             }
             catch (OperationCanceledException) {
@@ -783,36 +825,45 @@ public class PreparedLoadOperation<T> : PreparedLoadOperation {
 
             reader.Dispose();
 
-            return new PagedResult<T>(ToAsyncEnumerable(buffer), totalTcs.Task);
+            return new WindowResult<T, TWindow>(ToAsyncEnumerable(buffer), windowTcs.Task);
         }
 
         // Multi-connection path: stream rows through the open reader
-        return new PagedResult<T>(StreamRemaining(reader, firstRow, hasFirstRow, setters, totalOrdinal, cancellationToken), totalTcs.Task);
+        return new WindowResult<T, TWindow>(StreamRemaining(reader, firstRow, hasFirstRow, setters, windowOrdinal, cancellationToken), windowTcs.Task);
     }
 
-    static string InjectTotalColumn(string commandText, int limit, int offset, string dialectTypeName) {
-        // Insert ", COUNT(*) OVER() AS __total" just before the first "FROM" keyword (case-insensitive, word boundary).
-        // Strip any existing LIMIT/OFFSET and re-append the caller-supplied values in dialect-appropriate syntax.
-        // This works because LoadOperation<T>.Prepare always produces "SELECT ... FROM ..." shape.
+    string RenderWindowedAggregateSql(WindowedAggregate aggregate) {
+        OperationPreparator temp = new();
+        aggregate.ToSql(DBClient.DBInfo, temp, ModelDescriptorCache, null);
+        return string.Join(" ", temp.Tokens.Select(t => t.GetText(DBClient.DBInfo)));
+    }
+
+    static string InjectWindowedColumn(string commandText, string aggregateSql, int? limit, int? offset, string dialectTypeName) {
+        // Insert ", <aggregateSql>" just before the first "FROM" keyword (case-insensitive, word boundary).
+        // Strip any existing LIMIT/OFFSET and re-append the caller-supplied values when limit/offset are provided.
         int fromIdx = FindFromKeyword(commandText);
         string baseText;
         if (fromIdx < 0)
-            baseText = commandText + ", COUNT(*) OVER() AS __total";
+            baseText = commandText + ", " + aggregateSql;
         else
-            baseText = commandText[..fromIdx].TrimEnd() + ", COUNT(*) OVER() AS __total " + commandText[fromIdx..];
+            baseText = commandText[..fromIdx].TrimEnd() + ", " + aggregateSql + " " + commandText[fromIdx..];
 
-        // Strip trailing LIMIT/OFFSET clause that may have been baked in already,
-        // then re-append with the caller-supplied values.
-        baseText = StripLimitOffset(baseText);
+        if (limit.HasValue || offset.HasValue) {
+            baseText = StripLimitOffset(baseText);
+            int lim = limit ?? 0;
+            int off = offset ?? 0;
 
-        // MSSQL uses OFFSET x ROWS FETCH NEXT y ROWS ONLY; all others use LIMIT y OFFSET x
-        if (dialectTypeName == "MsSqlInfo") {
-            if (!baseText.Contains("ORDER BY", StringComparison.OrdinalIgnoreCase))
-                baseText += " ORDER BY(SELECT NULL)";
-            return baseText + $" OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY";
+            // MSSQL uses OFFSET x ROWS FETCH NEXT y ROWS ONLY; all others use LIMIT y OFFSET x
+            if (dialectTypeName == "MsSqlInfo") {
+                if (!baseText.Contains("ORDER BY", StringComparison.OrdinalIgnoreCase))
+                    baseText += " ORDER BY(SELECT NULL)";
+                return baseText + $" OFFSET {off} ROWS FETCH NEXT {lim} ROWS ONLY";
+            }
+
+            return baseText + $" LIMIT {lim} OFFSET {off}";
         }
 
-        return baseText + $" LIMIT {limit} OFFSET {offset}";
+        return baseText;
     }
 
     static string StripLimitOffset(string sql) {
@@ -861,14 +912,14 @@ public class PreparedLoadOperation<T> : PreparedLoadOperation {
         return -1;
     }
 
-    static List<PropertyInfo> BuildSetters(Reader reader, EntityDescriptor descriptor, out int totalOrdinal) {
+    static List<PropertyInfo> BuildSetters(Reader reader, EntityDescriptor descriptor, string windowAlias, out int windowOrdinal) {
         List<PropertyInfo> setters = [];
-        totalOrdinal = -1;
+        windowOrdinal = -1;
         for (int i = 0; i < reader.FieldCount; ++i) {
             string colName = reader.GetName(i);
-            if (colName == "__total") {
-                totalOrdinal = i;
-                setters.Add(null); // skip mapping for __total
+            if (colName == windowAlias) {
+                windowOrdinal = i;
+                setters.Add(null); // skip mapping for the windowed aggregate column
             }
             else {
                 EntityColumnDescriptor column = descriptor.TryGetColumn(colName);
@@ -878,16 +929,16 @@ public class PreparedLoadOperation<T> : PreparedLoadOperation {
         return setters;
     }
 
-    static long ExtractTotal(Reader reader, int ordinal) {
-        if (ordinal < 0) return 0L;
+    static TWindow ExtractWindowValue<TWindow>(Reader reader, int ordinal) {
+        if (ordinal < 0) return default;
         object raw = reader.GetValue(ordinal);
-        return Converter.Convert<long>(raw, true);
+        return Converter.Convert<TWindow>(raw, true);
     }
 
-    async Task<T> ToObjectPagedAsync(Reader reader, List<PropertyInfo> properties, int totalOrdinal) {
+    async Task<T> ToObjectWindowedAsync(Reader reader, List<PropertyInfo> properties, int windowOrdinal) {
         T obj = (T)Activator.CreateInstance(typeof(T), true);
         for (int i = 0; i < reader.FieldCount; ++i) {
-            if (i == totalOrdinal) continue; // skip __total
+            if (i == windowOrdinal) continue; // skip windowed aggregate column
             PropertyInfo pi = properties[i];
             if (pi == null) continue;
 
@@ -920,13 +971,13 @@ public class PreparedLoadOperation<T> : PreparedLoadOperation {
         await Task.CompletedTask;
     }
 
-    async IAsyncEnumerable<T> StreamRemaining(Reader reader, T firstRow, bool hasFirstRow, List<PropertyInfo> setters, int totalOrdinal, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken) {
+    async IAsyncEnumerable<T> StreamRemaining(Reader reader, T firstRow, bool hasFirstRow, List<PropertyInfo> setters, int windowOrdinal, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken) {
         using (reader) {
             if (hasFirstRow)
                 yield return firstRow;
             while (await reader.ReadAsync(cancellationToken)) {
                 cancellationToken.ThrowIfCancellationRequested();
-                yield return await ToObjectPagedAsync(reader, setters, totalOrdinal);
+                yield return await ToObjectWindowedAsync(reader, setters, windowOrdinal);
             }
         }
     }

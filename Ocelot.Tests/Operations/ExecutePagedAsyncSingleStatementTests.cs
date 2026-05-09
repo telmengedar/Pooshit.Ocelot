@@ -15,7 +15,7 @@ using DataTable = Pooshit.Ocelot.Clients.Tables.DataTable;
 namespace Pooshit.Ocelot.Tests.Operations;
 
 /// <summary>
-/// wraps an IDBClient, counting every ReaderAsync / ReaderPreparedAsync call (the paths ExecutePagedAsync uses)
+/// wraps an IDBClient, counting every ReaderAsync / ReaderPreparedAsync call (the paths ExecuteWindowedAsync uses)
 /// </summary>
 class CountingDBClient : IDBClient {
     readonly IDBClient inner;
@@ -154,7 +154,7 @@ public class ExecutePagedAsyncSingleStatementTests {
         em.UpdateSchema<ValueModel>();
         await InsertRows(em, 10);
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
 
         // Drain items
         await foreach (ValueModel _ in result.Items) { }
@@ -169,7 +169,7 @@ public class ExecutePagedAsyncSingleStatementTests {
         em.UpdateSchema<ValueModel>();
 
         // No inserts — empty table
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 0);
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(10, 0);
 
         await foreach (ValueModel _ in result.Items) { }
 
@@ -183,7 +183,7 @@ public class ExecutePagedAsyncSingleStatementTests {
         em.UpdateSchema<ValueModel>();
         await InsertRows(em, 20);
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>()
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>()
             .Where(v => v.Integer < 5)
             .ExecutePagedAsync(10, 0);
 
@@ -195,19 +195,19 @@ public class ExecutePagedAsyncSingleStatementTests {
 
     [Test, Parallelizable]
     public async Task ExecutePagedAsync_DoesNotIssueReaderCallForCountQuery() {
-        // Verify that Total is resolved from the single reader call, not a separate count query
+        // Verify that WindowValue is resolved from the single reader call, not a separate count query
         (IEntityManager em, CountingDBClient counter) = CreateEntityManagerWithCounter();
         em.UpdateSchema<ValueModel>();
         await InsertRows(em, 7);
 
-        PagedResult<ValueModel> result = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
+        WindowResult<ValueModel, long> result = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
 
-        long total = await result.Total;
+        long total = await result.WindowValue;
         await foreach (ValueModel _ in result.Items) { }
 
-        Assert.AreEqual(7L, total, "Total must reflect full table count");
+        Assert.AreEqual(7L, total, "WindowValue must reflect full table count");
         Assert.AreEqual(1, counter.ReaderCallCount,
-            "Total resolution must not trigger a second reader call");
+            "WindowValue resolution must not trigger a second reader call");
     }
 
     [Test, Parallelizable]
@@ -217,14 +217,14 @@ public class ExecutePagedAsyncSingleStatementTests {
         await InsertRows(em, 5);
 
         // First call
-        PagedResult<ValueModel> result1 = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
+        WindowResult<ValueModel, long> result1 = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
         await foreach (ValueModel _ in result1.Items) { }
 
         int afterFirst = counter.ReaderCallCount;
         Assert.AreEqual(1, afterFirst, "First ExecutePagedAsync call: exactly one reader");
 
         // Second independent call via a fresh fluent chain
-        PagedResult<ValueModel> result2 = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
+        WindowResult<ValueModel, long> result2 = await em.Load<ValueModel>().ExecutePagedAsync(5, 0);
         await foreach (ValueModel _ in result2.Items) { }
 
         Assert.AreEqual(2, counter.ReaderCallCount, "Two ExecutePagedAsync calls: exactly two readers total");
