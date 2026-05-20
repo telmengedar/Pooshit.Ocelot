@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities.Attributes;
 using Pooshit.Ocelot.Entities.Descriptors;
+using Pooshit.Ocelot.Entities.Operations;
 using Pooshit.Ocelot.Entities.Operations.Expressions;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Entities.Schema;
@@ -273,6 +274,20 @@ public class SQLiteInfo : DBInfo {
 
     /// <inheritdoc />
     public override bool SupportsLateralJoin => false;
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// SQLite does not support LATERAL joins or <c>CROSS/OUTER APPLY</c>.
+    /// Throws <see cref="NotSupportedException"/> for <see cref="JoinOp.CrossLateral"/> and
+    /// <see cref="JoinOp.LeftLateral"/>; Inner and Left fall through to the base implementation.
+    /// Consumers should check <see cref="SupportsLateralJoin"/> before calling
+    /// <c>LateralJoin</c> / <c>LeftLateralJoin</c> to take a fallback path instead.
+    /// </remarks>
+    public override void AppendJoin(JoinOperation join, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string outerAlias) {
+        if (join.JoinType == JoinOp.CrossLateral || join.JoinType == JoinOp.LeftLateral)
+            throw new NotSupportedException("SQLite does not support LATERAL joins. Use UNION-based composition or a recursive CTE.");
+        base.AppendJoin(join, preparator, descriptorgetter, outerAlias);
+    }
 
     /// <summary>
     /// method used to create a replace function
