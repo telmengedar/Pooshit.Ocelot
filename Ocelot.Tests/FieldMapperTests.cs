@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Pooshit.Ocelot.Entities;
+using Pooshit.Ocelot.Errors;
 using Pooshit.Ocelot.Fields;
 using Pooshit.Ocelot.Tests.Data;
 using Pooshit.Ocelot.Tests.Models;
@@ -78,5 +80,40 @@ public class FieldMapperTests {
         Assert.AreEqual(5.4f, models[1].Single);
         Assert.AreEqual("haha", models[0].String);
         Assert.AreEqual("hihi", models[1].String);
+    }
+
+    [Test, Parallelizable]
+    public void TestUnknownFieldName_ThrowsUnknownFieldException() {
+        FieldMapper<ValueModel> mapper = new(
+            new FieldMapping<ValueModel, int>("integer", DB.Property<ValueModel>(v => v.Integer), (model, i) => model.Integer = i),
+            new FieldMapping<ValueModel, string>("string", DB.Property<ValueModel>(v => v.String), (model, i) => model.String = i)
+        );
+
+        UnknownFieldException ex = Assert.Throws<UnknownFieldException>(() => mapper.DbFieldsFromNames("doesnotexist").ToArray());
+        Assert.AreEqual("doesnotexist", ex.FieldName);
+        Assert.That(ex.AvailableNames, Does.Contain("integer"));
+        Assert.That(ex.AvailableNames, Does.Contain("string"));
+    }
+
+    [Test, Parallelizable]
+    public void TestUnknownFieldName_ExceptionIsAlsoKeyNotFoundException() {
+        FieldMapper<ValueModel> mapper = new(
+            new FieldMapping<ValueModel, int>("integer", DB.Property<ValueModel>(v => v.Integer), (model, i) => model.Integer = i),
+            new FieldMapping<ValueModel, string>("string", DB.Property<ValueModel>(v => v.String), (model, i) => model.String = i)
+        );
+
+        UnknownFieldException ex = Assert.Throws<UnknownFieldException>(() => mapper.DbFieldsFromNames("doesnotexist").ToArray());
+        Assert.That(ex, Is.InstanceOf<KeyNotFoundException>());
+    }
+
+    [Test, Parallelizable]
+    public void TestUnknownFieldName_KnownNamesUnaffected() {
+        FieldMapper<ValueModel> mapper = new(
+            new FieldMapping<ValueModel, int>("integer", DB.Property<ValueModel>(v => v.Integer), (model, i) => model.Integer = i),
+            new FieldMapping<ValueModel, string>("string", DB.Property<ValueModel>(v => v.String), (model, i) => model.String = i)
+        );
+
+        IDBField[] fields = mapper.DbFieldsFromNames("integer", "string").ToArray();
+        Assert.AreEqual(2, fields.Length);
     }
 }
