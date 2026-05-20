@@ -101,9 +101,9 @@ The change touches three layers, one method each. No new types except the two en
 | `JoinOp` (enum) | Carries the *kind* of join, including the two lateral variants. | Has no rendering knowledge. |
 | `JoinOperation` (existing class) | Already holds `IDatabaseOperation Operation`, `Expression Criterias`, `JoinOp JoinType`, `string Alias`. Unchanged. | Does not render itself. |
 | `LoadOperation<T>` / `LoadOperation` (fluent surface) | Adds `LateralJoin` and `LeftLateralJoin` methods accepting an `IDatabaseOperation` (the inner select), an optional `Expression<Func<T, bool>>` (or null for `ON TRUE`), and an optional alias. The two-arg form `LoadOperation<T, TJoin>` is reached via a parallel generic overload so users can write `Where(Func<T, TJoin, bool>)` on the result. | Does not know dialect SQL. Does not render the join itself. |
-| `IDBInfo` / `DBInfo` (dialect base) | New method `AppendJoin(JoinOperation join, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptors, string outerAlias, params string[] knownAliases)`. Default emits `<KIND> JOIN ...` where `<KIND>` is `INNER`, `LEFT`, `LATERAL`, `LEFT LATERAL`, etc., plus the `(subquery) AS alias ON criteria` tail. | Does not own the join-list iteration — that stays in `LoadOperation.Prepare`. |
-| `MsSqlInfo` | Overrides `AppendJoin` to translate `CrossLateral` → `CROSS APPLY` and `LeftLateral` → `OUTER APPLY` (no `ON` clause; criteria, if any, becomes a `WHERE` inside the subquery — see Section 9 for the trade-off). For Inner/Left, falls through to base. | Does not change how non-lateral joins render. |
-| `SQLiteInfo` | Overrides `AppendJoin` only to intercept `CrossLateral` and `LeftLateral` and throw `NotSupportedException` with a clear message naming the unsupported feature and the engine. | Does not break any existing SQLite test. |
+| `IDBInfo` / `DBInfo` (dialect base) | New method `AppendJoin(JoinOperation join, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptors, string outerAlias, params string[] knownAliases)`. Default emits `<KIND> JOIN ...` where `<KIND>` is `INNER`, `LEFT`, `LATERAL`, `LEFT LATERAL`, etc., plus the `(subquery) AS alias ON criteria` tail. Also exposes new capability flag `SupportsLateralJoin` (see Section 8.2). | Does not own the join-list iteration — that stays in `LoadOperation.Prepare`. |
+| `MsSqlInfo` | Overrides `AppendJoin` to translate `CrossLateral` → `CROSS APPLY` and `LeftLateral` → `OUTER APPLY` (no `ON` clause; criteria, if any, becomes a `WHERE` inside the subquery — see Section 9 for the trade-off). For Inner/Left, falls through to base. `SupportsLateralJoin` returns `true` (semantic equivalence via APPLY). | Does not change how non-lateral joins render. |
+| `SQLiteInfo` | Overrides `AppendJoin` only to intercept `CrossLateral` and `LeftLateral` and throw `NotSupportedException` with a clear message naming the unsupported feature and the engine. `SupportsLateralJoin` returns `false`. | Does not break any existing SQLite test. |
 | `LoadOperation.Prepare` (existing flow) | Calls `DBInfo.AppendJoin(operation, preparator, descriptorgetter, tablealias, aliases)` in place of the inlined `INNER/LEFT JOIN (...) AS ... ON ...` block. | Does not branch on `JoinOp`. The dialect owns the keyword choice. |
 
 ## 6. Interactions & Data Flow
@@ -171,9 +171,21 @@ The names are chosen for **engine-agnostic clarity**: `CrossLateral` describes t
 
 ### 8.2 New dialect contract on `IDBInfo`
 
-| Method | Inputs | Output | Semantics |
+Two new surfaces on `IDBInfo`. One is the render method already described; the second is a **capability flag** that lets consumers branch *before* triggering the SQLite throw.
+
+| Member | Kind | Inputs / Type | Semantics |
 |---|---|---|---|
-| `AppendJoin(JoinOperation join, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptors, string outerAlias)` | The join descriptor and the current preparator state, plus the outer alias for correlation resolution. | void (mutates preparator). | Emits the complete join clause — keyword, source (subquery or table), alias, and ON-clause — into the preparator. Caller (LoadOperation.Prepare) is responsible only for accumulating aliases for later WHERE/HAVING resolution. |
+| `AppendJoin(JoinOperation join, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptors, string outerAlias)` | method | The join descriptor and the current preparator state, plus the outer alias for correlation resolution. | Emits the complete join clause — keyword, source (subquery or table), alias, and ON-clause — into the preparator. Caller (`LoadOperation.Prepare`) is responsible only for accumulating aliases for later WHERE/HAVING resolution. |
+| `SupportsLateralJoin` | property (`bool`) | get-only. | Declares whether the dialect can render `JoinOp.CrossLateral` / `JoinOp.LeftLateral` without throwing. Default `true` in `DBInfo`. Overridden to `false` in `SQLiteInfo`. Postgres, MySQL, MSSQL all inherit the `true` default. Pattern is intentionally identical to the existing `MultipleConnectionsSupported` capability flag (same shape, same location, same override discipline). |
+
+**Per-engine capability matrix:**
+
+| Engine | `SupportsLateralJoin` | Rendering |
+|---|---|---|
+| Postgres | `true` | `INNER JOIN LATERAL` / `LEFT JOIN LATERAL` (base default). |
+| MySQL / MariaDB | `true` | `INNER JOIN LATERAL` / `LEFT JOIN LATERAL` (base default). Requires server version MySQL 8.0.14+ / MariaDB 10.3+; older servers will surface a `StatementException` from the driver at execute time. |
+| MSSQL | `true` | `CROSS APPLY` / `OUTER APPLY` (override). Semantic equivalent — APPLY is SQL Server's name for the same construct. |
+| SQLite | `false` | Throws `NotSupportedException` at `Prepare()` time. |
 
 **Default implementation in `DBInfo`** handles all four `JoinOp` values for ANSI engines:
 
@@ -186,7 +198,9 @@ The names are chosen for **engine-agnostic clarity**: `CrossLateral` describes t
 - `CrossLateral` → `CROSS APPLY (<inner>) AS <alias>`. If criteria is non-null, it is folded into the inner's filter via a wrapping `SELECT * FROM (...) AS x WHERE (criteria)` — alternative is documented in Section 11.
 - `LeftLateral` → `OUTER APPLY (<inner>) AS <alias>`. Same criteria-folding rule.
 
-`SQLiteInfo.AppendJoin` overrides only the two lateral cases and throws `NotSupportedException("SQLite does not support LATERAL joins or CROSS/OUTER APPLY equivalents. Use UNION-based composition or a CTE.")`. Inner/Left fall through to base.
+`SQLiteInfo.AppendJoin` overrides only the two lateral cases and throws `NotSupportedException("SQLite does not support LATERAL joins or CROSS/OUTER APPLY equivalents. Use UNION-based composition or a CTE.")`. Inner/Left fall through to base. `SQLiteInfo.SupportsLateralJoin` returns `false` so consumers can branch *before* the throw fires.
+
+**Why expose this as a capability flag rather than relying on the throw alone?** Because the throw is a runtime production-path failure mode for any consumer whose test suite uses SQLite in-memory. The flag turns the choice into a build-time-determinable branch: consumers query it once, take a fallback path on SQLite, and run their full suite without environment-gating every single test. See Section 8.5 for the consumer-facing pattern.
 
 ### 8.3 The `inner` argument is just an `IDatabaseOperation`
 
@@ -247,6 +261,85 @@ Because `LateralJoin` returns `LoadOperation<T>` (or its two-arg variant), all e
 - No special-case branch in `WindowedFromOperation` / `PagedFromOperation` is required.
 
 This composition is the strongest signal that the design fits Ocelot's existing style: the new operation slots into the existing pipeline at the existing seam.
+
+### 8.5 Consumer guidance: handling the SQLite path
+
+This section addresses an adoption blocker for any Ocelot consumer whose unit tests default to SQLite in-memory (which is the recommended Ocelot test posture — see `TestData.CreateDatabaseAccess()` in this very repository). Once a consumer adopts `LateralJoin(...)` in production code, every SQLite-backed unit test exercising that codepath will throw `NotSupportedException` at `Prepare()`-time. The throw is by design (Section 8.2), but it leaves the consumer with an empirical question: *how do we ship LATERAL-using code without breaking our test suite?*
+
+#### 8.5.1 Why SQLite throws rather than falling back
+
+A brief recap so this section stands on its own. SQLite has neither LATERAL syntax nor a semantic equivalent like SQL Server's APPLY. A fallback would have to either rewrite the lateral as a UNION + IN (the very workaround this design eliminates), or as a correlated subquery in the SELECT list (which changes the row cardinality and column shape). Either is a silent semantic divergence between dialects — wrong values in production if the engine swaps. **Ocelot's posture: be loud when a feature is not portable; let the consumer choose its fallback explicitly.** This matches how `Truncate`-with-reset-identity behaves today.
+
+#### 8.5.2 Recommended pattern: hybrid (A + B)
+
+For **production code**: query `IDBInfo.SupportsLateralJoin` and branch. The capability flag is the seam — your production codepath uses LATERAL when supported, falls back to your pre-existing UNION/IN shape when not. This keeps SQLite-backed tests green without requiring an environment-gate on every single test, and it documents the dialect dependence at the call site.
+
+For **integration tests that exercise the real LATERAL SQL** (i.e., the SQL-text-correctness tests, not just the C#-behavior tests): use the Postgres-gated NUnit pattern already established in `PostgresLocalTests.cs` (gated on `POSTGRES_CONNECTION` env var, with `Assert.Inconclusive` when missing). These tests verify the LATERAL branch end-to-end against a real Postgres; they sit alongside the SQLite tests that verify the fallback branch.
+
+**Why hybrid and not pure (A) or pure (B)?**
+
+- **Pure (B) — test-only gating, no production branching.** Would force consumers to either (i) skip the LATERAL path entirely in any test that touches it (defeats the test) or (ii) make every such test Postgres-gated (slow, fragile, and obscures the C# behavior the test is trying to verify — most unit tests do not care which SQL was emitted, they care that the operation produced the right result objects). Rejected as the *primary* mechanism, but retained as a complement for the small number of tests that *do* care about the exact SQL text.
+- **Pure (C) — consumer writes their own dialect probe.** Same effect as (A) but reinvents the capability surface per-consumer (every consumer probes `db.DBInfo is SQLiteInfo` or similar). The capability flag (A) is a tiny additive surface in Ocelot that saves every downstream consumer from writing the same probe. Rejected on don't-repeat-yourself grounds; (A) is strictly cheaper.
+- **Pure (A) — capability flag, no test-gating ever.** Almost right, but does not address the case where a consumer *wants* an integration test of the actual LATERAL SQL. That test cannot run on SQLite by definition. The Postgres-gated pattern fills that gap. Hence the hybrid.
+
+#### 8.5.3 Concrete example: DiVoid `NodeService.cs:259-263`
+
+The current UNION workaround (paraphrased — this is what `NodeService.cs:259-263` does today):
+
+```
+linkSourceQuery   = Load<NodeLink>.Columns(SourceId).Where(TargetId IN filter.LinkedTo)
+linkTargetQuery   = Load<NodeLink>.Columns(TargetId).Where(SourceId IN filter.LinkedTo)
+combinedLinks     = linkSourceQuery.Union(linkTargetQuery)
+nodes             = Load<Node>.Where(n => n.Id.In(combinedLinks)).Execute()
+```
+
+Two passes over `node_links`, one materialised union, one semi-join. Three logical statements, one round-trip.
+
+Under the recommended pattern, with `IDBInfo.SupportsLateralJoin` as the seam:
+
+```
+if (db.DBInfo.SupportsLateralJoin) {
+    // Postgres / MySQL / MSSQL — single LATERAL-joined statement
+    lateral = Load<NodeLink>
+                .Columns(SourceId, TargetId)
+                .Where(l => (l.SourceId == DB.Property<Node>(n => n.Id)
+                          || l.TargetId == DB.Property<Node>(n => n.Id))
+                         && (l.SourceId.In(filter.LinkedTo)
+                          || l.TargetId.In(filter.LinkedTo)))
+                .Limit(1)
+    nodes = Load<Node>
+              .LateralJoin(lateral, joinAlias: "link")
+              .Where(n => !n.Id.In(filter.LinkedTo))
+              .Execute()
+} else {
+    // SQLite — original UNION/IN shape, kept verbatim
+    nodes = <existing UNION workaround>
+}
+```
+
+Reading this without knowing what LATERAL is: the `if` branch builds one query that asks, for every candidate node, "is there at least one matching link row?" — short-circuiting via `Limit(1)`. The `else` branch is the existing two-query workaround that did the same thing in two passes. Both produce the same result set; the `if` branch is one round-trip, the `else` branch is two passes.
+
+The shape of the fallback branch is **your existing code**, untouched. The new code only adds the `if` and the LATERAL branch. Migration is monotonically additive at the call site.
+
+#### 8.5.4 Test harness implications
+
+For a typical consumer (Ocelot-using application with NUnit tests against in-memory SQLite):
+
+- **Default unit tests stay on SQLite.** They execute the *fallback* branch automatically because `SQLiteInfo.SupportsLateralJoin == false`. No test changes required — the branch selection happens at runtime on the production code's `if`, and the SQLite-targeted test path takes the UNION fallback transparently.
+- **Add a small number of Postgres-gated tests** that explicitly exercise the LATERAL branch end-to-end. Use the existing Ocelot pattern: gate on `POSTGRES_CONNECTION` and `Assert.Inconclusive("Postgres connection not configured")` when absent. One or two such tests per LATERAL-using call site is usually enough — they validate that the LATERAL SQL is syntactically valid against real Postgres and produces the same result set as the SQLite fallback against the same seed data.
+- **Behavior parity test (recommended once per LATERAL call site).** A SQLite test calls the production method, asserts result correctness. A Postgres-gated test calls the *same* production method against the same seed data, asserts the same result. This is the empirical guarantee that the two branches stay in sync — without it, the fallback can rot silently.
+
+No new harness primitive is required. The pattern is exactly what `PostgresLocalTests.cs` already establishes for postgres-specific feature tests; this section just identifies LATERAL-using tests as another class of test that belongs in that harness slot.
+
+#### 8.5.5 What if a consumer *cannot* maintain a fallback?
+
+Some consumers are Postgres-only (e.g., they use PG-specific types like `jsonb` or `tstzrange` throughout) and run their tests on Postgres in CI. Those consumers should:
+
+- **Skip the capability check** — call `LateralJoin` unconditionally.
+- **Switch their unit tests off SQLite** for the affected suite. Ocelot's `TestData.CreateDatabaseAccess()` is a *convenience* for engine-agnostic testing; nothing prevents an Ocelot consumer from running its own tests against a Postgres test database (containerised or local).
+- **Document the Postgres-only stance** at the project level so future contributors do not introduce SQLite as a "lightweight" test database and silently break the suite.
+
+This is the explicit opt-out. The capability flag is the *default* recommendation because most Ocelot consumers benefit from SQLite-fast unit tests; the opt-out exists for consumers who have already paid the price of Postgres-only testing for other reasons.
 
 ## 9. Cross-Cutting Concerns
 
@@ -309,6 +402,8 @@ John, the implementation breaks naturally into the following ordered milestones.
 
 1. **Enum extension and `JoinOperation` documentation.** Add `CrossLateral` and `LeftLateral` to `JoinOp`. Update XML doc comments to mention the new variants. Zero behavioral change yet — existing tests still pass.
 
+1a. **Capability flag on `IDBInfo`.** Add `bool SupportsLateralJoin { get; }` to `IDBInfo` (place it next to `MultipleConnectionsSupported` — same shape, same documentation style). Add `public virtual bool SupportsLateralJoin => true;` to `DBInfo`. Add `public override bool SupportsLateralJoin => false;` to `SQLiteInfo`. No override on `PostgreInfo`, `MySQLInfo`, or `MsSqlInfo` — they inherit `true`. This is a tiny commit; existing tests still pass.
+
 2. **Extract `AppendJoin` into `IDBInfo` / `DBInfo`.** Move the existing inline join rendering (the per-`JoinOperation` foreach inside `LoadOperation<T>.Prepare` and `LoadOperation.Prepare`) into a new `DBInfo.AppendJoin` virtual method. Have `LoadOperation` call it. Run the full test suite — this is a pure refactor; everything must stay green. This isolates the dialect-rendering seam.
 
 3. **Default rendering for `CrossLateral` / `LeftLateral` in `DBInfo`.** Emit `INNER JOIN LATERAL` / `LEFT JOIN LATERAL`, with `ON TRUE` when criteria is null. Add XML doc comments referencing this architecture document.
@@ -323,7 +418,7 @@ John, the implementation breaks naturally into the following ordered milestones.
 
 8. **Tests** (always pass `--timeout` per the global rule):
 
-   8a. **SQLite-fallback test.** `[TestFixture, Parallelizable]`. Build a `LoadOperation` with `LateralJoin`, call `.Prepare()`, assert `NotSupportedException` with the expected message. (Build phase succeeds; throw happens at Prepare.)
+   8a. **SQLite-fallback test.** `[TestFixture, Parallelizable]`. Build a `LoadOperation` with `LateralJoin`, call `.Prepare()`, assert `NotSupportedException` with the expected message. (Build phase succeeds; throw happens at Prepare.) Additionally: assert `new SQLiteInfo().SupportsLateralJoin == false`, `new PostgreInfo().SupportsLateralJoin == true`, `new MySQLInfo().SupportsLateralJoin == true`, `new MsSqlInfo().SupportsLateralJoin == true`. Cheap, four-line capability-flag sanity test.
 
    8b. **In-memory SQL-text tests** (model: `WindowedAggregateTests`). Build a `LoadOperation` with `LateralJoin` against a `Mock<IDBClient>` returning `PostgreInfo`, render the SQL, assert it contains `INNER JOIN LATERAL`, `AS lat0`, and `ON TRUE`. Do the same for `LeftLateralJoin` (asserts `LEFT JOIN LATERAL`). Use `MsSqlInfo` for `CROSS APPLY` / `OUTER APPLY` assertions.
 
