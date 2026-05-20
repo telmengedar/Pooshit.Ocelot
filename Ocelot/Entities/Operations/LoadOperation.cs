@@ -867,6 +867,89 @@ public class LoadOperation<T> : IDatabaseOperation {
         return new(this);
     }
 
+    /// <summary>
+    /// generates a unique lateral-join alias of the form <c>lat{N}</c>, scanning existing join
+    /// aliases for collisions and incrementing until the candidate is clean.
+    /// </summary>
+    string GenerateLateralAlias() {
+        int n = 0;
+        string candidate;
+        do {
+            candidate = $"lat{n++}";
+        } while (joinoperations.Any(j => j.Alias == candidate));
+        return candidate;
+    }
+
+    /// <summary>
+    /// adds a cross lateral join (inner-equivalent correlated subquery join) to the operation.
+    /// The inner subquery is evaluated once per outer row; rows with no matching inner result are dropped.
+    /// <para>
+    /// Postgres / MySQL: emits <c>INNER JOIN LATERAL (...) AS alias ON TRUE</c> (or <c>ON criteria</c> if provided).
+    /// MSSQL: emits <c>CROSS APPLY (...) AS alias</c>.
+    /// SQLite: throws <see cref="NotSupportedException"/> at <c>Prepare()</c> time.
+    /// Check <c>IDBInfo.SupportsLateralJoin</c> to branch before calling this method on SQLite-backed clients.
+    /// </para>
+    /// </summary>
+    /// <param name="inner">the inner (lateral) operation, typically a <see cref="LoadOperation{TInner}"/></param>
+    /// <param name="criteria">optional ON-clause criteria; when <c>null</c> the renderer emits <c>ON TRUE</c></param>
+    /// <param name="joinAlias">alias for the lateral result; when <c>null</c> a unique <c>lat{N}</c> alias is generated</param>
+    /// <returns>this operation for fluent chaining</returns>
+    public LoadOperation<T> LateralJoin(IDatabaseOperation inner, Expression<Func<T, bool>> criteria = null, string joinAlias = null) {
+        if (inner is null) throw new ArgumentNullException(nameof(inner));
+        joinoperations.Add(new(inner, criteria, JoinOp.CrossLateral, null, joinAlias ?? GenerateLateralAlias()));
+        return new(this);
+    }
+
+    /// <summary>
+    /// adds a cross lateral join that exposes the inner type as a typed parameter to subsequent
+    /// <c>Where(Func&lt;T, TInner, bool&gt;)</c> and other two-typed-parameter fluent calls.
+    /// </summary>
+    /// <typeparam name="TInner">the entity type produced by the lateral subquery</typeparam>
+    /// <param name="inner">the inner (lateral) operation</param>
+    /// <param name="criteria">optional ON-clause criteria</param>
+    /// <param name="joinAlias">alias for the lateral result; auto-generated when <c>null</c></param>
+    /// <returns>two-typed-parameter load operation for fluent chaining</returns>
+    public LoadOperation<T, TInner> LateralJoin<TInner>(IDatabaseOperation inner, Expression<Func<T, TInner, bool>> criteria = null, string joinAlias = null) {
+        if (inner is null) throw new ArgumentNullException(nameof(inner));
+        joinoperations.Add(new(inner, criteria, JoinOp.CrossLateral, null, joinAlias ?? GenerateLateralAlias()));
+        return new(this);
+    }
+
+    /// <summary>
+    /// adds a left lateral join (outer-equivalent correlated subquery join) to the operation.
+    /// Outer rows are preserved with <c>NULL</c> in inner columns when the lateral yields no rows.
+    /// <para>
+    /// Postgres / MySQL: emits <c>LEFT JOIN LATERAL (...) AS alias ON TRUE</c> (or <c>ON criteria</c> if provided).
+    /// MSSQL: emits <c>OUTER APPLY (...) AS alias</c>.
+    /// SQLite: throws <see cref="NotSupportedException"/> at <c>Prepare()</c> time.
+    /// Check <c>IDBInfo.SupportsLateralJoin</c> to branch before calling this method on SQLite-backed clients.
+    /// </para>
+    /// </summary>
+    /// <param name="inner">the inner (lateral) operation</param>
+    /// <param name="criteria">optional ON-clause criteria; when <c>null</c> the renderer emits <c>ON TRUE</c></param>
+    /// <param name="joinAlias">alias for the lateral result; when <c>null</c> a unique <c>lat{N}</c> alias is generated</param>
+    /// <returns>this operation for fluent chaining</returns>
+    public LoadOperation<T> LeftLateralJoin(IDatabaseOperation inner, Expression<Func<T, bool>> criteria = null, string joinAlias = null) {
+        if (inner is null) throw new ArgumentNullException(nameof(inner));
+        joinoperations.Add(new(inner, criteria, JoinOp.LeftLateral, null, joinAlias ?? GenerateLateralAlias()));
+        return new(this);
+    }
+
+    /// <summary>
+    /// adds a left lateral join that exposes the inner type as a typed parameter to subsequent
+    /// two-typed-parameter fluent calls.
+    /// </summary>
+    /// <typeparam name="TInner">the entity type produced by the lateral subquery</typeparam>
+    /// <param name="inner">the inner (lateral) operation</param>
+    /// <param name="criteria">optional ON-clause criteria</param>
+    /// <param name="joinAlias">alias for the lateral result; auto-generated when <c>null</c></param>
+    /// <returns>two-typed-parameter load operation for fluent chaining</returns>
+    public LoadOperation<T, TInner> LeftLateralJoin<TInner>(IDatabaseOperation inner, Expression<Func<T, TInner, bool>> criteria = null, string joinAlias = null) {
+        if (inner is null) throw new ArgumentNullException(nameof(inner));
+        joinoperations.Add(new(inner, criteria, JoinOp.LeftLateral, null, joinAlias ?? GenerateLateralAlias()));
+        return new(this);
+    }
+
     /// <inheritdoc />
     void IDatabaseOperation.Prepare(IOperationPreparator preparator) {
         if (columns.Count == 0)
@@ -911,19 +994,8 @@ public class LoadOperation<T> : IDatabaseOperation {
             preparator.AppendText("AS").AppendText(tablealias);
             
         if(joinoperations.Count > 0) {
-            foreach(JoinOperation operation in joinoperations) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
-                preparator.AppendText($"{operation.JoinType.ToString().ToUpper()} JOIN");
-                if (operation.Operation != null) {
-                    preparator.AppendText("(");
-                    operation.Operation.Prepare(preparator);
-                    preparator.AppendText(")");
-                }   
-                else preparator.AppendText(descriptorgetter(operation.Type).TableName);
-                
-                if(!string.IsNullOrEmpty(operation.Alias))
-                    preparator.AppendText("AS").AppendText(operation.Alias);
-                preparator.AppendText("ON");
-                CriteriaVisitor.GetCriteriaText(operation.Criterias, descriptorgetter, dbclient.DBInfo, preparator, tablealias, operation.Alias);
+            foreach(JoinOperation operation in joinoperations) {
+                dbclient.DBInfo.AppendJoin(operation, preparator, descriptorgetter, tablealias);
                 aliases.Add(operation.Alias);
             }
         }
@@ -1380,6 +1452,47 @@ public class LoadOperation : ILoadOperation {
         return new LoadOperation(this);
     }
 
+    /// <summary>
+    /// generates a unique lateral-join alias of the form <c>lat{N}</c>, scanning existing join
+    /// aliases for collisions and incrementing until the candidate is clean.
+    /// </summary>
+    string GenerateLateralAlias() {
+        int n = 0;
+        string candidate;
+        do {
+            candidate = $"lat{n++}";
+        } while (joinoperations.Any(j => j.Alias == candidate));
+        return candidate;
+    }
+
+    /// <summary>
+    /// adds a cross lateral join (inner-equivalent correlated subquery join) to the operation.
+    /// See <see cref="LoadOperation{T}.LateralJoin"/> for the full dialect behavior matrix.
+    /// </summary>
+    /// <param name="inner">the inner (lateral) operation</param>
+    /// <param name="criteria">optional ON-clause criteria; when <c>null</c> the renderer emits <c>ON TRUE</c></param>
+    /// <param name="joinAlias">alias for the lateral result; auto-generated when <c>null</c></param>
+    /// <returns>this operation for fluent chaining</returns>
+    public LoadOperation LateralJoin(IDatabaseOperation inner, Expression<Func<bool>> criteria = null, string joinAlias = null) {
+        if (inner is null) throw new ArgumentNullException(nameof(inner));
+        joinoperations.Add(new(inner, criteria, JoinOp.CrossLateral, null, joinAlias ?? GenerateLateralAlias()));
+        return new LoadOperation(this);
+    }
+
+    /// <summary>
+    /// adds a left lateral join (outer-equivalent correlated subquery join) to the operation.
+    /// See <see cref="LoadOperation{T}.LeftLateralJoin"/> for the full dialect behavior matrix.
+    /// </summary>
+    /// <param name="inner">the inner (lateral) operation</param>
+    /// <param name="criteria">optional ON-clause criteria; when <c>null</c> the renderer emits <c>ON TRUE</c></param>
+    /// <param name="joinAlias">alias for the lateral result; auto-generated when <c>null</c></param>
+    /// <returns>this operation for fluent chaining</returns>
+    public LoadOperation LeftLateralJoin(IDatabaseOperation inner, Expression<Func<bool>> criteria = null, string joinAlias = null) {
+        if (inner is null) throw new ArgumentNullException(nameof(inner));
+        joinoperations.Add(new(inner, criteria, JoinOp.LeftLateral, null, joinAlias ?? GenerateLateralAlias()));
+        return new LoadOperation(this);
+    }
+
     /// <inheritdoc />
     void IDatabaseOperation.Prepare(IOperationPreparator preparator) {
         if (columns.Count == 0)
@@ -1421,18 +1534,7 @@ public class LoadOperation : ILoadOperation {
 
         if (joinoperations.Count > 0) {
             foreach (JoinOperation operation in joinoperations) {
-                preparator.AppendText($"{operation.JoinType.ToString().ToUpper()} JOIN");
-                if (operation.Operation != null) {
-                    preparator.AppendText("(");
-                    operation.Operation.Prepare(preparator);
-                    preparator.AppendText(")");
-                }
-                else preparator.AppendText(descriptorgetter(operation.Type).TableName);
-
-                if (!string.IsNullOrEmpty(operation.Alias))
-                    preparator.AppendText("AS").AppendText(operation.Alias);
-                preparator.AppendText("ON");
-                CriteriaVisitor.GetCriteriaText(operation.Criterias, descriptorgetter, dbclient.DBInfo, preparator, tablealias, operation.Alias);
+                dbclient.DBInfo.AppendJoin(operation, preparator, descriptorgetter, tablealias);
                 aliases.Add(operation.Alias);
             }
         }

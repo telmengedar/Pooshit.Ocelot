@@ -127,6 +127,9 @@ public abstract class DBInfo : IDBInfo {
     /// <inheritdoc />
     public virtual bool MultipleConnectionsSupported => true;
 
+    /// <inheritdoc />
+    public virtual bool SupportsLateralJoin => true;
+
     /// <summary>
     /// method used to create a replace function
     /// </summary>
@@ -626,5 +629,63 @@ public abstract class DBInfo : IDBInfo {
 
     /// <inheritdoc />
     public virtual void CreateIndexTypeFragment(StringBuilder commandBuilder, string type) {
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Default implementation covers all four <see cref="JoinOp"/> values for ANSI-style engines
+    /// (Postgres, MySQL/MariaDB, and the base pass-through for Inner/Left on MSSQL):
+    /// <list type="bullet">
+    ///   <item><c>Inner</c> → <c>INNER JOIN</c></item>
+    ///   <item><c>Left</c> → <c>LEFT JOIN</c></item>
+    ///   <item><c>CrossLateral</c> → <c>INNER JOIN LATERAL (...) AS alias ON TRUE</c></item>
+    ///   <item><c>LeftLateral</c> → <c>LEFT JOIN LATERAL (...) AS alias ON TRUE</c></item>
+    /// </list>
+    /// <c>SQLiteInfo</c> overrides to throw <see cref="NotSupportedException"/> for the lateral variants.
+    /// <c>MsSqlInfo</c> overrides to emit <c>CROSS APPLY</c> / <c>OUTER APPLY</c>.
+    /// </remarks>
+    public virtual void AppendJoin(JoinOperation join, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string outerAlias) {
+        switch (join.JoinType) {
+            case JoinOp.Inner:
+                preparator.AppendText("INNER JOIN");
+                break;
+            case JoinOp.Left:
+                preparator.AppendText("LEFT JOIN");
+                break;
+            case JoinOp.CrossLateral:
+                preparator.AppendText("INNER JOIN LATERAL");
+                break;
+            case JoinOp.LeftLateral:
+                preparator.AppendText("LEFT JOIN LATERAL");
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(join), $"Unknown JoinOp value: {join.JoinType}");
+        }
+
+        if (join.Operation != null) {
+            preparator.AppendText("(");
+            join.Operation.Prepare(preparator);
+            preparator.AppendText(")");
+        }
+        else preparator.AppendText(descriptorgetter(join.Type).TableName);
+
+        if (!string.IsNullOrEmpty(join.Alias))
+            preparator.AppendText("AS").AppendText(join.Alias);
+
+        if (join.JoinType == JoinOp.CrossLateral || join.JoinType == JoinOp.LeftLateral) {
+            // For LATERAL joins the correlation lives inside the inner's WHERE clause.
+            // Emit ON (criteria) when provided, ON TRUE when not.
+            if (join.Criterias != null) {
+                preparator.AppendText("ON");
+                CriteriaVisitor.GetCriteriaText(join.Criterias, descriptorgetter, this, preparator, outerAlias, join.Alias);
+            }
+            else {
+                preparator.AppendText("ON TRUE");
+            }
+        }
+        else {
+            preparator.AppendText("ON");
+            CriteriaVisitor.GetCriteriaText(join.Criterias, descriptorgetter, this, preparator, outerAlias, join.Alias);
+        }
     }
 }

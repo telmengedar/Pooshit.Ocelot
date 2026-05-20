@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities.Descriptors;
+using Pooshit.Ocelot.Entities.Operations;
 using Pooshit.Ocelot.Entities.Operations.Expressions;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Entities.Schema;
@@ -53,6 +54,14 @@ public interface IDBInfo {
     /// determines whether multiple parallel connections to the database are supported
     /// </summary>
     bool MultipleConnectionsSupported { get; }
+
+    /// <summary>
+    /// determines whether the dialect can render <see cref="Pooshit.Ocelot.Entities.Operations.JoinOp.CrossLateral"/>
+    /// and <see cref="Pooshit.Ocelot.Entities.Operations.JoinOp.LeftLateral"/> joins without throwing.
+    /// Consumers should check this flag before using <c>LateralJoin</c> / <c>LeftLateralJoin</c> so that
+    /// SQLite-backed test suites can take a fallback path rather than hitting the runtime throw.
+    /// </summary>
+    bool SupportsLateralJoin { get; }
         
     /// <summary>
     /// method used to create a replace function
@@ -247,6 +256,17 @@ public interface IDBInfo {
     /// <param name="descriptorgetter">function used to get <see cref="EntityDescriptor"/>s for types</param>
     /// <param name="tablealias">alias to use when resolving properties</param>
     void Append(IDBField field, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string tablealias = null);
+
+    /// <summary>
+    /// appends a complete join clause — keyword, source, alias, and ON-condition — to the preparator.
+    /// Called by <c>LoadOperation.Prepare</c> once per entry in the join list; the dialect owns the
+    /// keyword choice (including <c>LATERAL</c> / <c>CROSS APPLY</c> / <c>OUTER APPLY</c> for lateral variants).
+    /// </summary>
+    /// <param name="join">join descriptor containing the type, operation, criteria, alias, and join kind</param>
+    /// <param name="preparator">preparator to write SQL tokens into</param>
+    /// <param name="descriptorgetter">function used to resolve <see cref="EntityDescriptor"/>s for types</param>
+    /// <param name="outerAlias">alias of the outer (driving) table; used for correlation in criteria resolution</param>
+    void AppendJoin(JoinOperation join, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string outerAlias);
 
     /// <summary>
     /// visits an expression in an expression tree

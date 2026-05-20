@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities.Descriptors;
+using Pooshit.Ocelot.Entities.Operations;
 using Pooshit.Ocelot.Entities.Operations.Expressions;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Entities.Schema;
@@ -239,5 +240,41 @@ public class MsSqlInfo : DBInfo {
     /// <inheritdoc />
     public override object GenerateDefault(string type) {
         throw new NotImplementedException();
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// MSSQL override: translates lateral variants to <c>CROSS APPLY</c> / <c>OUTER APPLY</c>
+    /// (SQL Server's semantic equivalent of <c>LATERAL</c>). APPLY does not have an <c>ON</c> clause;
+    /// when the caller supplies a criteria expression it is folded into the inner subquery via a
+    /// wrapping <c>SELECT * FROM (...) AS w WHERE (criteria)</c> so the correlation survives.
+    /// Inner and Left fall through to the base ANSI implementation.
+    /// </remarks>
+    public override void AppendJoin(JoinOperation join, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorgetter, string outerAlias) {
+        if (join.JoinType == JoinOp.CrossLateral || join.JoinType == JoinOp.LeftLateral) {
+            preparator.AppendText(join.JoinType == JoinOp.CrossLateral ? "CROSS APPLY" : "OUTER APPLY");
+
+            if (join.Criterias != null) {
+                // Fold user-supplied criteria into a wrapping SELECT so the ON-less APPLY syntax
+                // still evaluates the predicate. The outer alias is available inside the inner
+                // subquery via correlated reference — no change needed at the SQL level.
+                preparator.AppendText("(SELECT * FROM (");
+                join.Operation!.Prepare(preparator);
+                preparator.AppendText(") AS w WHERE");
+                CriteriaVisitor.GetCriteriaText(join.Criterias, descriptorgetter, this, preparator, outerAlias, join.Alias);
+                preparator.AppendText(")");
+            }
+            else {
+                preparator.AppendText("(");
+                join.Operation!.Prepare(preparator);
+                preparator.AppendText(")");
+            }
+
+            if (!string.IsNullOrEmpty(join.Alias))
+                preparator.AppendText("AS").AppendText(join.Alias);
+        }
+        else {
+            base.AppendJoin(join, preparator, descriptorgetter, outerAlias);
+        }
     }
 }
