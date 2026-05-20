@@ -55,9 +55,13 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
     /// <inheritdoc />
     public FieldMapping<TModel> this[string name] {
         get {
-            if (!fieldLookup.TryGetValue(name, out FieldMapping<TModel> field))
-                fieldLookup[name] = field = fieldLookup[name.ToLower()];
-            return field;
+            if (fieldLookup.TryGetValue(name, out FieldMapping<TModel> field))
+                return field;
+            if (fieldLookup.TryGetValue(name.ToLower(), out field)) {
+                fieldLookup[name] = field;
+                return field;
+            }
+            throw new UnknownFieldException(name, fieldLookup.Keys.ToArray());
         }
     }
 
@@ -86,13 +90,7 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
 
     /// <inheritdoc />
     public IEnumerable<IDBField> DbFieldsFromNames(IEnumerable<string> names) {
-        List<IDBField> result = [];
-        foreach (string name in names) {
-            if (!fieldLookup.ContainsKey(name) && !fieldLookup.ContainsKey(name.ToLower()))
-                throw new UnknownFieldException(name, fieldLookup.Keys.ToArray());
-            result.Add(this[name].Field);
-        }
-        return result;
+        return names.Select(n => this[n].Field).ToArray();
     }
 
     int IndexOf(string[] fields, string fieldName) {

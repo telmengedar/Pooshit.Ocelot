@@ -116,4 +116,29 @@ public class FieldMapperTests {
         IDBField[] fields = mapper.DbFieldsFromNames("integer", "string").ToArray();
         Assert.AreEqual(2, fields.Length);
     }
+
+    [Test, Parallelizable]
+    public void TestUnknownFieldName_IndexerThrowsUnknownFieldException() {
+        FieldMapper<ValueModel> mapper = new(
+            new FieldMapping<ValueModel, int>("integer", DB.Property<ValueModel>(v => v.Integer), (model, i) => model.Integer = i),
+            new FieldMapping<ValueModel, string>("string", DB.Property<ValueModel>(v => v.String), (model, i) => model.String = i)
+        );
+
+        UnknownFieldException ex = Assert.Throws<UnknownFieldException>(() => { _ = mapper["doesnotexist"]; });
+        Assert.AreEqual("doesnotexist", ex.FieldName);
+        Assert.That(ex.AvailableNames, Does.Contain("integer"));
+        Assert.That(ex.AvailableNames, Does.Contain("string"));
+    }
+
+    [Test, Parallelizable]
+    public void TestKnownFieldName_CaseInsensitiveMatch_ForwardCached() {
+        FieldMapping<ValueModel, int> intMapping = new("integer", DB.Property<ValueModel>(v => v.Integer), (model, i) => model.Integer = i);
+        FieldMapper<ValueModel> mapper = new(intMapping);
+
+        FieldMapping<ValueModel> firstLookup = mapper["Integer"];
+        FieldMapping<ValueModel> secondLookup = mapper["Integer"];
+
+        Assert.AreSame(intMapping, firstLookup);
+        Assert.AreSame(firstLookup, secondLookup);
+    }
 }
