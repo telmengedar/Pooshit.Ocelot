@@ -271,6 +271,9 @@ public class SQLiteInfo : DBInfo {
     /// <inheritdoc />
     public override bool MultipleConnectionsSupported => false;
 
+    /// <inheritdoc />
+    public override bool SupportsLateralJoin => false;
+
     /// <summary>
     /// method used to create a replace function
     /// </summary>

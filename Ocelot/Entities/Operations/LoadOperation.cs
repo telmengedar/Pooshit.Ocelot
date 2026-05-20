@@ -911,19 +911,8 @@ public class LoadOperation<T> : IDatabaseOperation {
             preparator.AppendText("AS").AppendText(tablealias);
             
         if(joinoperations.Count > 0) {
-            foreach(JoinOperation operation in joinoperations) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
-                preparator.AppendText($"{operation.JoinType.ToString().ToUpper()} JOIN");
-                if (operation.Operation != null) {
-                    preparator.AppendText("(");
-                    operation.Operation.Prepare(preparator);
-                    preparator.AppendText(")");
-                }   
-                else preparator.AppendText(descriptorgetter(operation.Type).TableName);
-                
-                if(!string.IsNullOrEmpty(operation.Alias))
-                    preparator.AppendText("AS").AppendText(operation.Alias);
-                preparator.AppendText("ON");
-                CriteriaVisitor.GetCriteriaText(operation.Criterias, descriptorgetter, dbclient.DBInfo, preparator, tablealias, operation.Alias);
+            foreach(JoinOperation operation in joinoperations) {
+                dbclient.DBInfo.AppendJoin(operation, preparator, descriptorgetter, tablealias);
                 aliases.Add(operation.Alias);
             }
         }
@@ -1421,18 +1410,7 @@ public class LoadOperation : ILoadOperation {
 
         if (joinoperations.Count > 0) {
             foreach (JoinOperation operation in joinoperations) {
-                preparator.AppendText($"{operation.JoinType.ToString().ToUpper()} JOIN");
-                if (operation.Operation != null) {
-                    preparator.AppendText("(");
-                    operation.Operation.Prepare(preparator);
-                    preparator.AppendText(")");
-                }
-                else preparator.AppendText(descriptorgetter(operation.Type).TableName);
-
-                if (!string.IsNullOrEmpty(operation.Alias))
-                    preparator.AppendText("AS").AppendText(operation.Alias);
-                preparator.AppendText("ON");
-                CriteriaVisitor.GetCriteriaText(operation.Criterias, descriptorgetter, dbclient.DBInfo, preparator, tablealias, operation.Alias);
+                dbclient.DBInfo.AppendJoin(operation, preparator, descriptorgetter, tablealias);
                 aliases.Add(operation.Alias);
             }
         }
