@@ -8,6 +8,7 @@ using Pooshit.Ocelot.Clients.Tables;
 using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Entities.Operations;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
+using Pooshit.Ocelot.Errors;
 using Pooshit.Ocelot.Tokens;
 using Pooshit.Ocelot.Tokens.Partitions;
 
@@ -54,9 +55,13 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
     /// <inheritdoc />
     public FieldMapping<TModel> this[string name] {
         get {
-            if (!fieldLookup.TryGetValue(name, out FieldMapping<TModel> field))
-                fieldLookup[name] = field = fieldLookup[name.ToLower()];
-            return field;
+            if (fieldLookup.TryGetValue(name, out FieldMapping<TModel> field))
+                return field;
+            if (fieldLookup.TryGetValue(name.ToLower(), out field)) {
+                fieldLookup[name] = field;
+                return field;
+            }
+            throw new UnknownFieldException(name, fieldLookup.Keys.ToArray());
         }
     }
 
@@ -85,7 +90,7 @@ public class FieldMapper<TModel> : IFieldMapper<TModel> {
 
     /// <inheritdoc />
     public IEnumerable<IDBField> DbFieldsFromNames(IEnumerable<string> names) {
-        return names.Select(n => this[n].Field);
+        return names.Select(n => this[n].Field).ToArray();
     }
 
     int IndexOf(string[] fields, string fieldName) {
