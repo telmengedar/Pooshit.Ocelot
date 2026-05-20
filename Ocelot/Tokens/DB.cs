@@ -720,6 +720,104 @@ public static class DB {
     }
 
     /// <summary>
+    /// extracts a substring from <paramref name="expr"/>
+    /// </summary>
+    /// <remarks>
+    /// Emits <c>SUBSTRING(expr, start, length)</c> on Postgres, MySQL and MSSQL;
+    /// falls back to <c>SUBSTR(expr, start, length)</c> on SQLite.
+    /// </remarks>
+    /// <param name="expr">string expression to extract from</param>
+    /// <param name="start">1-based start position</param>
+    /// <param name="length">number of characters to extract</param>
+    /// <returns>token to be used in statements</returns>
+    public static SubstringToken Substring(ISqlToken expr, ISqlToken start, ISqlToken length) {
+        return new(expr, start, length);
+    }
+
+    /// <summary>
+    /// extracts a substring from <paramref name="expr"/>
+    /// </summary>
+    /// <param name="expr">string expression to extract from</param>
+    /// <param name="start">1-based start position</param>
+    /// <param name="length">number of characters to extract</param>
+    /// <returns>token to be used in statements</returns>
+    public static SubstringToken Substring(ISqlToken expr, int start, int length) {
+        return new(expr, Constant(start), Constant(length));
+    }
+
+    /// <summary>
+    /// extracts a substring from <paramref name="expr"/> — expression-tree overload
+    /// </summary>
+    /// <exception cref="NotImplementedException">thrown when called outside an expression tree</exception>
+    public static ISqlToken Substring(object expr, object start, object length) {
+        throw new NotImplementedException("Only to be used in expressions");
+    }
+
+    /// <summary>
+    /// returns the leftmost <paramref name="length"/> characters from <paramref name="expr"/>
+    /// </summary>
+    /// <remarks>
+    /// Emits <c>LEFT(expr, length)</c> on Postgres, MySQL and MSSQL;
+    /// falls back to <c>SUBSTR(expr, 1, length)</c> on SQLite.
+    /// </remarks>
+    /// <param name="expr">string expression</param>
+    /// <param name="length">number of characters to take from the left</param>
+    /// <returns>token to be used in statements</returns>
+    public static LeftToken Left(ISqlToken expr, ISqlToken length) {
+        return new(expr, length);
+    }
+
+    /// <summary>
+    /// returns the leftmost <paramref name="length"/> characters from <paramref name="expr"/>
+    /// </summary>
+    /// <param name="expr">string expression</param>
+    /// <param name="length">number of characters to take from the left</param>
+    /// <returns>token to be used in statements</returns>
+    public static LeftToken Left(ISqlToken expr, int length) {
+        return new(expr, Constant(length));
+    }
+
+    /// <summary>
+    /// returns the leftmost N characters from a string — expression-tree overload
+    /// </summary>
+    /// <exception cref="NotImplementedException">thrown when called outside an expression tree</exception>
+    public static ISqlToken Left(object expr, object length) {
+        throw new NotImplementedException("Only to be used in expressions");
+    }
+
+    /// <summary>
+    /// decodes a bytea value using the specified encoding — Postgres-specific
+    /// </summary>
+    /// <remarks>
+    /// Wraps the Postgres <c>convert_from(bytea, text)</c> function.
+    /// Throws <see cref="NotSupportedException"/> when rendered against any non-Postgres dialect.
+    /// </remarks>
+    /// <param name="bytes">bytea expression</param>
+    /// <param name="encoding">encoding name token (e.g. <c>DB.Constant("UTF8")</c>)</param>
+    /// <returns>token to be used in statements</returns>
+    public static ConvertFromToken ConvertFrom(ISqlToken bytes, ISqlToken encoding) {
+        return new(bytes, encoding);
+    }
+
+    /// <summary>
+    /// decodes a bytea value using the specified encoding — Postgres-specific
+    /// </summary>
+    /// <param name="bytes">bytea expression</param>
+    /// <param name="encoding">encoding name (e.g. "UTF8")</param>
+    /// <returns>token to be used in statements</returns>
+    public static ConvertFromToken ConvertFrom(ISqlToken bytes, string encoding) {
+        return new(bytes, Constant(encoding));
+    }
+
+    /// <summary>
+    /// decodes a bytea value using the specified encoding — expression-tree overload
+    /// </summary>
+    /// <exception cref="NotImplementedException">thrown when called outside an expression tree</exception>
+    public static ISqlToken ConvertFrom(object bytes, object encoding) {
+        throw new NotImplementedException("Only to be used in expressions");
+    }
+
+    /// <summary>
     /// current time
     /// </summary>
     /// <returns>token used to reference current time</returns>
