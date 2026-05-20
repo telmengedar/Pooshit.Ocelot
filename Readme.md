@@ -210,3 +210,44 @@ entitymanager.Load<Entity>(e=>e.Name).ExecuteSet<string>();
 ```
 entitymanager.Load<Entity>(DBFunction.Count).ExecuteScalar<long>();
 ```
+
+### Lateral joins
+
+`LateralJoin` and `LeftLateralJoin` let you join a correlated subquery that is evaluated once per outer row. This is the natural SQL shape for top-N-per-group queries and other patterns where the inner query depends on outer columns.
+
+```csharp
+// Top-1 order per customer (Postgres / MySQL / MSSQL)
+if (db.DBInfo.SupportsLateralJoin) {
+    var latestOrder = entitymanager.Load<Order>()
+        .Where(o => o.CustomerId == DB.Property<Customer>(c => c.Id))
+        .OrderBy(new OrderByCriteria(Field.Property<Order>(o => o.OrderDate), false))
+        .Limit(1);
+
+    var results = await entitymanager.Load<Customer>()
+        .LateralJoin(latestOrder, joinAlias: "recent")
+        .ExecuteEntitiesAsync();
+}
+```
+
+Generated SQL (Postgres):
+
+```sql
+SELECT t.* FROM customers AS t
+INNER JOIN LATERAL (
+  SELECT * FROM orders
+  WHERE customer_id = t.id
+  ORDER BY order_date DESC
+  LIMIT 1
+) AS recent ON TRUE
+```
+
+**Dialect support:**
+
+| Engine | Rendering |
+|---|---|
+| Postgres | `INNER JOIN LATERAL` / `LEFT JOIN LATERAL` |
+| MySQL 8.0.14+ / MariaDB 10.3+ | `INNER JOIN LATERAL` / `LEFT JOIN LATERAL` |
+| MSSQL | `CROSS APPLY` / `OUTER APPLY` |
+| SQLite | throws `NotSupportedException` at `Prepare()` time |
+
+Check `IDBInfo.SupportsLateralJoin` before calling `LateralJoin` when your code may run against SQLite. The flag is `false` on `SQLiteInfo` and `true` on all other dialects, so the check serves as a natural branch point for a fallback path in SQLite-backed tests.
