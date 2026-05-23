@@ -468,4 +468,78 @@ public class SchemaServiceTests {
                 "Check that UniqueDescriptor.Equals / GetHashCode are still column-set based, not name-based.");
         }
     }
+
+    /// <summary>
+    /// Regression: when a multi-column index keeps its name but one of its referenced columns is removed,
+    /// Postgres auto-drops the index as part of the column drop. UpdateIndices used to follow up with an
+    /// unconditional DROP INDEX idx_table_name on the altered index, which then failed because the index
+    /// no longer existed. The recreate-via-CreateIndices path emits DROP INDEX IF EXISTS first, so the
+    /// explicit drop is both redundant and harmful — this test pins that.
+    /// </summary>
+    [Test, Parallelizable]
+    public async Task AlteredMultiColumnIndex_WithDroppedReferencedColumn_DoesNotIssueBareDropIndex() {
+        PostgreInfo dbInfo = new();
+        Mock<IDBClient> client = new();
+        client.Setup(s => s.DBInfo).Returns(dbInfo);
+
+        string[] pgColumnNames = ["table_catalog", "table_schema", "table_name", "column_name", "data_type", "is_nullable", "column_default", "udt_name", "is_identity"];
+        string[] pgIndexNames = ["schemaname", "tablename", "indexname", "indexdef"];
+
+        client.Setup(s => s.ReaderAsync(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<IEnumerable<object>>()))
+              .Returns<Transaction, string, IEnumerable<object>>((transaction, command, parameters) => {
+                  if (command.StartsWith("SELECT * FROM pg_views"))
+                      return Task.FromResult(new Reader(new FakeReader(Array.Empty<string>(), Array.Empty<object[]>()), null, dbInfo));
+
+                  if (command.StartsWith("SELECT * FROM information_schema.columns")) {
+                      // pre-change: id (PK), brokerid, baacategory (to be dropped)
+                      object[][] rows = [
+                          ["db", "public", "aggregatedperf", "id",          "int8", "NO",  "nextval('aggregatedperf_id_seq'::regclass)", "int8", false],
+                          ["db", "public", "aggregatedperf", "brokerid",    "int8", "NO",  DBNull.Value,                                  "int8", false],
+                          ["db", "public", "aggregatedperf", "baacategory", "int8", "NO",  DBNull.Value,                                  "int8", false]
+                      ];
+                      return Task.FromResult(new Reader(new FakeReader(pgColumnNames, rows), null, dbInfo));
+                  }
+
+                  if (command.StartsWith("SELECT * FROM pg_indexes")) {
+                      // psc is a composite index spanning brokerid + baacategory in the live DB
+                      object[][] rows = [
+                          ["public", "aggregatedperf", "aggregatedperf_pkey", "CREATE UNIQUE INDEX aggregatedperf_pkey ON aggregatedperf USING btree (id)"],
+                          ["public", "aggregatedperf", "idx_aggregatedperf_psc", "CREATE INDEX idx_aggregatedperf_psc ON aggregatedperf (brokerid, baacategory)"]
+                      ];
+                      return Task.FromResult(new Reader(new FakeReader(pgIndexNames, rows), null, dbInfo));
+                  }
+
+                  throw new InvalidOperationException($"Unexpected query: {command}");
+              });
+
+        SchemaService service = new(client.Object);
+
+        // target schema: baacategory dropped; psc now references only brokerid
+        await service.UpdateSchema("aggregatedperf", new TableSchema {
+            Name = "aggregatedperf",
+            Columns = [
+                new("id", "int8") { PrimaryKey = true, AutoIncrement = true, NotNull = true },
+                new("brokerid", "int8") { NotNull = true }
+            ],
+            Index = [new IndexDescriptor("psc", ["brokerid"], null)]
+        });
+
+        // The bug: a bare "DROP INDEX idx_aggregatedperf_psc" (no IF EXISTS) would fire after the
+        // ALTER TABLE drop, by which point Postgres has already auto-removed the index. CreateIndices
+        // is responsible for the IF EXISTS variant, so any DROP-INDEX SQL must include IF EXISTS.
+        // NonQueryAsync has both an IEnumerable<object> and a params object[] overload; the
+        // SchemaService code path here uses the params overload, so we walk invocations directly.
+        System.Text.RegularExpressions.Regex bareDrop = new(@"DROP\s+INDEX\s+(?!IF\s+EXISTS)",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        foreach (Moq.IInvocation invocation in client.Invocations) {
+            if (invocation.Method.Name != nameof(IDBClient.NonQueryAsync))
+                continue;
+            string sql = invocation.Arguments.OfType<string>().FirstOrDefault();
+            if (sql == null)
+                continue;
+            Assert.That(bareDrop.IsMatch(sql), Is.False,
+                $"SchemaService emitted a DROP INDEX without IF EXISTS: {sql}");
+        }
+    }
 }
