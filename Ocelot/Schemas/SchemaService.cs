@@ -210,14 +210,14 @@ public class SchemaService : ISchemaService {
         if (obsolete.Count > 0) {
             Logger.Info(this, $"Detected obsolete index definition for '{string.Join(", ", obsolete)}'");
             foreach (string index in obsolete)
-                await client.NonQueryAsync(transaction, $"DROP INDEX idx_{newschema.Name}_{index}");
+                await client.NonQueryAsync(transaction, $"DROP INDEX IF EXISTS idx_{newschema.Name}_{index}");
         }
-            
+
         if(altered.Count > 0) {
             Logger.Info(this, $"Detected altered index definition for '{string.Join(", ", altered.Select(i => i.Name))}'");
-            foreach (IndexDescriptor index in altered)
-                await client.NonQueryAsync(transaction, $"DROP INDEX idx_{newschema.Name}_{index.Name}");
-
+            // CreateIndices emits DROP INDEX IF EXISTS before each CREATE, so an explicit
+            // drop here would double-drop and fail when a referenced column was just removed
+            // (engines like Postgres auto-drop indexes whose columns were dropped).
             await CreateIndices(client, newschema.Name, altered, transaction);
         }
 
