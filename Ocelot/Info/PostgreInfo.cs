@@ -852,7 +852,11 @@ public class PostgreInfo : DBInfo {
             }
             else parameter.Value =Converter.Convert(parameterValue, GetDBRepresentation(parameterValue.GetType()));
         }
-        else parameter.Value = Converter.Convert(parameterValue, GetDBRepresentation(parameterValue.GetType())); 
+        else {
+            Type dbRepresentation = GetDBRepresentation(parameterValue.GetType());
+            parameter.DbType = MapToDbType(dbRepresentation);
+            parameter.Value = Converter.Convert(parameterValue, dbRepresentation);
+        }
 
         command.Parameters.Add(parameter);
     }
