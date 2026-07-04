@@ -28,6 +28,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="Ocelot.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
         <None Remove="Info\Postgre\createstatement.sql" />
         <EmbeddedResource Include="Info\Postgre\createstatement.sql" />
     </ItemGroup>
