@@ -43,7 +43,13 @@ internal static class Converter {
         specificconverters[new(typeof(long), typeof(IntPtr))] = v => new IntPtr((long)v);
         specificconverters[new(typeof(int), typeof(UIntPtr))] = v => new UIntPtr((uint)v);
         specificconverters[new(typeof(long), typeof(UIntPtr))] = v => new UIntPtr((ulong)v);
-        specificconverters[new(typeof(string), typeof(bool))] = v => ((string)v).ToLower() == "true" || ((string)v != "" && (string)v != "0");
+        specificconverters[new(typeof(string), typeof(bool))] = v => {
+            string s = ((string)v).Trim();
+            if (bool.TryParse(s, out bool parsed)) return (object)parsed;
+            if (s == "1") return (object)true;
+            if (s == "0" || s.Length == 0) return (object)false;
+            throw new FormatException($"Cannot convert '{s}' to bool");
+        };
         specificconverters[new(typeof(string), typeof(byte[]))] = v => System.Convert.FromBase64String((string)v);
         specificconverters[new(typeof(byte[]), typeof(Guid))] = v => new Guid((byte[])v);
         specificconverters[new(typeof(Guid), typeof(byte[]))] = v => ((Guid)v).ToByteArray();
