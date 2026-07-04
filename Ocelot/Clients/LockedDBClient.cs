@@ -229,6 +229,66 @@ public class LockedDBClient : ADbClient {
     }
 
     /// <inheritdoc />
+    public override object ScalarWrite(Transaction transaction, string commandText, IEnumerable<object> parameters) {
+        if(transaction == null) {
+            connectionlock.Wait();
+            try {
+                return baseclient.ScalarWrite(null, commandText, parameters);
+            }
+            finally {
+                connectionlock.Release();
+            }
+        }
+
+        return baseclient.ScalarWrite(transaction, commandText, parameters);
+    }
+
+    /// <inheritdoc />
+    public override async Task<object> ScalarWriteAsync(Transaction transaction, string commandText, IEnumerable<object> parameters, CancellationToken cancellationToken) {
+        if(transaction == null) {
+            await connectionlock.WaitAsync(cancellationToken);
+            try {
+                return await baseclient.ScalarWriteAsync(null, commandText, parameters, cancellationToken);
+            }
+            finally {
+                connectionlock.Release();
+            }
+        }
+
+        return await baseclient.ScalarWriteAsync(transaction, commandText, parameters, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public override object ScalarWritePrepared(Transaction transaction, string commandText, IEnumerable<object> parameters) {
+        if(transaction == null) {
+            connectionlock.Wait();
+            try {
+                return baseclient.ScalarWritePrepared(null, commandText, parameters);
+            }
+            finally {
+                connectionlock.Release();
+            }
+        }
+
+        return baseclient.ScalarWritePrepared(transaction, commandText, parameters);
+    }
+
+    /// <inheritdoc />
+    public override async Task<object> ScalarWritePreparedAsync(Transaction transaction, string commandText, IEnumerable<object> parameters, CancellationToken cancellationToken) {
+        if(transaction == null) {
+            await connectionlock.WaitAsync(cancellationToken);
+            try {
+                return await baseclient.ScalarWritePreparedAsync(null, commandText, parameters, cancellationToken);
+            }
+            finally {
+                connectionlock.Release();
+            }
+        }
+
+        return await baseclient.ScalarWritePreparedAsync(transaction, commandText, parameters, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public override async Task<DataTable> QueryPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         if(transaction == null) {
             await connectionlock.WaitAsync(cancellationToken);

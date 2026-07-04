@@ -581,13 +581,43 @@ public abstract class DBInfo : IDBInfo {
         return client.NonQueryAsync(options?.Transaction,$"TRUNCATE {table}");
     }
 
+    /// <summary>
+    /// maps a CLR type to its standard ADO.NET <see cref="DbType" />, falling back to
+    /// <see cref="DbType.Object" /> so the driver infers unknown types itself
+    /// </summary>
+    /// <param name="type">CLR type to map</param>
+    /// <returns>matching <see cref="DbType" /> or <see cref="DbType.Object" /></returns>
+    protected static DbType MapToDbType(Type type) {
+        if (type == typeof(bool)) return DbType.Boolean;
+        if (type == typeof(byte)) return DbType.Byte;
+        if (type == typeof(sbyte)) return DbType.SByte;
+        if (type == typeof(short)) return DbType.Int16;
+        if (type == typeof(ushort)) return DbType.UInt16;
+        if (type == typeof(int)) return DbType.Int32;
+        if (type == typeof(uint)) return DbType.UInt32;
+        if (type == typeof(long)) return DbType.Int64;
+        if (type == typeof(ulong)) return DbType.UInt64;
+        if (type == typeof(float)) return DbType.Single;
+        if (type == typeof(double)) return DbType.Double;
+        if (type == typeof(decimal)) return DbType.Decimal;
+        if (type == typeof(string)) return DbType.String;
+        if (type == typeof(DateTime)) return DbType.DateTime;
+        if (type == typeof(Guid)) return DbType.Guid;
+        if (type == typeof(byte[])) return DbType.Binary;
+        return DbType.Object;
+    }
+
     /// <inheritdoc />
     public virtual void CreateParameter(IDbCommand command, object parameterValue) {
         IDbDataParameter parameter = command.CreateParameter();
         parameter.ParameterName = Parameter + (command.Parameters.Count + 1);
-        parameter.Value = parameterValue == null || parameterValue == DBNull.Value ?
-                              DBNull.Value :
-                              Converter.Convert(parameterValue, GetDBRepresentation(parameterValue.GetType()));
+        if (parameterValue == null || parameterValue == DBNull.Value)
+            parameter.Value = DBNull.Value;
+        else {
+            Type dbRepresentation = GetDBRepresentation(parameterValue.GetType());
+            parameter.DbType = MapToDbType(dbRepresentation);
+            parameter.Value = Converter.Convert(parameterValue, dbRepresentation);
+        }
 
         command.Parameters.Add(parameter);
     }
@@ -688,4 +718,7 @@ public abstract class DBInfo : IDBInfo {
             CriteriaVisitor.GetCriteriaText(join.Criterias, descriptorgetter, this, preparator, outerAlias, join.Alias);
         }
     }
+
+    /// <inheritdoc />
+    public virtual bool IsConnectionLost(Exception exception) => false;
 }

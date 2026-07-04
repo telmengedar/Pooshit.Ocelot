@@ -236,4 +236,120 @@ public class PostgresLocalTests {
 
         Assert.Pass();
     }
+
+    /// <summary>
+    /// verifies that a prepared READ transparently survives a forced backend connection loss
+    /// when Increment 2 (connection-loss retry on read paths) is active.
+    /// Without Increment 2 this test should fail with a StatementException.
+    /// </summary>
+    [Test]
+    public async Task PreparedReadSurvivesConnectionLoss() {
+        string connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION");
+        if (string.IsNullOrEmpty(connectionString))
+            Assert.Inconclusive("Test only active on local dev machine");
+
+        IDBClient setupClient = ClientFactory.Create(() => new NpgsqlConnection(connectionString), new PostgreInfo(), true);
+        EntityManager setupManager = new(setupClient);
+        await setupClient.NonQueryAsync("DROP TABLE IF EXISTS valuemodel CASCADE");
+        setupManager.Create<ValueModel>();
+        await setupClient.NonQueryAsync("INSERT INTO valuemodel (integer) VALUES (7)");
+
+        NpgsqlConnection conn = new(connectionString);
+        await conn.OpenAsync();
+        IDBClient dbclient = ClientFactory.Create(conn, new PostgreInfo());
+        EntityManager em = new(dbclient);
+
+        PreparedLoadOperation<ValueModel> readOp = em.Load<ValueModel>().Prepare();
+
+        ValueModel baseline = await readOp.ExecuteEntityAsync();
+        Assert.IsNotNull(baseline, "Baseline read should succeed before connection loss");
+
+        long backendPid = Convert.ToInt64(await dbclient.ScalarAsync("SELECT pg_backend_pid()"));
+
+        await using (NpgsqlConnection killer = new(connectionString)) {
+            await killer.OpenAsync();
+            await using NpgsqlCommand killCmd = new($"SELECT pg_terminate_backend({backendPid})", killer);
+            await killCmd.ExecuteScalarAsync();
+        }
+
+        ValueModel recovered = await readOp.ExecuteEntityAsync();
+        Assert.IsNotNull(recovered, "Read should succeed after connection loss via transparent retry");
+        Assert.AreEqual(7, recovered.Integer, "Recovered data should match the inserted value");
+    }
+
+    /// <summary>
+    /// verifies that a .ReturnID() insert (routes through ScalarWrite, not NonQuery) after a forced
+    /// backend connection loss surfaces the error and does NOT phantom-insert a second row.
+    /// This test fails if PreparedReturnIdOperation retries on connection loss — fail-on-revert guarantee.
+    /// </summary>
+    [Test]
+    public async Task ReturnIdInsertAfterConnectionLossThrows() {
+        string connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION");
+        if (string.IsNullOrEmpty(connectionString))
+            Assert.Inconclusive("Test only active on local dev machine");
+
+        IDBClient setupClient = ClientFactory.Create(() => new NpgsqlConnection(connectionString), new PostgreInfo(), true);
+        EntityManager setupManager = new(setupClient);
+        await setupClient.NonQueryAsync("DROP TABLE IF EXISTS autoincremententity CASCADE");
+        setupManager.Create<AutoIncrementEntity>();
+
+        NpgsqlConnection conn = new(connectionString);
+        await conn.OpenAsync();
+        IDBClient dbclient = ClientFactory.Create(conn, new PostgreInfo());
+        EntityManager em = new(dbclient);
+
+        PreparedOperation insertOp = em.Insert<AutoIncrementEntity>().Columns(e => e.Bla).ReturnID().Prepare();
+
+        long firstId = insertOp.Execute("baseline");
+        Assert.Greater(firstId, 0, "Baseline .ReturnID() insert should return a valid PK");
+
+        long backendPid = Convert.ToInt64(await dbclient.ScalarAsync("SELECT pg_backend_pid()"));
+
+        await using (NpgsqlConnection killer = new(connectionString)) {
+            await killer.OpenAsync();
+            await using NpgsqlCommand killCmd = new($"SELECT pg_terminate_backend({backendPid})", killer);
+            await killCmd.ExecuteScalarAsync();
+        }
+
+        Assert.CatchAsync<Exception>(() => insertOp.ExecuteAsync("after-loss"),
+            "ReturnID insert after connection loss must throw, not silently retry");
+
+        long rowCount = Convert.ToInt64(await setupClient.ScalarAsync("SELECT COUNT(*) FROM autoincremententity"));
+        Assert.AreEqual(1, rowCount, "Table must contain exactly 1 row — no phantom insert from a retry");
+    }
+
+    /// <summary>
+    /// verifies that a prepared WRITE after a forced backend connection loss surfaces the error
+    /// rather than silently retrying — write paths are structurally excluded from retry.
+    /// </summary>
+    [Test]
+    public async Task PreparedWriteAfterConnectionLossThrows() {
+        string connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION");
+        if (string.IsNullOrEmpty(connectionString))
+            Assert.Inconclusive("Test only active on local dev machine");
+
+        IDBClient setupClient = ClientFactory.Create(() => new NpgsqlConnection(connectionString), new PostgreInfo(), true);
+        EntityManager setupManager = new(setupClient);
+        await setupClient.NonQueryAsync("DROP TABLE IF EXISTS valuemodel CASCADE");
+        setupManager.Create<ValueModel>();
+
+        NpgsqlConnection conn = new(connectionString);
+        await conn.OpenAsync();
+        IDBClient dbclient = ClientFactory.Create(conn, new PostgreInfo());
+        EntityManager em = new(dbclient);
+
+        PreparedOperation insertOp = em.Insert<ValueModel>().Columns(v => v.Integer).Prepare();
+
+        await insertOp.ExecuteAsync(42);
+
+        long backendPid = Convert.ToInt64(await dbclient.ScalarAsync("SELECT pg_backend_pid()"));
+
+        await using (NpgsqlConnection killer = new(connectionString)) {
+            await killer.OpenAsync();
+            await using NpgsqlCommand killCmd = new($"SELECT pg_terminate_backend({backendPid})", killer);
+            await killCmd.ExecuteScalarAsync();
+        }
+
+        Assert.CatchAsync<Exception>(() => insertOp.ExecuteAsync(99));
+    }
 }

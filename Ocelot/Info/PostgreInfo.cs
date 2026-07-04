@@ -852,7 +852,11 @@ public class PostgreInfo : DBInfo {
             }
             else parameter.Value =Converter.Convert(parameterValue, GetDBRepresentation(parameterValue.GetType()));
         }
-        else parameter.Value = Converter.Convert(parameterValue, GetDBRepresentation(parameterValue.GetType())); 
+        else {
+            Type dbRepresentation = GetDBRepresentation(parameterValue.GetType());
+            parameter.DbType = MapToDbType(dbRepresentation);
+            parameter.Value = Converter.Convert(parameterValue, dbRepresentation);
+        }
 
         command.Parameters.Add(parameter);
     }
@@ -924,9 +928,8 @@ public class PostgreInfo : DBInfo {
         }
     }
 
-    // TODO: deactivated for now, leads to bugs
     /// <inheritdoc />
-    public override bool PreparationSupported => false;
+    public override bool PreparationSupported => true;
 
     /// <inheritdoc />
     public override object ValueFromReader(Reader reader, int ordinal, Type type) {
@@ -1020,5 +1023,42 @@ public class PostgreInfo : DBInfo {
         if (string.IsNullOrEmpty(type))
             return;
         commandBuilder.Append(" USING ").Append(type);
+    }
+
+    /// <summary>
+    /// classifies <paramref name="exception"/> as a connection-loss event.
+    /// Checks <see cref="InvalidOperationException"/> messages for "connection is not open / closed" first
+    /// (no reflection). Then walks the inner-exception chain for Npgsql types — via reflection because
+    /// Ocelot carries no direct Npgsql NuGet reference — reading <c>SqlState</c> where available
+    /// (57P01 admin_shutdown, 57P05 idle_session_timeout, 08xxx connection class, 26000 invalid_sql_statement_name)
+    /// and falling back to the message heuristic for Npgsql exceptions without a SqlState.
+    /// </summary>
+    public override bool IsConnectionLost(Exception exception) {
+        if (exception is InvalidOperationException ioex) {
+            string msg = ioex.Message;
+            return msg.IndexOf("connection is not open", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   msg.IndexOf("connection is closed", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        for (Exception ex = exception; ex != null; ex = ex.InnerException) {
+            string fullName = ex.GetType().FullName;
+            if (fullName == null || !fullName.StartsWith("Npgsql."))
+                continue;
+
+            PropertyInfo sqlStateProp = ex.GetType().GetProperty("SqlState");
+            if (sqlStateProp?.GetValue(ex) is string sqlState) {
+                return sqlState == "57P01" ||          // admin_shutdown
+                       sqlState == "57P05" ||          // idle_session_timeout
+                       sqlState.StartsWith("08") ||    // connection_exception class (08000, 08003, 08006 …)
+                       sqlState == "26000";            // invalid_sql_statement_name — prepared stmt lost after reconnect
+            }
+
+            string exMsg = ex.Message;
+            if (exMsg.IndexOf("connection is not open", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                exMsg.IndexOf("connection is closed", StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+        }
+
+        return false;
     }
 }

@@ -125,6 +125,36 @@ public abstract class ADbClient : IDBClient {
     public abstract IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken);
 
     /// <inheritdoc />
+    public object ScalarWrite(string commandText, IEnumerable<object> parameters) => ScalarWrite(null, commandText, parameters);
+
+    /// <inheritdoc />
+    public abstract object ScalarWrite(Transaction transaction, string commandText, IEnumerable<object> parameters);
+
+    /// <inheritdoc />
+    public Task<object> ScalarWriteAsync(string commandText, IEnumerable<object> parameters) => ScalarWriteAsync(null, commandText, parameters, CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task<object> ScalarWriteAsync(Transaction transaction, string commandText, IEnumerable<object> parameters) => ScalarWriteAsync(transaction, commandText, parameters, CancellationToken.None);
+
+    /// <inheritdoc />
+    public abstract Task<object> ScalarWriteAsync(Transaction transaction, string commandText, IEnumerable<object> parameters, CancellationToken cancellationToken);
+
+    /// <inheritdoc />
+    public object ScalarWritePrepared(string commandText, IEnumerable<object> parameters) => ScalarWritePrepared(null, commandText, parameters);
+
+    /// <inheritdoc />
+    public abstract object ScalarWritePrepared(Transaction transaction, string commandText, IEnumerable<object> parameters);
+
+    /// <inheritdoc />
+    public Task<object> ScalarWritePreparedAsync(string commandText, IEnumerable<object> parameters) => ScalarWritePreparedAsync(null, commandText, parameters, CancellationToken.None);
+
+    /// <inheritdoc />
+    public Task<object> ScalarWritePreparedAsync(Transaction transaction, string commandText, IEnumerable<object> parameters) => ScalarWritePreparedAsync(transaction, commandText, parameters, CancellationToken.None);
+
+    /// <inheritdoc />
+    public abstract Task<object> ScalarWritePreparedAsync(Transaction transaction, string commandText, IEnumerable<object> parameters, CancellationToken cancellationToken);
+
+    /// <inheritdoc />
     public abstract Transaction Transaction();
 
     /// <inheritdoc />
