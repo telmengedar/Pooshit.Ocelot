@@ -389,9 +389,9 @@ public class PostgreInfoTests {
 
     [Test, Parallelizable]
     public void MapToDbTypeMapsGuidToGuid() {
-        SQLiteInfo info = new();
-        System.Data.Common.DbCommand cmd = new Microsoft.Data.Sqlite.SqliteCommand();
-        info.CreateParameter(cmd, Guid.NewGuid());
-        Assert.AreEqual(System.Data.DbType.Guid, cmd.Parameters[0].DbType);
+        System.Reflection.MethodInfo method = typeof(SQLiteInfo).GetMethod("MapToDbType",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.FlattenHierarchy);
+        var result = (System.Data.DbType)method.Invoke(null, new object[] { typeof(Guid) });
+        Assert.AreEqual(System.Data.DbType.Guid, result);
     }
 }
