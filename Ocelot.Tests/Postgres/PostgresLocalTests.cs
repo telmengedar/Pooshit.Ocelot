@@ -236,4 +236,97 @@ public class PostgresLocalTests {
 
         Assert.Pass();
     }
+
+    /// <summary>
+    /// verifies that a prepared READ transparently survives a forced backend connection loss
+    /// when Increment 2 (connection-loss retry on read paths) is active.
+    /// Without Increment 2 this test should fail with a StatementException.
+    /// </summary>
+    [Test]
+    public async Task PreparedReadSurvivesConnectionLoss() {
+        string connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION");
+        if (string.IsNullOrEmpty(connectionString))
+            Assert.Inconclusive("Test only active on local dev machine");
+
+        // Set up the table using a factory-backed client.
+        // Use raw SQL DROP IF EXISTS to avoid the pre-existing 'NO'→bool GetSchema bug (DiVoid #3287).
+        IDBClient setupClient = ClientFactory.Create(() => new NpgsqlConnection(connectionString), new PostgreInfo(), true);
+        EntityManager setupManager = new(setupClient);
+        await setupClient.NonQueryAsync("DROP TABLE IF EXISTS valuemodel CASCADE");
+        setupManager.Create<ValueModel>();
+        await setupClient.NonQueryAsync("INSERT INTO valuemodel (integer) VALUES (7)");
+
+        // Open a single held connection — this is the specific connection we will terminate
+        NpgsqlConnection conn = new(connectionString);
+        await conn.OpenAsync();
+        IDBClient dbclient = ClientFactory.Create(conn, new PostgreInfo());
+        EntityManager em = new(dbclient);
+
+        // Prepare the read — with PreparationSupported=true this routes through ReaderPreparedAsync
+        PreparedLoadOperation<ValueModel> readOp = em.Load<ValueModel>().Prepare();
+
+        // Baseline: confirm the prepared read works on a live connection
+        ValueModel baseline = await readOp.ExecuteEntityAsync();
+        Assert.IsNotNull(baseline, "Baseline read should succeed before connection loss");
+
+        // Get the backend PID from the single-connection client while it is alive
+        long backendPid = Convert.ToInt64(await dbclient.ScalarAsync("SELECT pg_backend_pid()"));
+
+        // Kill the backend from a separate connection
+        await using (NpgsqlConnection killer = new(connectionString)) {
+            await killer.OpenAsync();
+            await using NpgsqlCommand killCmd = new($"SELECT pg_terminate_backend({backendPid})", killer);
+            await killCmd.ExecuteScalarAsync();
+        }
+
+        // With Increment 2: the connection-loss is classified by PostgreInfo.IsConnectionLost,
+        // OpenReaderWithRetry reconnects and re-prepares, and the read succeeds transparently
+        ValueModel recovered = await readOp.ExecuteEntityAsync();
+        Assert.IsNotNull(recovered, "Read should succeed after connection loss via transparent retry");
+        Assert.AreEqual(7, recovered.Integer, "Recovered data should match the inserted value");
+    }
+
+    /// <summary>
+    /// verifies that a prepared WRITE after a forced backend connection loss surfaces the error
+    /// rather than silently retrying — write paths are structurally excluded from retry.
+    /// </summary>
+    [Test]
+    public async Task PreparedWriteAfterConnectionLossThrows() {
+        string connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION");
+        if (string.IsNullOrEmpty(connectionString))
+            Assert.Inconclusive("Test only active on local dev machine");
+
+        // Set up the table using a factory-backed client.
+        // Use raw SQL DROP IF EXISTS to avoid the pre-existing 'NO'→bool GetSchema bug (DiVoid #3287).
+        IDBClient setupClient = ClientFactory.Create(() => new NpgsqlConnection(connectionString), new PostgreInfo(), true);
+        EntityManager setupManager = new(setupClient);
+        await setupClient.NonQueryAsync("DROP TABLE IF EXISTS valuemodel CASCADE");
+        setupManager.Create<ValueModel>();
+
+        // Open a single held connection
+        NpgsqlConnection conn = new(connectionString);
+        await conn.OpenAsync();
+        IDBClient dbclient = ClientFactory.Create(conn, new PostgreInfo());
+        EntityManager em = new(dbclient);
+
+        // Prepare the write — with PreparationSupported=true this routes through NonQueryPreparedAsync
+        PreparedOperation insertOp = em.Insert<ValueModel>().Columns(v => v.Integer).Prepare();
+
+        // Baseline write: should succeed on the live connection
+        await insertOp.ExecuteAsync(42);
+
+        // Get the backend PID while the connection is alive
+        long backendPid = Convert.ToInt64(await dbclient.ScalarAsync("SELECT pg_backend_pid()"));
+
+        // Kill the backend
+        await using (NpgsqlConnection killer = new(connectionString)) {
+            await killer.OpenAsync();
+            await using NpgsqlCommand killCmd = new($"SELECT pg_terminate_backend({backendPid})", killer);
+            await killCmd.ExecuteScalarAsync();
+        }
+
+        // Write path has NO retry — NonQueryPreparedAsync does not call IsConnectionLost.
+        // The error must be surfaced (thrown) rather than silently suppressed or retried.
+        Assert.CatchAsync<Exception>(() => insertOp.ExecuteAsync(99));
+    }
 }

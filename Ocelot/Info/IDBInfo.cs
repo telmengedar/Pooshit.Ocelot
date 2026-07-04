@@ -398,4 +398,12 @@ public interface IDBInfo {
     /// <param name="type">index type</param>
     /// <returns>text fragment to be used for index type</returns>
     void CreateIndexTypeFragment(StringBuilder commandBuilder, string type);
+
+    /// <summary>
+    /// determines whether the specified exception indicates a physical connection loss
+    /// that warrants a transparent reconnect-and-retry on the read path
+    /// </summary>
+    /// <param name="exception">exception to classify</param>
+    /// <returns>true if the exception signals a lost or dead connection, false otherwise</returns>
+    bool IsConnectionLost(Exception exception);
 }

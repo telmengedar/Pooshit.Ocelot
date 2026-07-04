@@ -718,4 +718,7 @@ public abstract class DBInfo : IDBInfo {
             CriteriaVisitor.GetCriteriaText(join.Criterias, descriptorgetter, this, preparator, outerAlias, join.Alias);
         }
     }
+
+    /// <inheritdoc />
+    public virtual bool IsConnectionLost(Exception exception) => false;
 }

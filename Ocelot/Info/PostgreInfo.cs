@@ -928,9 +928,8 @@ public class PostgreInfo : DBInfo {
         }
     }
 
-    // TODO: deactivated for now, leads to bugs
     /// <inheritdoc />
-    public override bool PreparationSupported => false;
+    public override bool PreparationSupported => true;
 
     /// <inheritdoc />
     public override object ValueFromReader(Reader reader, int ordinal, Type type) {
@@ -1024,5 +1023,35 @@ public class PostgreInfo : DBInfo {
         if (string.IsNullOrEmpty(type))
             return;
         commandBuilder.Append(" USING ").Append(type);
+    }
+
+    /// <inheritdoc />
+    public override bool IsConnectionLost(Exception exception) {
+        // ADO.NET "connection is not open" — free check, no reflection needed
+        if (exception is InvalidOperationException ioex)
+            return ioex.Message.IndexOf("connection", StringComparison.OrdinalIgnoreCase) >= 0;
+
+        // Walk the exception chain looking for an Npgsql exception with a connection-class SqlState.
+        // We use reflection because Ocelot has no direct Npgsql NuGet dependency.
+        for (Exception ex = exception; ex != null; ex = ex.InnerException) {
+            string fullName = ex.GetType().FullName;
+            if (fullName == null || !fullName.StartsWith("Npgsql."))
+                continue;
+
+            // PostgresException (extends NpgsqlException) carries SqlState; NpgsqlException itself does not.
+            PropertyInfo sqlStateProp = ex.GetType().GetProperty("SqlState");
+            if (sqlStateProp?.GetValue(ex) is string sqlState) {
+                return sqlState == "57P01" ||          // admin_shutdown
+                       sqlState == "57P05" ||          // idle_session_timeout
+                       sqlState.StartsWith("08") ||    // connection_exception class (08000, 08003, 08006 …)
+                       sqlState == "26000";            // invalid_sql_statement_name — prepared stmt lost after reconnect
+            }
+
+            // NpgsqlException without SqlState — fall back to message heuristic
+            if (ex.Message.IndexOf("connection", StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+        }
+
+        return false;
     }
 }
