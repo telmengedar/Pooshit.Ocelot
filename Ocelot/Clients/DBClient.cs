@@ -52,7 +52,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override int NonQueryPrepared(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
-        using PreparedCommand command = PrepareCommand(transaction, commandstring, parameters, true);
+        using PreparedCommand command = PrepareCommand(transaction, commandstring, parameters);
 
         try {
             return command.Command.ExecuteNonQuery();
@@ -64,7 +64,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override DataTable QueryPrepared(Transaction transaction, string query, IEnumerable<object> parameters) {
-        using PreparedCommand command = PrepareCommand(transaction, query, parameters, true);
+        using PreparedCommand command = PrepareCommand(transaction, query, parameters);
 
         try {
             using IDataReader reader = command.Command.ExecuteReader();
@@ -77,7 +77,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override object ScalarPrepared(Transaction transaction, string query, IEnumerable<object> parameters) {
-        using PreparedCommand command = PrepareCommand(transaction, query, parameters, true);
+        using PreparedCommand command = PrepareCommand(transaction, query, parameters);
         try {
             return command.Command.ExecuteScalar();
         }
@@ -88,7 +88,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override IEnumerable<object> SetPrepared(Transaction transaction, string query, IEnumerable<object> parameters) {
-        using PreparedCommand command = PrepareCommand(transaction, query, parameters, true);
+        using PreparedCommand command = PrepareCommand(transaction, query, parameters);
         IDataReader reader;
         try {
             reader = command.Command.ExecuteReader();
@@ -105,10 +105,10 @@ public class DBClient : ADbClient {
     }
 
     /// <inheritdoc />
-    public override Task<int> NonQueryPreparedAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters, CancellationToken cancellationToken) {
-        using PreparedCommand command = PrepareCommand(transaction, commandstring, parameters, true);
+    public override async Task<int> NonQueryPreparedAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters, CancellationToken cancellationToken) {
+        using PreparedCommand command = PrepareCommand(transaction, commandstring, parameters);
         try {
-            return command.Command.ExecuteNonQueryAsync(cancellationToken);
+            return await command.Command.ExecuteNonQueryAsync(cancellationToken);
         }
         catch (OperationCanceledException) {
             throw;
@@ -120,7 +120,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override async Task<DataTable> QueryPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken) {
-        using PreparedCommand command = PrepareCommand(transaction, query, parameters, true);
+        using PreparedCommand command = PrepareCommand(transaction, query, parameters);
 
         try {
             using IDataReader reader = await command.Command.ExecuteReaderAsync(cancellationToken);
@@ -136,7 +136,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override async Task<object> ScalarPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken) {
-        using PreparedCommand command = PrepareCommand(transaction, query, parameters, true);
+        using PreparedCommand command = PrepareCommand(transaction, query, parameters);
         try {
             return await command.Command.ExecuteScalarAsync(cancellationToken);
         }
@@ -150,7 +150,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<object> SetPreparedAsync(Transaction transaction, string query, IEnumerable<object> parameters, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken) {
-        PreparedCommand command = PrepareCommand(transaction, query, parameters, true);
+        PreparedCommand command = PrepareCommand(transaction, query, parameters);
 
         DbDataReader reader;
         try {
@@ -178,7 +178,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override Reader Reader(Transaction transaction, string command, IEnumerable<object> parameters) {
-        PreparedCommand prepared = PrepareCommand(transaction, command, parameters, false);
+        PreparedCommand prepared = PrepareCommand(transaction, command, parameters);
         try {
             return new(prepared.Command.ExecuteReader(), prepared, DBInfo);
         }
@@ -190,7 +190,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override async Task<Reader> ReaderAsync(Transaction transaction, string command, IEnumerable<object> parameters, CancellationToken cancellationToken) {
-        PreparedCommand prepared = PrepareCommand(transaction, command, parameters, false);
+        PreparedCommand prepared = PrepareCommand(transaction, command, parameters);
         try {
             return new(await prepared.Command.ExecuteReaderAsync(cancellationToken), prepared, DBInfo);
         }
@@ -202,7 +202,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override Reader ReaderPrepared(Transaction transaction, string command, IEnumerable<object> parameters) {
-        PreparedCommand prepared = PrepareCommand(transaction, command, parameters, true);
+        PreparedCommand prepared = PrepareCommand(transaction, command, parameters);
         try {
             return new(prepared.Command.ExecuteReader(), prepared, DBInfo);
         }
@@ -214,7 +214,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override async Task<Reader> ReaderPreparedAsync(Transaction transaction, string command, IEnumerable<object> parameters, CancellationToken cancellationToken) {
-        PreparedCommand prepared = PrepareCommand(transaction, command, parameters, true);
+        PreparedCommand prepared = PrepareCommand(transaction, command, parameters);
         try {
             return new Reader(await prepared.Command.ExecuteReaderAsync(cancellationToken), prepared, DBInfo);
         }
@@ -226,11 +226,16 @@ public class DBClient : ADbClient {
 
     DataTable CreateTable(IDataReader reader) => DataTable.FromReader(reader);
 
-    PreparedCommand PrepareCommand(Transaction transaction, string commandString, IEnumerable<object> parameters, bool prepare) {
+    PreparedCommand PrepareCommand(Transaction transaction, string commandString, IEnumerable<object> parameters) {
         IConnection connection = Connect(transaction);
         DbCommand command = PrepareCommand(connection, commandString, parameters);
-        if (prepare)
-            command.Prepare();
+        // Transaction must be assigned before Prepare() to satisfy the ADO.NET contract
+        // (Surface 6 fix: ordering was reversed in the original).
+        // Manual command.Prepare() is intentionally omitted: per-call prepare-then-dispose
+        // yields no server-side reuse with a pooled-connection factory (Surface 3).
+        // Callers who want real plan caching should set "Maximum Auto Prepare" in their
+        // Npgsql connection string; Npgsql then transparently prepares frequently-used
+        // statements without the per-call overhead or the sync-over-async hazard (Surface 5).
         if (transaction != null)
             command.Transaction = transaction.DbTransaction;
         return new PreparedCommand(connection, command);
@@ -238,7 +243,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override int NonQuery(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
-        using PreparedCommand command = PrepareCommand(transaction, commandstring, parameters, false);
+        using PreparedCommand command = PrepareCommand(transaction, commandstring, parameters);
         try {
             return command.Command.ExecuteNonQuery();
         }
@@ -249,7 +254,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override async Task<int> NonQueryAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters, CancellationToken cancellationToken) {
-        using PreparedCommand command = PrepareCommand(transaction, commandstring, parameters, false);
+        using PreparedCommand command = PrepareCommand(transaction, commandstring, parameters);
         try {
             return await command.Command.ExecuteNonQueryAsync(cancellationToken);
         }
@@ -263,7 +268,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override DataTable Query(Transaction transaction, string query, IEnumerable<object> parameters) {
-        using PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
+        using PreparedCommand command = PrepareCommand(transaction, query, parameters);
         try {
             using IDataReader reader = command.Command.ExecuteReader();
             return CreateTable(reader);
@@ -275,7 +280,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override async Task<DataTable> QueryAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken) {
-        using PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
+        using PreparedCommand command = PrepareCommand(transaction, query, parameters);
         try {
             using IDataReader reader = await command.Command.ExecuteReaderAsync(cancellationToken);
             return CreateTable(reader);
@@ -290,7 +295,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override object Scalar(Transaction transaction, string query, IEnumerable<object> parameters) {
-        using PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
+        using PreparedCommand command = PrepareCommand(transaction, query, parameters);
         try {
             return command.Command.ExecuteScalar();
         }
@@ -301,7 +306,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override async Task<object> ScalarAsync(Transaction transaction, string query, IEnumerable<object> parameters, CancellationToken cancellationToken) {
-        using PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
+        using PreparedCommand command = PrepareCommand(transaction, query, parameters);
         try {
             return await command.Command.ExecuteScalarAsync(cancellationToken);
         }
@@ -315,7 +320,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override IEnumerable<object> Set(Transaction transaction, string query, IEnumerable<object> parameters) {
-        using PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
+        using PreparedCommand command = PrepareCommand(transaction, query, parameters);
         IDataReader reader;
         try {
             reader = command.Command.ExecuteReader();
@@ -333,7 +338,7 @@ public class DBClient : ADbClient {
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<object> SetAsync(Transaction transaction, string query, IEnumerable<object> parameters, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken) {
-        using PreparedCommand command = PrepareCommand(transaction, query, parameters, false);
+        using PreparedCommand command = PrepareCommand(transaction, query, parameters);
 
         DbDataReader reader;
         try {

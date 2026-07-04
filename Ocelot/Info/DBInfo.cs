@@ -581,13 +581,47 @@ public abstract class DBInfo : IDBInfo {
         return client.NonQueryAsync(options?.Transaction,$"TRUNCATE {table}");
     }
 
+    /// <summary>
+    /// Maps a CLR type to the corresponding standard ADO.NET <see cref="DbType"/>.
+    /// Returns <see cref="DbType.Object"/> for unknown types so the driver falls back
+    /// to its own inference heuristics — this is safe for ad-hoc queries and for Npgsql
+    /// auto-prepare (which uses OID 0 for unspecified types, relying on PostgreSQL's
+    /// type inference from statement context).
+    /// </summary>
+    protected static DbType MapToDbType(Type type) {
+        if (type == typeof(bool))     return DbType.Boolean;
+        if (type == typeof(byte))     return DbType.Byte;
+        if (type == typeof(sbyte))    return DbType.SByte;
+        if (type == typeof(short))    return DbType.Int16;
+        if (type == typeof(ushort))   return DbType.UInt16;
+        if (type == typeof(int))      return DbType.Int32;
+        if (type == typeof(uint))     return DbType.UInt32;
+        if (type == typeof(long))     return DbType.Int64;
+        if (type == typeof(ulong))    return DbType.UInt64;
+        if (type == typeof(float))    return DbType.Single;
+        if (type == typeof(double))   return DbType.Double;
+        if (type == typeof(decimal))  return DbType.Decimal;
+        if (type == typeof(string))   return DbType.String;
+        if (type == typeof(DateTime)) return DbType.DateTime;
+        if (type == typeof(Guid))     return DbType.Guid;
+        if (type == typeof(byte[]))   return DbType.Binary;
+        return DbType.Object;
+    }
+
     /// <inheritdoc />
     public virtual void CreateParameter(IDbCommand command, object parameterValue) {
         IDbDataParameter parameter = command.CreateParameter();
         parameter.ParameterName = Parameter + (command.Parameters.Count + 1);
-        parameter.Value = parameterValue == null || parameterValue == DBNull.Value ?
-                              DBNull.Value :
-                              Converter.Convert(parameterValue, GetDBRepresentation(parameterValue.GetType()));
+        if (parameterValue == null || parameterValue == DBNull.Value) {
+            parameter.Value = DBNull.Value;
+            // DbType intentionally left as DbType.Object for nulls: the provider
+            // uses OID 0 in its prepared-statement protocol, letting the database
+            // infer the type from the query context — correct and safe.
+        } else {
+            Type dbRepType = GetDBRepresentation(parameterValue.GetType());
+            parameter.DbType = MapToDbType(dbRepType);
+            parameter.Value = Converter.Convert(parameterValue, dbRepType);
+        }
 
         command.Parameters.Add(parameter);
     }

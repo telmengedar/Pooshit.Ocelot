@@ -830,29 +830,39 @@ public class PostgreInfo : DBInfo {
     public override void CreateParameter(IDbCommand command, object parameterValue) {
         IDbDataParameter parameter = command.CreateParameter();
         parameter.ParameterName = Parameter + (command.Parameters.Count + 1);
-        if (parameterValue == null || parameterValue == DBNull.Value)
+        if (parameterValue == null || parameterValue == DBNull.Value) {
+            // Null: leave DbType as DbType.Object. Npgsql sends OID 0 in its extended-query
+            // protocol so PostgreSQL infers the type from the statement context.
+            // This is safe for both ad-hoc and auto-prepared statements (DiVoid #3266, Surface 1).
             parameter.Value = DBNull.Value;
-        else if (parameterValue is Range<BigInteger> numericRange)
+        } else if (parameterValue is Range<BigInteger> numericRange) {
             parameter.Value = Activator.CreateInstance(bigIntRangeType, (decimal)numericRange.Lower, numericRange.LowerInclusive, (decimal)numericRange.Upper, numericRange.UpperInclusive);
-        else if(parameterValue is Range<int> intRange)
+        } else if (parameterValue is Range<int> intRange) {
             parameter.Value = Activator.CreateInstance(intRangeType, intRange.Lower, intRange.LowerInclusive, intRange.Upper, intRange.UpperInclusive);
-        else if(parameterValue is Range<long> longRange)
+        } else if (parameterValue is Range<long> longRange) {
             parameter.Value = Activator.CreateInstance(longRangeType, longRange.Lower, longRange.LowerInclusive, longRange.Upper, longRange.UpperInclusive);
-        else if(parameterValue is Range<DateTime> dateRange)
+        } else if (parameterValue is Range<DateTime> dateRange) {
             parameter.Value = Activator.CreateInstance(dateRangeType, dateRange.Lower, dateRange.LowerInclusive, dateRange.Upper, dateRange.UpperInclusive);
-        else if(parameterValue is Array array) {
+        } else if (parameterValue is Array array) {
+            // Array types: Npgsql infers the element OID from the .NET array type without
+            // a DbType hint — leave as DbType.Object for these Postgres-specific values.
             Type elementType = array.GetType().GetElementType();
             Type dbType = GetDBRepresentation(elementType);
             if (dbType != elementType) {
                 Array convertedArray = Array.CreateInstance(dbType, array.Length);
                 for (int i = 0; i < array.Length; ++i)
                     convertedArray.SetValue(Converter.Convert(array.GetValue(i), dbType), i);
-                    
                 parameter.Value = convertedArray;
+            } else {
+                parameter.Value = Converter.Convert(parameterValue, GetDBRepresentation(parameterValue.GetType()));
             }
-            else parameter.Value =Converter.Convert(parameterValue, GetDBRepresentation(parameterValue.GetType()));
+        } else {
+            // Scalar non-null value: set an explicit DbType so Npgsql can resolve a stable
+            // OID for auto-prepared statements without relying on per-call value inference.
+            Type dbRepType = GetDBRepresentation(parameterValue.GetType());
+            parameter.DbType = MapToDbType(dbRepType);
+            parameter.Value = Converter.Convert(parameterValue, dbRepType);
         }
-        else parameter.Value = Converter.Convert(parameterValue, GetDBRepresentation(parameterValue.GetType())); 
 
         command.Parameters.Add(parameter);
     }
@@ -924,9 +934,13 @@ public class PostgreInfo : DBInfo {
         }
     }
 
-    // TODO: deactivated for now, leads to bugs
     /// <inheritdoc />
-    public override bool PreparationSupported => false;
+    /// <remarks>
+    /// Enabled as of DiVoid #3270 fix. Manual per-call <c>command.Prepare()</c> has been
+    /// removed from <c>DBClient.PrepareCommand</c> — callers who want server-side plan
+    /// caching should set <c>Maximum Auto Prepare</c> in their Npgsql connection string.
+    /// </remarks>
+    public override bool PreparationSupported => true;
 
     /// <inheritdoc />
     public override object ValueFromReader(Reader reader, int ordinal, Type type) {
