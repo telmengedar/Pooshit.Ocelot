@@ -319,4 +319,79 @@ public class PostgreInfoTests {
         visitor.Visit(predicate);
         Assert.That(preparator.Tokens.Any(t=>t.GetText(info)=="LEAST("));
     }
+
+    /// <summary>
+    /// verifies that IsConnectionLost returns true for a fake Npgsql-shaped exception that exposes
+    /// a connection-class SqlState — exercises the reflection-based classifier path.
+    /// </summary>
+    [Test, Parallelizable]
+    public void IsConnectionLostReturnsTrueForSqlState57P01() {
+        PostgreInfo info = new();
+        Exception fake = new global::Npgsql.FakeNpgsqlException("57P01", "termination message");
+        Assert.IsTrue(info.IsConnectionLost(fake));
+    }
+
+    /// <summary>
+    /// verifies that IsConnectionLost returns true for a fake Npgsql exception without a SqlState
+    /// but with a genuine lost-connection message — exercises the message-fallback path.
+    /// </summary>
+    [Test, Parallelizable]
+    public void IsConnectionLostReturnsTrueForNpgsqlMessageFallback() {
+        PostgreInfo info = new();
+        Exception fake = new global::Npgsql.FakeNpgsqlNoSqlStateException("Connection is not open");
+        Assert.IsTrue(info.IsConnectionLost(fake));
+    }
+
+    /// <summary>
+    /// verifies that IsConnectionLost returns false for unrelated errors that merely contain the
+    /// word "connection" — guards against the previously too-broad heuristic.
+    /// </summary>
+    [Test, Parallelizable]
+    public void IsConnectionLostReturnsFalseForOpenDataReaderError() {
+        PostgreInfo info = new();
+        Exception unrelated = new InvalidOperationException("There is already an open DataReader associated with this Connection which must be closed first.");
+        Assert.IsFalse(info.IsConnectionLost(unrelated));
+    }
+
+    /// <summary>
+    /// verifies that IsConnectionLost returns true for a genuine "connection is not open" InvalidOperationException.
+    /// </summary>
+    [Test, Parallelizable]
+    public void IsConnectionLostReturnsTrueForConnectionIsNotOpenInvalidOperation() {
+        PostgreInfo info = new();
+        Exception ioe = new InvalidOperationException("The connection is not open.");
+        Assert.IsTrue(info.IsConnectionLost(ioe));
+    }
+
+    [Test, Parallelizable]
+    public void MapToDbTypeReturnsObjectForUnknownType() {
+        SQLiteInfo info = new();
+        System.Data.Common.DbCommand cmd = new Microsoft.Data.Sqlite.SqliteCommand();
+        info.CreateParameter(cmd, new Uri("https://example.com"));
+        Assert.AreEqual(System.Data.DbType.Object, cmd.Parameters[0].DbType);
+    }
+
+    [Test, Parallelizable]
+    public void MapToDbTypeMapsIntToInt32() {
+        SQLiteInfo info = new();
+        System.Data.Common.DbCommand cmd = new Microsoft.Data.Sqlite.SqliteCommand();
+        info.CreateParameter(cmd, 42);
+        Assert.AreEqual(System.Data.DbType.Int32, cmd.Parameters[0].DbType);
+    }
+
+    [Test, Parallelizable]
+    public void MapToDbTypeMapsBoolToBoolean() {
+        SQLiteInfo info = new();
+        System.Data.Common.DbCommand cmd = new Microsoft.Data.Sqlite.SqliteCommand();
+        info.CreateParameter(cmd, true);
+        Assert.AreEqual(System.Data.DbType.Boolean, cmd.Parameters[0].DbType);
+    }
+
+    [Test, Parallelizable]
+    public void MapToDbTypeMapsGuidToGuid() {
+        SQLiteInfo info = new();
+        System.Data.Common.DbCommand cmd = new Microsoft.Data.Sqlite.SqliteCommand();
+        info.CreateParameter(cmd, Guid.NewGuid());
+        Assert.AreEqual(System.Data.DbType.Guid, cmd.Parameters[0].DbType);
+    }
 }

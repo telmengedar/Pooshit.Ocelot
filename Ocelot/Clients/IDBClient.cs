@@ -383,6 +383,64 @@ namespace Pooshit.Ocelot.Clients {
         Task<Reader> ReaderPreparedAsync(Transaction transaction, string command, IEnumerable<object> parameters, CancellationToken cancellationToken);
 
         /// <summary>
+        /// executes a write statement returning a scalar without a connection-loss retry.
+        /// Use this instead of <see cref="Scalar(Transaction,string,System.Collections.Generic.IEnumerable{object})"/> whenever
+        /// the command is a mutating statement (INSERT … RETURNING, etc.) to prevent double-apply on a committed-but-ack-lost drop.
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="commandText">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>resulting scalar</returns>
+        object ScalarWrite(Transaction transaction, string commandText, IEnumerable<object> parameters);
+
+        /// <summary>
+        /// executes a write statement returning a scalar without a connection-loss retry (async).
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="commandText">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>resulting scalar</returns>
+        Task<object> ScalarWriteAsync(Transaction transaction, string commandText, IEnumerable<object> parameters);
+
+        /// <summary>
+        /// executes a write statement returning a scalar without a connection-loss retry (async).
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="commandText">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <param name="cancellationToken">token used to cancel the operation</param>
+        /// <returns>resulting scalar</returns>
+        Task<object> ScalarWriteAsync(Transaction transaction, string commandText, IEnumerable<object> parameters, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// executes a prepared write statement returning a scalar without a connection-loss retry.
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="commandText">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>resulting scalar</returns>
+        object ScalarWritePrepared(Transaction transaction, string commandText, IEnumerable<object> parameters);
+
+        /// <summary>
+        /// executes a prepared write statement returning a scalar without a connection-loss retry (async).
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="commandText">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <returns>resulting scalar</returns>
+        Task<object> ScalarWritePreparedAsync(Transaction transaction, string commandText, IEnumerable<object> parameters);
+
+        /// <summary>
+        /// executes a prepared write statement returning a scalar without a connection-loss retry (async).
+        /// </summary>
+        /// <param name="transaction">transaction to use</param>
+        /// <param name="commandText">command text to execute</param>
+        /// <param name="parameters">parameters for command</param>
+        /// <param name="cancellationToken">token used to cancel the operation</param>
+        /// <returns>resulting scalar</returns>
+        Task<object> ScalarWritePreparedAsync(Transaction transaction, string commandText, IEnumerable<object> parameters, CancellationToken cancellationToken);
+
+        /// <summary>
         /// begins a transaction
         /// </summary>
         /// <returns>Transaction object to use</returns>

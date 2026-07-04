@@ -60,16 +60,12 @@ public class DBClient : ADbClient {
         return new PreparedCommand(connection, command);
     }
 
-    // ── Parameter materialization ─────────────────────────────────────────────────
-
     /// <summary>
     /// materializes an <see cref="IEnumerable{T}"/> of parameters to an array so it can be
     /// iterated more than once — required for the connection-loss retry path
     /// </summary>
     static object[] MaterializeParameters(IEnumerable<object> parameters) =>
         parameters as object[] ?? parameters.ToArray();
-
-    // ── Sync read helpers (with connection-loss retry) ────────────────────────────
 
     /// <summary>
     /// opens a <see cref="DbDataReader"/> with a single connection-loss retry.
@@ -86,7 +82,6 @@ public class DBClient : ADbClient {
         catch (Exception e) when (transaction == null && DBInfo.IsConnectionLost(e)) {
             command?.Dispose();
             command = null;
-            // Retry once: the dialect detected a dead connection; reconnect and re-prepare
             PreparedCommand retryCmd = null;
             try {
                 retryCmd = PrepareCommand(null, commandText, paramArray, prepare);
@@ -136,8 +131,6 @@ public class DBClient : ADbClient {
             command?.Dispose();
         }
     }
-
-    // ── Async read helpers (with connection-loss retry) ───────────────────────────
 
     /// <summary>
     /// opens a <see cref="DbDataReader"/> asynchronously with a single connection-loss retry.
@@ -217,8 +210,6 @@ public class DBClient : ADbClient {
         }
     }
 
-    // ── Write paths — no retry (blind write retry could double-apply) ─────────────
-
     /// <inheritdoc />
     public override int NonQuery(Transaction transaction, string commandstring, IEnumerable<object> parameters) {
         using PreparedCommand command = PrepareCommand(transaction, commandstring, parameters, false);
@@ -269,7 +260,55 @@ public class DBClient : ADbClient {
         }
     }
 
-    // ── Non-prepared read paths (with retry) ──────────────────────────────────────
+    /// <inheritdoc />
+    public override object ScalarWrite(Transaction transaction, string commandText, IEnumerable<object> parameters) {
+        using PreparedCommand command = PrepareCommand(transaction, commandText, parameters, false);
+        try {
+            return command.Command.ExecuteScalar();
+        }
+        catch (Exception e) {
+            throw new StatementException(commandText, command.Command.Parameters.Cast<object>().ToArray(), e);
+        }
+    }
+
+    /// <inheritdoc />
+    public override async Task<object> ScalarWriteAsync(Transaction transaction, string commandText, IEnumerable<object> parameters, CancellationToken cancellationToken) {
+        using PreparedCommand command = PrepareCommand(transaction, commandText, parameters, false);
+        try {
+            return await command.Command.ExecuteScalarAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) {
+            throw;
+        }
+        catch (Exception e) {
+            throw new StatementException(commandText, command.Command.Parameters.Cast<object>().ToArray(), e);
+        }
+    }
+
+    /// <inheritdoc />
+    public override object ScalarWritePrepared(Transaction transaction, string commandText, IEnumerable<object> parameters) {
+        using PreparedCommand command = PrepareCommand(transaction, commandText, parameters, true);
+        try {
+            return command.Command.ExecuteScalar();
+        }
+        catch (Exception e) {
+            throw new StatementException(commandText, command.Command.Parameters.Cast<object>().ToArray(), e);
+        }
+    }
+
+    /// <inheritdoc />
+    public override async Task<object> ScalarWritePreparedAsync(Transaction transaction, string commandText, IEnumerable<object> parameters, CancellationToken cancellationToken) {
+        using PreparedCommand command = PrepareCommand(transaction, commandText, parameters, true);
+        try {
+            return await command.Command.ExecuteScalarAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) {
+            throw;
+        }
+        catch (Exception e) {
+            throw new StatementException(commandText, command.Command.Parameters.Cast<object>().ToArray(), e);
+        }
+    }
 
     /// <inheritdoc />
     public override DataTable Query(Transaction transaction, string query, IEnumerable<object> parameters) {
@@ -344,8 +383,6 @@ public class DBClient : ADbClient {
         (PreparedCommand cmd, DbDataReader reader) = await OpenReaderWithRetryAsync(transaction, command, paramArray, false, cancellationToken);
         return new Reader(reader, cmd, DBInfo);
     }
-
-    // ── Prepared read paths (with retry) ─────────────────────────────────────────
 
     /// <inheritdoc />
     public override DataTable QueryPrepared(Transaction transaction, string query, IEnumerable<object> parameters) {

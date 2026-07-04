@@ -1025,20 +1025,26 @@ public class PostgreInfo : DBInfo {
         commandBuilder.Append(" USING ").Append(type);
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// classifies <paramref name="exception"/> as a connection-loss event.
+    /// Checks <see cref="InvalidOperationException"/> messages for "connection is not open / closed" first
+    /// (no reflection). Then walks the inner-exception chain for Npgsql types — via reflection because
+    /// Ocelot carries no direct Npgsql NuGet reference — reading <c>SqlState</c> where available
+    /// (57P01 admin_shutdown, 57P05 idle_session_timeout, 08xxx connection class, 26000 invalid_sql_statement_name)
+    /// and falling back to the message heuristic for Npgsql exceptions without a SqlState.
+    /// </summary>
     public override bool IsConnectionLost(Exception exception) {
-        // ADO.NET "connection is not open" — free check, no reflection needed
-        if (exception is InvalidOperationException ioex)
-            return ioex.Message.IndexOf("connection", StringComparison.OrdinalIgnoreCase) >= 0;
+        if (exception is InvalidOperationException ioex) {
+            string msg = ioex.Message;
+            return msg.IndexOf("connection is not open", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   msg.IndexOf("connection is closed", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
 
-        // Walk the exception chain looking for an Npgsql exception with a connection-class SqlState.
-        // We use reflection because Ocelot has no direct Npgsql NuGet dependency.
         for (Exception ex = exception; ex != null; ex = ex.InnerException) {
             string fullName = ex.GetType().FullName;
             if (fullName == null || !fullName.StartsWith("Npgsql."))
                 continue;
 
-            // PostgresException (extends NpgsqlException) carries SqlState; NpgsqlException itself does not.
             PropertyInfo sqlStateProp = ex.GetType().GetProperty("SqlState");
             if (sqlStateProp?.GetValue(ex) is string sqlState) {
                 return sqlState == "57P01" ||          // admin_shutdown
@@ -1047,8 +1053,9 @@ public class PostgreInfo : DBInfo {
                        sqlState == "26000";            // invalid_sql_statement_name — prepared stmt lost after reconnect
             }
 
-            // NpgsqlException without SqlState — fall back to message heuristic
-            if (ex.Message.IndexOf("connection", StringComparison.OrdinalIgnoreCase) >= 0)
+            string exMsg = ex.Message;
+            if (exMsg.IndexOf("connection is not open", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                exMsg.IndexOf("connection is closed", StringComparison.OrdinalIgnoreCase) >= 0)
                 return true;
         }
 

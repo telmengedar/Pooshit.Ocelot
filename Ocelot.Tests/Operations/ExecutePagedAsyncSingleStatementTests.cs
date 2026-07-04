@@ -30,7 +30,6 @@ class CountingDBClient : IDBClient {
     public IDBInfo DBInfo => inner.DBInfo;
     public IConnectionProvider Connection => inner.Connection;
 
-    // Counting overrides for reader methods
     public Task<Reader> ReaderAsync(Transaction transaction, string command, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         Interlocked.Increment(ref readerCallCount);
         return inner.ReaderAsync(transaction, command, parameters, cancellationToken);
@@ -41,7 +40,6 @@ class CountingDBClient : IDBClient {
         return inner.ReaderPreparedAsync(transaction, command, parameters, cancellationToken);
     }
 
-    // Pass-throughs for all remaining interface members
     public int NonQuery(string commandstring, params object[] parameters) => inner.NonQuery(commandstring, parameters);
     public int NonQuery(string commandstring, IEnumerable<object> parameters) => inner.NonQuery(commandstring, parameters);
     public int NonQuery(Transaction transaction, string commandstring, params object[] parameters) => inner.NonQuery(transaction, commandstring, parameters);
@@ -130,6 +128,12 @@ class CountingDBClient : IDBClient {
     public Task<Reader> ReaderPreparedAsync(Transaction transaction, string command, params object[] parameters) => inner.ReaderPreparedAsync(transaction, command, parameters);
     public Task<Reader> ReaderPreparedAsync(string command, IEnumerable<object> parameters) => inner.ReaderPreparedAsync(command, parameters);
     public Task<Reader> ReaderPreparedAsync(string command, params object[] parameters) => inner.ReaderPreparedAsync(command, parameters);
+    public object ScalarWrite(Transaction transaction, string commandText, IEnumerable<object> parameters) => inner.ScalarWrite(transaction, commandText, parameters);
+    public Task<object> ScalarWriteAsync(Transaction transaction, string commandText, IEnumerable<object> parameters) => inner.ScalarWriteAsync(transaction, commandText, parameters);
+    public Task<object> ScalarWriteAsync(Transaction transaction, string commandText, IEnumerable<object> parameters, CancellationToken cancellationToken) => inner.ScalarWriteAsync(transaction, commandText, parameters, cancellationToken);
+    public object ScalarWritePrepared(Transaction transaction, string commandText, IEnumerable<object> parameters) => inner.ScalarWritePrepared(transaction, commandText, parameters);
+    public Task<object> ScalarWritePreparedAsync(Transaction transaction, string commandText, IEnumerable<object> parameters) => inner.ScalarWritePreparedAsync(transaction, commandText, parameters);
+    public Task<object> ScalarWritePreparedAsync(Transaction transaction, string commandText, IEnumerable<object> parameters, CancellationToken cancellationToken) => inner.ScalarWritePreparedAsync(transaction, commandText, parameters, cancellationToken);
     public Transaction Transaction() => inner.Transaction();
 }
 
