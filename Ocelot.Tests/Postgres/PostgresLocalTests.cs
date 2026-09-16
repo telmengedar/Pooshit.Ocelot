@@ -208,7 +208,7 @@ public class PostgresLocalTests {
         for (int i = 0; i < 800; ++i)
             await insert.ExecuteAsync(i);
 
-        long objectCount = sourceDatabase.LoadData("valuemodel").Columns(new DataField("COUNT(*)")).ExecuteScalar<long>();
+        long objectCount = sourceDatabase.LoadData("valuemodel").Columns(DataField.Raw("COUNT(*)")).ExecuteScalar<long>();
             
         List<object> parameters = new();
 

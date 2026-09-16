@@ -33,8 +33,10 @@ namespace Pooshit.Ocelot.Entities.Operations.Entities {
         }
 
         PreparedOperation PrepareOperation() {
+            string columnlist = string.Join(", ", interestingcolumns.Select(c => dbclient.DBInfo.MaskColumn(c.Name)));
+
             OperationPreparator preparator = new OperationPreparator();
-            preparator.AppendText($"INSERT INTO {entitydescriptor.TableName} ({dbclient.DBInfo.ColumnIndicator}{string.Join(string.Format("{0}, {0}", dbclient.DBInfo.ColumnIndicator), interestingcolumns.Select(c => c.Name))}{dbclient.DBInfo.ColumnIndicator}) VALUES(");
+            preparator.AppendText($"INSERT INTO {entitydescriptor.TableName} ({columnlist}) VALUES(");
             preparator.AppendParameter();
             foreach(EntityColumnDescriptor unused in interestingcolumns.Skip(1)) {
                 preparator.AppendText(",");

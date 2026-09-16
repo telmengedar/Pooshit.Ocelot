@@ -76,10 +76,8 @@ public class WindowedAggregate : SqlToken {
 
     /// <inheritdoc />
     public override void ToSql(IDBInfo dbinfo, IOperationPreparator preparator, Func<Type, EntityDescriptor> models, string tablealias) {
-        // Render aggregate expression compactly (e.g. "COUNT(*)" not "COUNT ( * )")
         string aggregateSql = RenderCompact(AggregateExpression, dbinfo, models, tablealias);
 
-        // Build OVER(...) clause
         string overContent = string.Empty;
 
         if (PartitionBy != null) {
@@ -95,11 +93,11 @@ public class WindowedAggregate : SqlToken {
                 overContent += " DESC";
         }
 
-        // Emit the whole windowed expression as a single token to avoid unwanted spaces
         string windowedSql = aggregateSql + " OVER(" + overContent + ")";
         preparator.AppendText(windowedSql);
 
         if (!string.IsNullOrEmpty(Alias)) {
+            IdentifierGuard.Simple(Alias, "alias");
             preparator.AppendText("AS");
             preparator.AppendText(Alias);
         }

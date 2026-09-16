@@ -104,7 +104,7 @@ public class SchemaCreator {
                     firstindicator = false;
                 else
                     commandbuilder.Append(", ");
-                commandbuilder.Append(client.DBInfo.ColumnIndicator).Append(column).Append(client.DBInfo.ColumnIndicator);
+                commandbuilder.Append(client.DBInfo.MaskColumn(column));
             }
             commandbuilder.Append(");");
         }

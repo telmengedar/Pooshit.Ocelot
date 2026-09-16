@@ -19,7 +19,7 @@ SELECT 'CREATE TABLE ' || pn.nspname || '.' || pc.relname || E '(\n' ||
 FROM pg_catalog.pg_attribute pa
          JOIN pg_catalog.pg_class pc
               ON pc.oid = pa.attrelid
-                  AND pc.relname = '{0}'
+                  AND pc.relname = @1
          JOIN pg_catalog.pg_namespace pn
               ON pn.oid = pc.relnamespace
                   AND pn.nspname = 'public'

@@ -95,10 +95,12 @@ public class MsSqlInfo : DBInfo {
 
     /// <inheritdoc />
     public override void DropView(IDBClient client, ViewDescriptor view) {
+        IdentifierGuard.Qualified(view.Name, "table");
     }
 
     /// <inheritdoc />
     public override void DropTable(IDBClient client, TableDescriptor entity) {
+        IdentifierGuard.Qualified(entity.Name, "table");
     }
 
     /// <inheritdoc />
@@ -203,12 +205,8 @@ public class MsSqlInfo : DBInfo {
         return type;
     }
 
-    /// <summary>
-    /// masks a column
-    /// </summary>
-    /// <param name="column"></param>
-    /// <returns></returns>
-    public override string MaskColumn(string column) {
+    /// <inheritdoc />
+    protected override string QuoteColumn(string column) {
         return $"\"{column}\"";
     }
 
@@ -271,7 +269,7 @@ public class MsSqlInfo : DBInfo {
             }
 
             if (!string.IsNullOrEmpty(join.Alias))
-                preparator.AppendText("AS").AppendText(join.Alias);
+                preparator.AppendText("AS").AppendText(IdentifierGuard.Simple(join.Alias, "alias"));
         }
         else {
             base.AppendJoin(join, preparator, descriptorgetter, outerAlias);

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
+using Pooshit.Ocelot.Info;
 using Pooshit.Ocelot.Schemas;
 
 namespace Pooshit.Ocelot.Entities.Operations;
@@ -58,6 +59,8 @@ public class AlterTableOperation : IOperation {
 
     /// <inheritdoc />
     public PreparedOperation Prepare() {
+        IdentifierGuard.Qualified(tablename, "table");
+
         OperationPreparator preparator = new();
         preparator.AppendText("ALTER TABLE").AppendText(tablename);
 

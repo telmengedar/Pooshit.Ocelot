@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
+using Pooshit.Ocelot.Info;
 using Pooshit.Ocelot.Tokens;
 
 namespace Pooshit.Ocelot.Entities.Operations.Tables {
@@ -69,24 +70,26 @@ namespace Pooshit.Ocelot.Entities.Operations.Tables {
             if((columns?.Length ?? 0) == 0)
                 throw new InvalidOperationException("No columns to update specified");
 
+            IdentifierGuard.Qualified(tablename, "table");
+
             OperationPreparator preparator = new OperationPreparator();
             preparator.AppendText($"UPDATE {tablename} SET ");
 
             if(values != null) {
                 if(values.Length != columns.Length)
                     throw new InvalidOperationException("Value count does not match column count");
-                preparator.AppendText($"{dbclient.DBInfo.ColumnIndicator}{columns.First()}{dbclient.DBInfo.ColumnIndicator}=");
+                preparator.AppendText($"{dbclient.DBInfo.MaskColumn(columns.First())}=");
                 preparator.AppendParameter(values[0]);
                 for(int i = 1; i < columns.Length; ++i) {
-                    preparator.AppendText($",{dbclient.DBInfo.ColumnIndicator}{columns[i]}{dbclient.DBInfo.ColumnIndicator}=");
+                    preparator.AppendText($",{dbclient.DBInfo.MaskColumn(columns[i])}=");
                     preparator.AppendParameter(values[i]);
                 }
             }
             else {
-                preparator.AppendText($"{dbclient.DBInfo.ColumnIndicator}{columns.First()}{dbclient.DBInfo.ColumnIndicator}=");
+                preparator.AppendText($"{dbclient.DBInfo.MaskColumn(columns.First())}=");
                 preparator.AppendParameter();
                 foreach(string column in columns.Skip(1)) {
-                    preparator.AppendText($",{dbclient.DBInfo.ColumnIndicator}{column}{dbclient.DBInfo.ColumnIndicator}=");
+                    preparator.AppendText($",{dbclient.DBInfo.MaskColumn(column)}=");
                     preparator.AppendParameter();
                 }
             }

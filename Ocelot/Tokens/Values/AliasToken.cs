@@ -33,6 +33,7 @@ public class AliasToken : SqlToken {
 	/// <inheritdoc />
 	public override void ToSql(IDBInfo dbinfo, IOperationPreparator preparator, Func<Type, EntityDescriptor> models, string tablealias) {
 		Token.ToSql(dbinfo, preparator, models, tablealias);
+		IdentifierGuard.Simple(Alias, "alias");
 		preparator.AppendText("AS");
 		preparator.AppendText(Alias);
 	}

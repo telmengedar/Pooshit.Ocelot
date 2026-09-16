@@ -6,6 +6,7 @@ using Pooshit.Ocelot.Entities.Descriptors;
 using Pooshit.Ocelot.Entities.Operations.Expressions;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Entities.Operations.Tables;
+using Pooshit.Ocelot.Info;
 using Pooshit.Ocelot.Tokens;
 
 namespace Pooshit.Ocelot.Entities.Operations {
@@ -58,12 +59,14 @@ namespace Pooshit.Ocelot.Entities.Operations {
         /// </summary>
         /// <returns>prepared operation to be executed</returns>
         public PreparedOperation Prepare() {
+            IdentifierGuard.Qualified(table, "table");
+
             OperationPreparator preparator = new();
             preparator.AppendText("DELETE");
             preparator.AppendText("FROM").AppendText(table);
 
             AppendCriterias(dbclient.DBInfo, preparator);
-            
+
             return preparator.GetOperation(dbclient, false);
         }
     }

@@ -91,8 +91,10 @@ public class CriteriaVisitor : ExpressionVisitor {
         EntityDescriptor descriptor = descriptorgetter(parameter.Type);
         EntityColumnDescriptor column = descriptor.GetColumnByProperty(info.Name);
 
-        if(aliases.TryGetValue(parameter.Name, out string alias))
+        if(aliases.TryGetValue(parameter.Name, out string alias)) {
+            IdentifierGuard.Simple(alias, "alias");
             return string.Format("{1}.{0}", dbInfo.MaskColumn(column.Name), alias);
+        }
         return dbInfo.MaskColumn(column.Name);
     }
 
