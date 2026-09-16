@@ -7,6 +7,7 @@ using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities.Operations;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Extern;
+using Pooshit.Ocelot.Info;
 using Pooshit.Ocelot.Models;
 
 namespace Pooshit.Ocelot.Schemas; 
@@ -27,6 +28,9 @@ public class SchemaService : ISchemaService {
 
     /// <inheritdoc />
     public Task CreateSchema(Schema schema, Transaction transaction = null) {
+        if (schema is TableSchema tableSchema)
+            IdentifierGuard.TableModel(tableSchema.Name, tableSchema.Columns, tableSchema.Index, tableSchema.Unique);
+
         if (Database.DBInfo.CheckIfTableExists(Database, schema.Name, transaction))
             throw new ArgumentException($"'{schema.Name}' already exists in database");
 
@@ -108,6 +112,9 @@ public class SchemaService : ISchemaService {
 
         targetSchema.Index ??= Array.Empty<IndexDescriptor>();
         targetSchema.Unique ??= Array.Empty<UniqueDescriptor>();
+
+        IdentifierGuard.TableModel(name, targetSchema.Columns, targetSchema.Index, targetSchema.Unique);
+        IdentifierGuard.Qualified(targetSchema.Name, "table");
 
         if (await GetSchema(name, transaction) is not TableSchema existingSchema)
             throw new ArgumentException("Can not update view to a table");
@@ -234,9 +241,8 @@ public class SchemaService : ISchemaService {
 
     /// <inheritdoc />
     public async Task RemoveSchema(string name, Transaction transaction = null) {
-        if (name.Contains('"') || name.Contains('[') || name.Contains("']"))
-            throw new ArgumentException("Illegal schema name", nameof(name));
-            
+        IdentifierGuard.Simple(name, "table");
+
         SchemaType type = await GetSchemaType(name, transaction);
         switch (type) {
             case SchemaType.Table:
@@ -308,7 +314,7 @@ public class SchemaService : ISchemaService {
                     firstindicator = false;
                 else
                     commandBuilder.Append(", ");
-                commandBuilder.Append(client.DBInfo.ColumnIndicator).Append(column).Append(client.DBInfo.ColumnIndicator);
+                commandBuilder.Append(client.DBInfo.MaskColumn(column));
             }
             commandBuilder.Append(");");
         }

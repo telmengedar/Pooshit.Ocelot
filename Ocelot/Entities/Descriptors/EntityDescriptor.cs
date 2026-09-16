@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Pooshit.Ocelot.Entities.Attributes;
+using Pooshit.Ocelot.Info;
 using Pooshit.Ocelot.Schemas;
 
 namespace Pooshit.Ocelot.Entities.Descriptors;
@@ -29,6 +30,8 @@ public class EntityDescriptor {
     /// </summary>
     /// <param name="column"></param>
     internal void AddColumn(EntityColumnDescriptor column) {
+        IdentifierGuard.Simple(column.Name, "column");
+        IdentifierGuard.Default(column.DefaultValue);
         columndescriptors[column.Name] = column;
         properties[column.Property.Name] = column;
         if(column.PrimaryKey)
@@ -48,6 +51,7 @@ public class EntityDescriptor {
     /// <param name="column">column to modify</param>
     /// <param name="name">new name of column</param>
     internal void ChangeColumnName(EntityColumnDescriptor column, string name) {
+        IdentifierGuard.Simple(name, "column");
         columndescriptors.Remove(column.Name);
         column.Name = name;
         columndescriptors[name] = column;
@@ -58,6 +62,7 @@ public class EntityDescriptor {
     /// </summary>
     /// <param name="index"></param>
     internal void AddIndex(IndexDescriptor index) {
+        IdentifierGuard.Index(index);
         indices.Add(index);
     }
 
@@ -66,6 +71,7 @@ public class EntityDescriptor {
     /// </summary>
     /// <param name="unique"></param>
     internal void AddUnique(UniqueDescriptor unique) {
+        IdentifierGuard.Unique(unique);
         uniques.Add(unique);
     }
 
@@ -97,10 +103,15 @@ public class EntityDescriptor {
     /// </summary>
     public IEnumerable<UniqueDescriptor> Uniques => uniques;
 
+    string tableName;
+
     /// <summary>
     /// name of the table
     /// </summary>
-    public string TableName { get; internal set; }
+    public string TableName {
+        get => tableName;
+        internal set => tableName = IdentifierGuard.Qualified(value, "table");
+    }
 
     /// <summary>
     /// get the full column descriptor for the column

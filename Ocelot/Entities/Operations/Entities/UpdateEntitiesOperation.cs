@@ -34,14 +34,14 @@ namespace Pooshit.Ocelot.Entities.Operations.Entities {
         PreparedOperation Prepare() {
             OperationPreparator preparator = new OperationPreparator();
             preparator.AppendText($"UPDATE {entitydescription.TableName} SET ");
-            preparator.AppendText($"{dbclient.DBInfo.ColumnIndicator}{interestingcolumns.First().Name}{dbclient.DBInfo.ColumnIndicator}=");
+            preparator.AppendText($"{dbclient.DBInfo.MaskColumn(interestingcolumns.First().Name)}=");
             preparator.AppendParameter();
             foreach(EntityColumnDescriptor column in interestingcolumns.Skip(1)) {
-                preparator.AppendText($",{dbclient.DBInfo.ColumnIndicator}{column.Name}{dbclient.DBInfo.ColumnIndicator}=");
+                preparator.AppendText($",{dbclient.DBInfo.MaskColumn(column.Name)}=");
                 preparator.AppendParameter();
             }
 
-            preparator.AppendText($"WHERE {dbclient.DBInfo.ColumnIndicator}{entitydescription.PrimaryKeyColumn.Name}{dbclient.DBInfo.ColumnIndicator}=");
+            preparator.AppendText($"WHERE {dbclient.DBInfo.MaskColumn(entitydescription.PrimaryKeyColumn.Name)}=");
             preparator.AppendParameter();
             return preparator.GetOperation(dbclient, false);
         }

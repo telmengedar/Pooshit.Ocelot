@@ -27,7 +27,7 @@ namespace Pooshit.Ocelot.Entities.Operations.Entities {
 
             OperationPreparator preparator = new OperationPreparator();
             preparator.AppendText($"DELETE FROM {entitydescriptor.TableName} WHERE ");
-            preparator.AppendText($"{dbclient.DBInfo.ColumnIndicator}{entitydescriptor.PrimaryKeyColumn.Name}{dbclient.DBInfo.ColumnIndicator} IN ");
+            preparator.AppendText($"{dbclient.DBInfo.MaskColumn(entitydescriptor.PrimaryKeyColumn.Name)} IN ");
             preparator.AppendArrayParameter();
             preparedoperation = preparator.GetOperation(dbclient, false);
         }

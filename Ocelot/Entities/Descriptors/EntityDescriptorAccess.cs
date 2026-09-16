@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Linq.Expressions;
 using Pooshit.Ocelot.Entities.Operations.Expressions;
+using Pooshit.Ocelot.Info;
 using Pooshit.Ocelot.Schemas;
 
 namespace Pooshit.Ocelot.Entities.Descriptors {
@@ -151,6 +152,7 @@ namespace Pooshit.Ocelot.Entities.Descriptors {
         /// <param name="column">column for which to set a default value</param>
         /// <param name="value">value to use as default</param>
         public EntityDescriptorAccess<T> Default(Expression<Func<T, object>> column, object value) {
+            IdentifierGuard.Default(value);
             descriptor.GetColumn(visitor.GetColumnName(column)).DefaultValue = value;
             return this;
         }

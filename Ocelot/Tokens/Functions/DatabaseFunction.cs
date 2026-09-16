@@ -33,6 +33,7 @@ public class DatabaseFunction : SqlToken {
 
     /// <inheritdoc />
     public override void ToSql(IDBInfo dbinfo, IOperationPreparator preparator, Func<Type, EntityDescriptor> models, string tablealias) {
+        IdentifierGuard.Qualified(FunctionName, "function");
         preparator.AppendText(FunctionName);
         preparator.AppendText("(");
         bool first = true;

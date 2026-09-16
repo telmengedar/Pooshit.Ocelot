@@ -1,28 +1,42 @@
+using Pooshit.Ocelot.Info;
+
 namespace Pooshit.Ocelot.Entities.Operations.Tables {
-    
+
     /// <summary>
     /// field to be loaded
     /// </summary>
     public class DataField {
-        
-        /// <summary>
-        /// creates a new <see cref="DataField"/>
-        /// </summary>
-        /// <param name="name">name of column or field</param>
-        /// <param name="isColumn">determines whether name is masked as column</param>
-        public DataField(string name, bool isColumn=false) {
+
+        DataField(string name, bool isColumn) {
             Name = name;
             IsColumn = isColumn;
         }
 
         /// <summary>
-        /// name of column or field
+        /// creates a new <see cref="DataField"/> referencing a column
+        /// </summary>
+        /// <param name="name">name of the column</param>
+        public DataField(string name)
+            : this(IdentifierGuard.Simple(name, "column", "use DataField.Raw(...) to emit a sql expression verbatim"), true) {
+        }
+
+        /// <summary>
+        /// creates a <see cref="DataField"/> emitting <paramref name="sql"/> verbatim
+        /// </summary>
+        /// <param name="sql">sql expression to emit as-is; must not carry caller-supplied input</param>
+        /// <returns>raw data field</returns>
+        public static DataField Raw(string sql) {
+            return new(sql, false);
+        }
+
+        /// <summary>
+        /// name of column or raw sql expression
         /// </summary>
         public string Name { get; set; }
-        
+
         /// <summary>
         /// determines whether name is masked as column
         /// </summary>
-        public bool IsColumn { get; set; }
+        public bool IsColumn { get; }
     }
 }

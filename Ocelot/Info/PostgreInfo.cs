@@ -390,11 +390,13 @@ public class PostgreInfo : DBInfo {
 
     /// <inheritdoc />
     public override void DropView(IDBClient client, ViewDescriptor view) {
+        IdentifierGuard.Qualified(view.Name, "table");
         client.NonQuery($"DROP VIEW IF EXISTS {view.Name} CASCADE");
     }
 
     /// <inheritdoc />
     public override void DropTable(IDBClient client, TableDescriptor entity) {
+        IdentifierGuard.Qualified(entity.Name, "table");
         client.NonQuery($"DROP TABLE IF EXISTS {entity.Name} CASCADE");
     }
 
@@ -535,12 +537,8 @@ public class PostgreInfo : DBInfo {
         return type;
     }
 
-    /// <summary>
-    /// masks a column
-    /// </summary>
-    /// <param name="column"></param>
-    /// <returns></returns>
-    public override string MaskColumn(string column) {
+    /// <inheritdoc />
+    protected override string QuoteColumn(string column) {
         return $"\"{column}\"";
     }
 
@@ -551,14 +549,14 @@ public class PostgreInfo : DBInfo {
 
     /// <inheritdoc />
     public override void CreateColumn(OperationPreparator operation, EntityColumnDescriptor column) {
-        operation.AppendText($"\"{column.Name}\"");
+        operation.AppendText(MaskColumn(column.Name));
         ColumnType(operation, column);
         operation.AppendText(ColumnAttributes(column));
     }
 
     /// <inheritdoc />
     public override void CreateColumn(OperationPreparator operation, ColumnDescriptor column) {
-        operation.AppendText($"\"{column.Name}\"");
+        operation.AppendText(MaskColumn(column.Name));
 
         ColumnType(operation, column);
         operation.AppendText(ColumnAttributes(column));
@@ -628,8 +626,9 @@ public class PostgreInfo : DBInfo {
             builder.Append(" NOT NULL");
 
         if(column.DefaultValue != null) {
+            string text = IdentifierGuard.Default(column.DefaultValue);
             builder.Append(" DEFAULT ");
-            builder.Append('\'').Append(Converter.Convert<string>(column.DefaultValue)).Append('\'');
+            builder.Append('\'').Append(text).Append('\'');
         }
 
         return builder.ToString();
@@ -657,13 +656,13 @@ public class PostgreInfo : DBInfo {
 
     /// <inheritdoc />
     public override void DropColumn(OperationPreparator preparator, string column) {
-        preparator.AppendText("DROP COLUMN").AppendText($"\"{column}\"").AppendText("CASCADE");
+        preparator.AppendText("DROP COLUMN").AppendText(MaskColumn(column)).AppendText("CASCADE");
     }
 
     /// <inheritdoc />
     public override void AlterColumn(OperationPreparator preparator, ColumnDescriptor column) {
         preparator.AppendText("ALTER COLUMN");
-        preparator.AppendText($"\"{column.Name}\"");
+        preparator.AppendText(MaskColumn(column.Name));
         preparator.AppendText("TYPE");
         ColumnType(preparator, column);
     }
@@ -685,17 +684,17 @@ public class PostgreInfo : DBInfo {
 
     /// <inheritdoc />
     public override async Task<string> GenerateCreateStatement(IDBClient client, string table) {
+        IdentifierGuard.Qualified(table, "table");
+
         string template;
-        Stream templateStream = typeof(PostgreInfo).Assembly.GetManifestResourceStream("NightlyCode.Ocelot.Info.Postgre.createstatement.sql");
+        Stream templateStream = typeof(PostgreInfo).Assembly.GetManifestResourceStream("Pooshit.Ocelot.Info.Postgre.createstatement.sql");
         if (templateStream == null)
             throw new InvalidOperationException("Statement template resource not found");
-            
+
         using (StreamReader reader = new(templateStream))
             template = await reader.ReadToEndAsync();
 
-        string statement = string.Format(template, table);
-
-        string createStatement = Converter.Convert<string>(await client.ScalarAsync(statement));
+        string createStatement = Converter.Convert<string>(await client.ScalarAsync(template, table));
         return createStatement.ProcessCreateStatement();
     }
     
@@ -821,6 +820,7 @@ public class PostgreInfo : DBInfo {
 
     /// <inheritdoc />
     public override Task Truncate(IDBClient client, string table, TruncateOptions options = null) {
+        IdentifierGuard.Qualified(table, "table");
         if (options?.ResetIdentity ?? false)
             return client.NonQueryAsync(options.Transaction, $"TRUNCATE {MaskColumn(table)} RESTART IDENTITY");
         return client.NonQueryAsync(options?.Transaction,$"TRUNCATE {MaskColumn(table)}");

@@ -58,7 +58,7 @@ public abstract class DBInfo : IDBInfo {
     }
 
     void AppendFieldToken(FieldToken field, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorGetter, string tableAlias) {
-        preparator.AppendText(field.Field);
+        preparator.AppendText(IdentifierGuard.Simple(field.Field, "alias"));
     }
 
     void AppendTupleToken(TupleToken tuple, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorGetter, string tableAlias) {
@@ -215,11 +215,21 @@ public abstract class DBInfo : IDBInfo {
     public abstract Type GetDBRepresentation(Type type);
 
     /// <summary>
-    /// masks a column
+    /// masks a column, validating it as a simple identifier first
     /// </summary>
-    /// <param name="column"></param>
-    /// <returns></returns>
-    public abstract string MaskColumn(string column);
+    /// <param name="column">column to mask</param>
+    /// <returns>masked column identifier</returns>
+    public string MaskColumn(string column) {
+        IdentifierGuard.Simple(column, "column");
+        return QuoteColumn(column);
+    }
+
+    /// <summary>
+    /// quotes an already-validated column identifier for this dialect
+    /// </summary>
+    /// <param name="column">validated column identifier</param>
+    /// <returns>dialect-quoted column identifier</returns>
+    protected abstract string QuoteColumn(string column);
 
     /// <summary>
     /// suffix to use when creating tables
@@ -231,11 +241,13 @@ public abstract class DBInfo : IDBInfo {
 
     /// <inheritdoc />
     public virtual void DropView(IDBClient client, ViewDescriptor view) {
+        IdentifierGuard.Qualified(view.Name, "table");
         client.NonQuery($"DROP VIEW {view.Name}");
     }
 
     /// <inheritdoc />
     public virtual void DropTable(IDBClient client, TableDescriptor entity) {
+        IdentifierGuard.Qualified(entity.Name, "table");
         client.NonQuery($"DROP TABLE {entity.Name}");
     }
 
@@ -304,7 +316,7 @@ public abstract class DBInfo : IDBInfo {
                         visitor.Visit(methodCall.Arguments[0]);
                         operation.AppendText("AS");
                         string alias = visitor.GetHost(methodCall.Arguments[1]) as string;
-                        operation.AppendText(alias);
+                        operation.AppendText(IdentifierGuard.Simple(alias, "alias"));
                         break;
                     case "Sum":
                         operation.AppendText("SUM(");
@@ -334,7 +346,7 @@ public abstract class DBInfo : IDBInfo {
                         operation.AppendText(")");
                     break;
                     case "Field":
-                        operation.AppendText(visitor.GetHost(methodCall.Arguments[0]) as string);
+                        operation.AppendText(IdentifierGuard.Simple(visitor.GetHost(methodCall.Arguments[0]) as string, "alias"));
                     break;
                     case "Floor":
                         operation.AppendText("FLOOR(");
@@ -576,6 +588,7 @@ public abstract class DBInfo : IDBInfo {
 
     /// <inheritdoc />
     public virtual Task Truncate(IDBClient client, string table, TruncateOptions options = null) {
+        IdentifierGuard.Qualified(table, "table");
         if (options?.ResetIdentity ?? false)
             throw new InvalidOperationException("Unsupported truncate option");
         return client.NonQueryAsync(options?.Transaction,$"TRUNCATE {table}");
@@ -670,11 +683,9 @@ public abstract class DBInfo : IDBInfo {
         else preparator.AppendText(descriptorgetter(join.Type).TableName);
 
         if (!string.IsNullOrEmpty(join.Alias))
-            preparator.AppendText("AS").AppendText(join.Alias);
+            preparator.AppendText("AS").AppendText(IdentifierGuard.Simple(join.Alias, "alias"));
 
         if (join.JoinType == JoinOp.CrossLateral || join.JoinType == JoinOp.LeftLateral) {
-            // For LATERAL joins the correlation lives inside the inner's WHERE clause.
-            // Emit ON (criteria) when provided, ON TRUE when not.
             if (join.Criterias != null) {
                 preparator.AppendText("ON");
                 CriteriaVisitor.GetCriteriaText(join.Criterias, descriptorgetter, this, preparator, outerAlias, join.Alias);

@@ -8,6 +8,7 @@ using Pooshit.Ocelot.Clients.Tables;
 using Pooshit.Ocelot.Entities.Descriptors;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Fields;
+using Pooshit.Ocelot.Info;
 using Pooshit.Ocelot.Tokens;
 using Pooshit.Ocelot.Tokens.Values;
 using DataTable = Pooshit.Ocelot.Clients.Tables.DataTable;
@@ -56,7 +57,7 @@ public class LoadDataOperation : WhereTokenOperation {
     /// <param name="columnnames">name of columns</param>
     /// <returns>this operation for fluent behavior</returns>
     public LoadDataOperation Columns(params string[] columnnames) {
-        columns = columnnames.Select(c => new DataField(c, true)).ToArray();
+        columns = columnnames.Select(c => new DataField(c)).ToArray();
         return this;
     }
 
@@ -363,6 +364,8 @@ public class LoadDataOperation : WhereTokenOperation {
     }
         
     PreparedLoadOperation Prepare(bool dbPrepare) {
+        IdentifierGuard.Qualified(tablename, "table");
+
         OperationPreparator preparator = new OperationPreparator().AppendText("SELECT");
 
         bool flag = true;

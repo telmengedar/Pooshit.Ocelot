@@ -428,12 +428,8 @@ public class SQLiteInfo : DBInfo {
         return type;
     }
 
-    /// <summary>
-    /// masks a column
-    /// </summary>
-    /// <param name="column"></param>
-    /// <returns></returns>
-    public override string MaskColumn(string column) {
+    /// <inheritdoc />
+    protected override string QuoteColumn(string column) {
         return $"[{column}]";
     }
 
@@ -495,7 +491,7 @@ public class SQLiteInfo : DBInfo {
 
     void CreateColumn(OperationPreparator operation, string name, string type, bool primarykey, bool autoincrement, bool unique, bool notnull, object defaultvalue) {
         operation.AppendText(MaskColumn(name));
-        operation.AppendText(type);
+        operation.AppendText(IdentifierGuard.TypeToken(type, "column type"));
 
         if(primarykey)
             operation.AppendText("PRIMARY KEY");
@@ -507,13 +503,19 @@ public class SQLiteInfo : DBInfo {
             operation.AppendText("NOT NULL");
         }
 
-        if(defaultvalue != null) {
-            operation.AppendText("DEFAULT");
-            if(defaultvalue is string or Guid or DateTime or TimeSpan)
-                operation.AppendText($"'{Converter.Convert<string>(defaultvalue)}'");
-            else
-                operation.AppendText(Converter.Convert<string>(defaultvalue));
-        }
+        AppendDefault(operation, defaultvalue);
+    }
+
+    void AppendDefault(OperationPreparator operation, object defaultvalue) {
+        if(defaultvalue == null)
+            return;
+
+        string text = IdentifierGuard.Default(defaultvalue);
+        operation.AppendText("DEFAULT");
+        if(defaultvalue is string or Guid or DateTime or TimeSpan)
+            operation.AppendText($"'{text}'");
+        else
+            operation.AppendText(text);
     }
 
     /// <inheritdoc />
@@ -550,7 +552,7 @@ public class SQLiteInfo : DBInfo {
 
     void AddColumn(OperationPreparator operation, string name, string type, bool primarykey, bool autoincrement, bool unique, bool notnull, object defaultvalue) {
         operation.AppendText(MaskColumn(name));
-        operation.AppendText(type);
+        operation.AppendText(IdentifierGuard.TypeToken(type, "column type"));
 
         if(primarykey)
             operation.AppendText("PRIMARY KEY");
@@ -560,18 +562,10 @@ public class SQLiteInfo : DBInfo {
             operation.AppendText("UNIQUE");
         if(notnull) {
             operation.AppendText("NOT NULL");
-
-            // SQLite doesn't like no default values on nullable columns in add column case
             defaultvalue ??= GenerateDefault(type);
         }
 
-        if(defaultvalue != null) {
-            operation.AppendText("DEFAULT");
-            if(defaultvalue is string or Guid or DateTime or TimeSpan)
-                operation.AppendText($"'{defaultvalue}'");
-            else
-                operation.AppendText(defaultvalue.ToString());
-        }
+        AppendDefault(operation, defaultvalue);
     }
 
     /// <inheritdoc />
@@ -629,16 +623,13 @@ public class SQLiteInfo : DBInfo {
 
     IEnumerable<IndexDescriptor> AnalyseIndexDefinitions(Clients.Tables.DataTable table) {
         foreach(Clients.Tables.DataRow row in table.Rows) {
-
-            // sqlite has some internal index definitions which are not important here 
-            // and can't be analyzed anyways because they have no sql definition
             string sql = Converter.Convert<string>(row["sql"]);
             if(string.IsNullOrEmpty(sql))
                 continue;
 
             Match match = Regex.Match(sql, @"^CREATE INDEX idx_(?<tablename>.+)_(?<name>.+) ON (?<table>.+) \((?<columns>.+)\)$");
             if(match.Success)
-                yield return new IndexDescriptor(match.Groups["name"].Value, match.Groups["columns"].Value.Split(',').Select(c => c.Trim(' ', '\"')), null);
+                yield return new IndexDescriptor(match.Groups["name"].Value, match.Groups["columns"].Value.Split(',').Select(c => c.Trim(' ', '\"', '[', ']')), null);
         }
     }
 
@@ -650,6 +641,8 @@ public class SQLiteInfo : DBInfo {
     /// <param name="column">column to add</param>
     /// <param name="transaction">transaction to use (optional)</param>
     public void AddColumn(IDBClient client, string table, EntityColumnDescriptor column, Transaction transaction = null) {
+        IdentifierGuard.Qualified(table, "table");
+
         OperationPreparator operation = new();
         operation.AppendText($"ALTER TABLE {table} ADD COLUMN");
         AddColumn(operation, column);
@@ -694,7 +687,8 @@ public class SQLiteInfo : DBInfo {
 
     /// <inheritdoc />
     public override async Task<string> GenerateCreateStatement(IDBClient client, string table) {
-        return Converter.Convert<string>(await client.ScalarAsync($"SELECT sql FROM sqlite_master WHERE tbl_name = '{table}'"));
+        IdentifierGuard.Qualified(table, "table");
+        return Converter.Convert<string>(await client.ScalarAsync("SELECT sql FROM sqlite_master WHERE tbl_name = @1", table));
     }
 
     /// <summary>
@@ -758,17 +752,19 @@ public class SQLiteInfo : DBInfo {
 
     /// <inheritdoc />
     public override async Task Truncate(IDBClient client, string table, TruncateOptions options = null) {
+        IdentifierGuard.Qualified(table, "table");
+
         if (options?.Transaction == null) {
             using Transaction transaction = client.Transaction();
             await client.NonQueryAsync(transaction, $"DELETE FROM {MaskColumn(table)}");
             if (options?.ResetIdentity ?? false)
-                await client.NonQueryAsync(transaction, $"UPDATE {MaskColumn("sqlite_sequence")} SET {MaskColumn("seq")} = 0 WHERE {MaskColumn("name")} = '{table}'");
+                await client.NonQueryAsync(transaction, $"UPDATE {MaskColumn("sqlite_sequence")} SET {MaskColumn("seq")} = 0 WHERE {MaskColumn("name")} = @1", table);
             transaction.Commit();
         }
         else {
             await client.NonQueryAsync(options.Transaction, $"DELETE FROM {MaskColumn(table)}");
             if (options.ResetIdentity)
-                await client.NonQueryAsync(options.Transaction, $"UPDATE {MaskColumn("sqlite_sequence")} SET {MaskColumn("seq")} = 0 WHERE {MaskColumn("name")} = '{table}'");
+                await client.NonQueryAsync(options.Transaction, $"UPDATE {MaskColumn("sqlite_sequence")} SET {MaskColumn("seq")} = 0 WHERE {MaskColumn("name")} = @1", table);
         }
     }
 

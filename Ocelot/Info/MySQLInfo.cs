@@ -96,7 +96,7 @@ public class MySQLInfo : DBInfo {
     }
 
     /// <inheritdoc />
-    public override string MaskColumn(string column) {
+    protected override string QuoteColumn(string column) {
         return $"`{column}`";
     }
 

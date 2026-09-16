@@ -66,10 +66,14 @@ namespace Pooshit.Ocelot.Fields.Sql {
                     throw new PropertyNotFoundException(Property);
             }
 
-            if(!string.IsNullOrEmpty(Alias))
+            if(!string.IsNullOrEmpty(Alias)) {
+                IdentifierGuard.Simple(Alias, "alias");
                 preparator.AppendText($"{Alias}.{dbinfo.MaskColumn(columnmodel.Name)}");
-            else if(!string.IsNullOrEmpty(tablealias))
+            }
+            else if(!string.IsNullOrEmpty(tablealias)) {
+                IdentifierGuard.Simple(tablealias, "alias");
                 preparator.AppendText($"{tablealias}.{dbinfo.MaskColumn(columnmodel.Name)}");
+            }
             else
                 preparator.AppendText(dbinfo.MaskColumn(columnmodel.Name));
         }

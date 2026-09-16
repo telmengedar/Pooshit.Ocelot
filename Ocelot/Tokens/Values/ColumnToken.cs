@@ -41,8 +41,10 @@ public class ColumnToken : SqlToken {
 
     /// <inheritdoc />
     public override void ToSql(IDBInfo dbinfo, IOperationPreparator preparator, Func<Type, EntityDescriptor> models, string tablealias) {
-        if(!string.IsNullOrEmpty(Table))
+        if(!string.IsNullOrEmpty(Table)) {
+            IdentifierGuard.Simple(Table, "alias");
             preparator.AppendText($"{Table}.{dbinfo.MaskColumn(Name)}");
+        }
         else preparator.AppendText(dbinfo.MaskColumn(Name));
     }
 }

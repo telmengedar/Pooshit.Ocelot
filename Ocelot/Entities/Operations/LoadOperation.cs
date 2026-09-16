@@ -11,6 +11,7 @@ using Pooshit.Ocelot.Entities.Descriptors;
 using Pooshit.Ocelot.Entities.Operations.Expressions;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Fields;
+using Pooshit.Ocelot.Info;
 using Pooshit.Ocelot.Tokens;
 using Pooshit.Ocelot.Tokens.Partitions;
 using Pooshit.Ocelot.Tokens.Values;
@@ -967,6 +968,9 @@ public class LoadOperation<T> : IDatabaseOperation {
             aliases.Add(tablealias);
         }
 
+        if(!string.IsNullOrEmpty(tablealias))
+            IdentifierGuard.Simple(tablealias, "alias");
+
         preparator.AppendText("SELECT");
             
         if(distinct)
@@ -1509,6 +1513,9 @@ public class LoadOperation : ILoadOperation {
             tablealias = "t";
             aliases.Add(tablealias);
         }
+
+        if(!string.IsNullOrEmpty(tablealias))
+            IdentifierGuard.Simple(tablealias, "alias");
 
         preparator.AppendText("SELECT");
 

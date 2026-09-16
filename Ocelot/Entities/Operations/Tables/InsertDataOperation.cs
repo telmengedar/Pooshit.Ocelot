@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Extern;
+using Pooshit.Ocelot.Info;
 
 namespace Pooshit.Ocelot.Entities.Operations.Tables {
 
@@ -96,6 +97,8 @@ namespace Pooshit.Ocelot.Entities.Operations.Tables {
         }
         
         PreparedOperation Prepare(bool dbPrepare) {
+            IdentifierGuard.Qualified(tablename, "table");
+
             OperationPreparator preparator = new OperationPreparator();
             preparator.AppendText("INSERT INTO");
             preparator.AppendText(tablename);
@@ -147,6 +150,8 @@ namespace Pooshit.Ocelot.Entities.Operations.Tables {
         /// </summary>
         /// <returns>operation prepared for bulk execution</returns>
         public PreparedBulkInsertOperation PrepareBulk() {
+            IdentifierGuard.Qualified(tablename, "table");
+
             OperationPreparator preparator = new OperationPreparator();
             preparator.AppendText("INSERT INTO");
             preparator.AppendText(tablename);
