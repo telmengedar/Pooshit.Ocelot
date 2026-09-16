@@ -63,9 +63,17 @@ public abstract class DBInfo : IDBInfo {
 
     void AppendTupleToken(TupleToken tuple, IOperationPreparator preparator, Func<Type, EntityDescriptor> descriptorGetter, string tableAlias) {
         preparator.AppendText("(");
-        foreach (object value in tuple.Values) {
-            
+        for (int i = 0; i < tuple.Values.Length; ++i) {
+            if (i > 0)
+                preparator.AppendText(",");
+
+            object value = tuple.Values[i];
+            if (value is IDBField field)
+                Append(field, preparator, descriptorGetter, tableAlias);
+            else
+                AppendConstant(new ConstantValue(value), preparator, descriptorGetter, tableAlias);
         }
+
         preparator.AppendText(")");
     }
 
