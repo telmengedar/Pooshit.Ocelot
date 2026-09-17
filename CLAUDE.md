@@ -21,7 +21,7 @@ The test project ([Ocelot.Tests/Ocelot.Tests.csproj](Ocelot.Tests/Ocelot.Tests.c
 
 Postgres-backed tests in [Ocelot.Tests/Postgres/PostgresLocalTests.cs](Ocelot.Tests/Postgres/PostgresLocalTests.cs) are gated on the `POSTGRES_CONNECTION` env var and `Assert.Inconclusive` when it's missing — set that variable to run them locally.
 
-The library version is bumped manually in [Ocelot/Ocelot.csproj](Ocelot/Ocelot.csproj) (`AssemblyVersion`/`PackageVersion`); `GeneratePackageOnBuild` is on.
+The library version comes from a single `<Version>` fallback in [Ocelot/Ocelot.csproj](Ocelot/Ocelot.csproj); publishing is tag-triggered — `git tag vX.Y.Z && git push origin vX.Y.Z` runs [.github/workflows/publish.yml](.github/workflows/publish.yml), which tests, packs with `-p:Version` from the tag, and pushes to nuget.org via Trusted Publishing (OIDC, no stored API key).
 
 ## Architecture
 
