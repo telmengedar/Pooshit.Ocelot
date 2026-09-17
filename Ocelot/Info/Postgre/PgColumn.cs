@@ -57,9 +57,9 @@ namespace Pooshit.Ocelot.Info.Postgre {
         public string ItemType { get; set; }
 
         /// <summary>
-        /// determines whether column is identity column (AutoIncrement)
+        /// determines whether column is identity column (AutoIncrement), "YES" or "NO"
         /// </summary>
         [Column("is_identity")]
-        public bool IsIdentity { get; set; }
+        public string IsIdentity { get; set; }
     }
 }

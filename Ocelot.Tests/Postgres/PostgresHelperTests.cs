@@ -14,6 +14,6 @@ public class PostgresHelperTests {
         using StreamReader expectedReader=new(typeof(PostgresHelperTests).Assembly.GetManifestResourceStream("Pooshit.Ocelot.Tests.Data.createstatement_postgres_processed.txt"));
         string expected = expectedReader.ReadToEnd();
 
-        Assert.AreEqual(expected, statement.ProcessCreateStatement().Replace("\r", ""));
+        Assert.That(statement.ProcessCreateStatement().Replace("\r", ""), Is.EqualTo(expected.Replace("\r", "")));
     }
 }
