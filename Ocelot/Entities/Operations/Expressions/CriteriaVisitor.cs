@@ -489,35 +489,21 @@ public class CriteriaVisitor : ExpressionVisitor {
             return node;
         }
 
-        if(node.Method.DeclaringType == typeof(Enumerable)) {
+        if(node.Method.DeclaringType == typeof(Enumerable) || node.Method.DeclaringType == typeof(MemoryExtensions)) {
             switch(node.Method.Name) {
-                case "Contains":
-                    dbInfo.CreateInFragment(node.Arguments[1], node.Arguments[0], preparator, Visit);
-                    /*Visit(node.Arguments[1]);
-                    preparator.AppendText("IN");
+                case "Contains" when node.Arguments.Count == 2:
+                    Expression collection = node.Arguments[0];
+                    if(collection is MethodCallExpression spanConversion
+                        && spanConversion.Method.Name == "op_Implicit"
+                        && spanConversion.Arguments.Count == 1
+                        && spanConversion.Method.DeclaringType is { IsConstructedGenericType: true } spanType
+                        && spanType.GetGenericTypeDefinition() == typeof(ReadOnlySpan<>))
+                        collection = spanConversion.Arguments[0];
 
-                    if(node.Arguments[0].NodeType == ExpressionType.MemberAccess
-                        && (((MemberExpression)node.Arguments[0]).Member.DeclaringType == typeof(DBParameter)
-                            || ((MemberExpression)node.Arguments[0]).Member.DeclaringType?.BaseType == typeof(DBParameter))) {
-                        preparator.AppendArrayParameter();
-                    }
-                    else {
-                        preparator.AppendText("(");
-                        bool first = true;
-                        foreach(object item in (IEnumerable)GetValue(node.Arguments[0])) {
-                            if(first)
-                                first = false;
-                            else
-                                preparator.AppendText(",");
-                            AppendConstantValue(item);
-                        }
-
-                        preparator.AppendText(")");
-                    }*/
-
+                    dbInfo.CreateInFragment(node.Arguments[1], collection, preparator, Visit);
                     break;
                 default:
-                    throw new NotImplementedException();
+                    throw new NotImplementedException($"'{node.Method}' is not supported");
             }
 
             return node;

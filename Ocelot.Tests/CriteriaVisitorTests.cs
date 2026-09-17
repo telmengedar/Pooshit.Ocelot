@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using Moq;
 using NUnit.Framework;
@@ -166,4 +168,186 @@ public class CriteriaVisitorTests {
         PreparedOperation operation = preparator.GetOperation(client.Object, false);
         Assert.AreEqual("ACOS( ( SIN( ( @1 * @2 ) / @3 ) * SIN( ( @4 * @5 ) / @6 ) + COS( ( @7 * @8 ) / @9 ) * COS( ( @10 * @11 ) / @12 ) * COS( ( ( @13 * @14 ) / @15 - ( @16 * @17 ) / @18 ) ) ) ) * @19 > @20", operation.CommandText);
     }
+
+    [Test, Parallelizable]
+    public void TestContainsWithArrayRendersInOnSqlite() {
+        OperationPreparator preparator = new();
+        CriteriaVisitor visitor = new(EntityDescriptor.Create, preparator, new SQLiteInfo(), true);
+
+        int[] array = { 2, 3 };
+        Expression<Func<ValueModel, bool>> predicate = m => array.Contains(m.Integer);
+        visitor.Visit(predicate);
+
+        IDBClient client = TestData.CreateDatabaseAccess();
+        PreparedOperation operation = preparator.GetOperation(client, false);
+        Assert.That(operation.CommandText, Is.EqualTo("[integer] IN( @1 , @2 )"));
+    }
+
+    [Test, Parallelizable]
+    public void TestNotContainsWithArrayRendersNotInOnSqlite() {
+        OperationPreparator preparator = new();
+        CriteriaVisitor visitor = new(EntityDescriptor.Create, preparator, new SQLiteInfo(), true);
+
+        int[] array = { 2, 3 };
+        Expression<Func<ValueModel, bool>> predicate = m => !array.Contains(m.Integer);
+        visitor.Visit(predicate);
+
+        IDBClient client = TestData.CreateDatabaseAccess();
+        PreparedOperation operation = preparator.GetOperation(client, false);
+        Assert.That(operation.CommandText, Is.EqualTo("NOT [integer] IN( @1 , @2 )"));
+    }
+
+    [Test, Parallelizable]
+    public void TestContainsWithArrayRendersAnyOnPostgres() {
+        IDBInfo dbInfo = new PostgreInfo();
+
+        OperationPreparator preparator = new();
+        CriteriaVisitor visitor = new(EntityDescriptor.Create, preparator, dbInfo, true);
+
+        int[] array = { 2, 3 };
+        Expression<Func<ValueModel, bool>> predicate = m => array.Contains(m.Integer);
+        visitor.Visit(predicate);
+
+        Mock<IDBClient> client = new();
+        client.SetupGet(s => s.DBInfo).Returns(dbInfo);
+
+        PreparedOperation operation = preparator.GetOperation(client.Object, false);
+        Assert.That(operation.CommandText, Is.EqualTo("\"integer\" = ANY( @1 )"));
+    }
+
+    [Test, Parallelizable]
+    public void TestNotContainsWithArrayRendersNotAnyOnPostgres() {
+        IDBInfo dbInfo = new PostgreInfo();
+
+        OperationPreparator preparator = new();
+        CriteriaVisitor visitor = new(EntityDescriptor.Create, preparator, dbInfo, true);
+
+        int[] array = { 2, 3 };
+        Expression<Func<ValueModel, bool>> predicate = m => !array.Contains(m.Integer);
+        visitor.Visit(predicate);
+
+        Mock<IDBClient> client = new();
+        client.SetupGet(s => s.DBInfo).Returns(dbInfo);
+
+        PreparedOperation operation = preparator.GetOperation(client.Object, false);
+        Assert.That(operation.CommandText, Is.EqualTo("NOT \"integer\" = ANY( @1 )"));
+    }
+
+    [Test, Parallelizable]
+    public void TestContainsWithParameterArrayRendersArrayPlaceholderOnSqlite() {
+        OperationPreparator preparator = new();
+        CriteriaVisitor visitor = new(EntityDescriptor.Create, preparator, new SQLiteInfo(), true);
+
+        Expression<Func<ValueModel, bool>> predicate = m => DBParameter<int[]>.Value.Contains(m.Integer);
+        visitor.Visit(predicate);
+
+        IDBClient client = TestData.CreateDatabaseAccess();
+        PreparedOperation operation = preparator.GetOperation(client, false);
+        Assert.That(operation.CommandText, Is.EqualTo("[integer] IN( [0] )"));
+    }
+
+    [Test, Parallelizable]
+    public void TestContainsWithParameterArrayRendersAnyOnPostgres() {
+        IDBInfo dbInfo = new PostgreInfo();
+
+        OperationPreparator preparator = new();
+        CriteriaVisitor visitor = new(EntityDescriptor.Create, preparator, dbInfo, true);
+
+        Expression<Func<ValueModel, bool>> predicate = m => DBParameter<int[]>.Value.Contains(m.Integer);
+        visitor.Visit(predicate);
+
+        Mock<IDBClient> client = new();
+        client.SetupGet(s => s.DBInfo).Returns(dbInfo);
+
+        PreparedOperation operation = preparator.GetOperation(client.Object, false);
+        Assert.That(operation.CommandText, Is.EqualTo("\"integer\" = ANY( @1 )"));
+    }
+
+    [Test, Parallelizable]
+    public void TestContainsWithInlineArrayLiteralRendersInOnSqlite() {
+        OperationPreparator preparator = new();
+        CriteriaVisitor visitor = new(EntityDescriptor.Create, preparator, new SQLiteInfo(), true);
+
+        Expression<Func<ValueModel, bool>> predicate = m => new[] { 2, 3 }.Contains(m.Integer);
+        visitor.Visit(predicate);
+
+        IDBClient client = TestData.CreateDatabaseAccess();
+        PreparedOperation operation = preparator.GetOperation(client, false);
+        Assert.That(operation.CommandText, Is.EqualTo("[integer] IN( @1 , @2 )"));
+    }
+
+    [Test, Parallelizable]
+    public void TestContainsWithEnumArrayRendersInOnSqlite() {
+        OperationPreparator preparator = new();
+        CriteriaVisitor visitor = new(EntityDescriptor.Create, preparator, new SQLiteInfo(), true);
+
+        TestEnum[] enums = { TestEnum.Crazy, TestEnum.Insane };
+        Expression<Func<EnumEntity, bool>> predicate = e => enums.Contains(e.Enum);
+        visitor.Visit(predicate);
+
+        IDBClient client = TestData.CreateDatabaseAccess();
+        PreparedOperation operation = preparator.GetOperation(client, false);
+        Assert.That(operation.CommandText, Is.EqualTo("[enum] IN( @1 , @2 )"));
+    }
+
+    [Test, Parallelizable]
+    public void TestContainsWithEnumArrayRendersAnyOnPostgres() {
+        IDBInfo dbInfo = new PostgreInfo();
+
+        OperationPreparator preparator = new();
+        CriteriaVisitor visitor = new(EntityDescriptor.Create, preparator, dbInfo, true);
+
+        TestEnum[] enums = { TestEnum.Crazy, TestEnum.Insane };
+        Expression<Func<EnumEntity, bool>> predicate = e => enums.Contains(e.Enum);
+        visitor.Visit(predicate);
+
+        Mock<IDBClient> client = new();
+        client.SetupGet(s => s.DBInfo).Returns(dbInfo);
+
+        PreparedOperation operation = preparator.GetOperation(client.Object, false);
+        Assert.That(operation.CommandText, Is.EqualTo("\"enum\" = ANY( @1 )"));
+    }
+
+    [Test, Parallelizable]
+    public void TestContainsDoesNotStripNonSpanWrapperCall() {
+        OperationPreparator preparator = new();
+        CriteriaVisitor visitor = new(EntityDescriptor.Create, preparator, new SQLiteInfo(), true);
+
+        TestEnum[] enums = { TestEnum.Crazy, TestEnum.Insane };
+        Expression<Func<EnumEntity, bool>> predicate = e => OnlyFirst(enums).Contains(e.Enum);
+        visitor.Visit(predicate);
+
+        IDBClient client = TestData.CreateDatabaseAccess();
+        PreparedOperation operation = preparator.GetOperation(client, false);
+        Assert.That(operation.CommandText, Is.EqualTo("[enum] IN( @1 )"));
+    }
+
+    [Test, Parallelizable]
+    public void TestContainsWithComparerOverloadThrows() {
+        OperationPreparator preparator = new();
+        CriteriaVisitor visitor = new(EntityDescriptor.Create, preparator, new SQLiteInfo(), true);
+
+        int[] ints = { 2, 3 };
+        Expression<Func<ValueModel, bool>> predicate = m => ints.Contains(m.Integer, EqualityComparer<int>.Default);
+
+        NotImplementedException exception = Assert.Throws<NotImplementedException>(() => visitor.Visit(predicate));
+        Assert.That(exception.Message, Does.Contain("Contains[Int32]"));
+        Assert.That(exception.Message, Does.Contain("IEqualityComparer"));
+    }
+
+    [Test, Parallelizable]
+    public void TestInWithArrayRendersInOnSqlite() {
+        OperationPreparator preparator = new();
+        CriteriaVisitor visitor = new(EntityDescriptor.Create, preparator, new SQLiteInfo(), true);
+
+        int[] intArray = { 2, 3 };
+        Expression<Func<ValueModel, bool>> predicate = m => m.Integer.In(intArray);
+        visitor.Visit(predicate);
+
+        IDBClient client = TestData.CreateDatabaseAccess();
+        PreparedOperation operation = preparator.GetOperation(client, false);
+        Assert.That(operation.CommandText, Is.EqualTo("[integer] IN( @1 , @2 )"));
+    }
+
+    static TestEnum[] OnlyFirst(TestEnum[] source) => new[] { source[0] };
 }
