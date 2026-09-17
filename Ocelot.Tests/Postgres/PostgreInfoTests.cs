@@ -92,6 +92,63 @@ public class PostgreInfoTests {
     }
 
     [Test, Parallelizable]
+    public void GetSchema_IdentityColumnWithoutDefault_SetsAutoIncrement() {
+        PostgreInfo info = new();
+
+        Mock<IDBClient> client = new();
+        client.SetupGet(c => c.DBInfo).Returns(info);
+
+        client.Setup(c => c.Reader(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<IEnumerable<object>>())).Returns<Transaction, string, IEnumerable<object>>((tr, text, pr) => {
+            if (text.Contains(" information_schema.columns ")) {
+                return new(new FakeReader(["table_catalog", "table_schema", "table_name", "column_name", "data_type", "is_nullable", "column_default", "is_identity"],
+                [
+                    ["xx.io", "public", "identitytable", "id", "bigint", "NO", DBNull.Value, "YES"]
+                ]), null, info);
+            }
+
+            return new(new FakeReader([], []), null, info);
+        });
+
+        TableDescriptor descriptor = info.GetSchema(client.Object, "identitytable") as TableDescriptor;
+
+        ColumnDescriptor id = descriptor.Columns.First(c => c.Name == "id");
+        Assert.That(id.AutoIncrement, Is.True);
+    }
+
+    [Test, Parallelizable]
+    public async Task GetSchemaAsync_IdentityColumnWithoutDefault_SetsAutoIncrement() {
+        PostgreInfo info = new();
+
+        Mock<IDBClient> client = new();
+        client.SetupGet(c => c.DBInfo).Returns(info);
+
+        client.Setup(c => c.ReaderAsync(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<IEnumerable<object>>())).Returns<Transaction, string, IEnumerable<object>>((tr, text, pr) => {
+            if (text.Contains(" information_schema.columns ")) {
+                return Task.FromResult(new Reader(new FakeReader(["table_catalog", "table_schema", "table_name", "column_name", "data_type", "is_nullable", "column_default", "is_identity"],
+                [
+                    ["xx.io", "public", "identitytable", "id", "bigint", "NO", DBNull.Value, "YES"]
+                ]), null, info));
+            }
+
+            return Task.FromResult(new Reader(new FakeReader([], []), null, info));
+        });
+
+        TableSchema schema = await info.GetSchemaAsync(client.Object, "identitytable") as TableSchema;
+
+        ColumnDescriptor id = schema.Columns.First(c => c.Name == "id");
+        Assert.That(id.AutoIncrement, Is.True);
+    }
+
+    [Test, Parallelizable]
+    public void CreateStatementTemplate_ContainsNoMalformedEscapedStringLiteral() {
+        string template;
+        using (StreamReader reader = new(typeof(PostgreInfo).Assembly.GetManifestResourceStream("Pooshit.Ocelot.Info.Postgre.createstatement.sql")))
+            template = reader.ReadToEnd();
+
+        Assert.That(System.Text.RegularExpressions.Regex.IsMatch(template, "(?<![A-Za-z])E\\s+'", System.Text.RegularExpressions.RegexOptions.IgnoreCase), Is.False);
+    }
+
+    [Test, Parallelizable]
     public void LimitStatement() {
         PostgreInfo dbinfo = new PostgreInfo();
         Mock<IDBClient> client = new Mock<IDBClient>();

@@ -95,6 +95,25 @@ public class PostgresLocalTests {
 
     }
 
+    [Test]
+    public async Task GenerateCreateStatement_AgainstRealPostgres_GeneratedDdlExecutesSuccessfully() {
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION")))
+            Assert.Inconclusive("Test only active on local dev machine");
+
+        IDBClient dbclient = ClientFactory.Create(() => new NpgsqlConnection(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION")), new PostgreInfo(), true);
+        SchemaService schemaService = new(dbclient);
+        await schemaService.CreateOrUpdateSchema<BigIntData>();
+
+        string statement = await dbclient.DBInfo.GenerateCreateStatement(dbclient, "bigintdata");
+
+        using Transaction transaction = dbclient.Transaction();
+        await dbclient.NonQueryAsync(transaction, "DROP TABLE bigintdata");
+        await dbclient.NonQueryAsync(transaction, statement);
+        transaction.Rollback();
+
+        Assert.Pass();
+    }
+
     [Test, Parallelizable]
     public async Task LoadArrayPrepared() {
         if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION")))
