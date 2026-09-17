@@ -1,4 +1,4 @@
-SELECT 'CREATE TABLE ' || pn.nspname || '.' || pc.relname || E '(\n' ||
+SELECT 'CREATE TABLE ' || pn.nspname || '.' || pc.relname || E'(\n' ||
    string_agg('"' || pa.attname || '"' || ' ' || pg_catalog.format_type(pa.atttypid, pa.atttypmod) || 
    coalesce(' DEFAULT ' || (
                    SELECT pg_catalog.pg_get_expr(d.adbin, d.adrelid)
