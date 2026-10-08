@@ -131,6 +131,13 @@ public interface IDBInfo {
     /// <param name="length">length of array type (optional)</param>
     /// <returns>text representation of type</returns>
     string GetDBType(string type, int length=-1);
+
+    /// <summary>
+    /// get the native column type for vectors of a fixed dimension
+    /// </summary>
+    /// <param name="dimensions">number of dimensions of the vector</param>
+    /// <returns>native vector type, or null when the dialect has no native vector type</returns>
+    string GetVectorType(int dimensions) => null;
         
     /// <summary>
     /// determines whether two types are equal
