@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Moq;
 using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
+using Pooshit.Ocelot.Entities;
 using Pooshit.Ocelot.Entities.Attributes;
 using Pooshit.Ocelot.Entities.Descriptors;
 using Pooshit.Ocelot.Entities.Operations;
@@ -38,7 +39,13 @@ public class PostgreVectorColumnTests {
 
     static object[][] VectorTableFormattedTypes() => [["id", "bigint"], ["label", "character varying(50)"], ["embedding", "vector(3)"]];
 
-    static Mock<IDBClient> CreateSchemaClient(PostgreInfo info, object[][] columns, object[][] formattedTypes, Action onFormattedTypes = null) {
+    static object[][] VectorEntityColumns() => [VectorTableColumns()[0], VectorTableColumns()[2]];
+
+    static object[][] VectorEntityFormattedTypes() => [VectorTableFormattedTypes()[0], VectorTableFormattedTypes()[2]];
+
+    static object[][] VectorEntityIndexes() => [["public", "vectorentity", "vectorentity_pkey", "CREATE UNIQUE INDEX vectorentity_pkey ON public.vectorentity USING btree (id)"]];
+
+    static Mock<IDBClient> CreateSchemaClient(PostgreInfo info, object[][] columns, object[][] formattedTypes, Action onFormattedTypes = null, object[][] indexes = null, List<string> statements = null, long tableCount = 1) {
         Mock<IDBClient> client = new();
         client.SetupGet(c => c.DBInfo).Returns(info);
 
@@ -49,13 +56,25 @@ public class PostgreVectorColumnTests {
                 onFormattedTypes?.Invoke();
                 return new(new FakeReader(["attname", "format_type"], formattedTypes), null, info);
             }
+            if (text.Contains(" pg_indexes "))
+                return new(new FakeReader(["schemaname", "tablename", "indexname", "indexdef"], indexes ?? []), null, info);
             return new(new FakeReader([], []), null, info);
+        }
+
+        int Record(string text) {
+            statements?.Add(text);
+            return 0;
         }
 
         client.Setup(c => c.Reader(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<IEnumerable<object>>()))
               .Returns<Transaction, string, IEnumerable<object>>((_, text, _) => Answer(text));
         client.Setup(c => c.ReaderAsync(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<IEnumerable<object>>()))
               .Returns<Transaction, string, IEnumerable<object>>((_, text, _) => Task.FromResult(Answer(text)));
+        client.Setup(c => c.NonQuery(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<object[]>())).Returns<Transaction, string, object[]>((_, text, _) => Record(text));
+        client.Setup(c => c.NonQuery(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<IEnumerable<object>>())).Returns<Transaction, string, IEnumerable<object>>((_, text, _) => Record(text));
+        client.Setup(c => c.NonQueryPrepared(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<object[]>())).Returns<Transaction, string, object[]>((_, text, _) => Record(text));
+        client.Setup(c => c.NonQueryPrepared(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<IEnumerable<object>>())).Returns<Transaction, string, IEnumerable<object>>((_, text, _) => Record(text));
+        client.Setup(c => c.Scalar(It.IsAny<Transaction>(), It.IsAny<string>(), It.IsAny<object[]>())).Returns(tableCount);
         return client;
     }
 
@@ -138,10 +157,34 @@ public class PostgreVectorColumnTests {
         int formattedTypeQueries = 0;
         Mock<IDBClient> client = CreateSchemaClient(info, [VectorTableColumns()[0]], [], () => formattedTypeQueries++);
 
-        await info.GetSchemaAsync(client.Object, "vectorentity");
-        info.GetSchema(client.Object, "vectorentity");
+        TableSchema asyncSchema = (TableSchema)await info.GetSchemaAsync(client.Object, "vectorentity");
+        TableDescriptor syncSchema = (TableDescriptor)info.GetSchema(client.Object, "vectorentity");
 
+        Assert.That(asyncSchema.Columns.Single().Type, Is.EqualTo("bigint"));
+        Assert.That(syncSchema.Columns.Single().Type, Is.EqualTo("bigint"));
         Assert.That(formattedTypeQueries, Is.EqualTo(0));
+    }
+
+    [Test, Parallelizable]
+    public void UpdateSchema_UnchangedVectorColumn_IssuesNoStatement() {
+        PostgreInfo info = new();
+        List<string> statements = [];
+        Mock<IDBClient> client = CreateSchemaClient(info, VectorEntityColumns(), VectorEntityFormattedTypes(), indexes: VectorEntityIndexes(), statements: statements);
+
+        new SchemaUpdater(new EntityDescriptorCache()).Update<VectorEntity>(client.Object);
+
+        Assert.That(statements, Is.Empty);
+    }
+
+    [Test, Parallelizable]
+    public void EntityManagerCreate_DeclaredVectorProperty_IssuesVectorNColumn() {
+        PostgreInfo info = new();
+        List<string> statements = [];
+        Mock<IDBClient> client = CreateSchemaClient(info, [], [], statements: statements, tableCount: 0);
+
+        new EntityManager(client.Object).Create<VectorEntity>();
+
+        Assert.That(statements.Single(s => s.StartsWith("CREATE TABLE")), Does.Contain("\"embedding\" vector(3)"));
     }
 
     [Test, Parallelizable]

@@ -5,7 +5,7 @@ using Pooshit.Ocelot.Info;
 namespace Pooshit.Ocelot.Entities.Attributes;
 
 /// <summary>
-/// declares a <c>float[]</c> property as a native vector column of a fixed number of dimensions, honoured only by dialects with a native vector type
+/// declares a <c>float[]</c> property as a native vector column of fixed dimensions where the dialect supports it, the property is not populated on load
 /// </summary>
 [AttributeUsage(AttributeTargets.Property)]
 public class VectorAttribute : Attribute {

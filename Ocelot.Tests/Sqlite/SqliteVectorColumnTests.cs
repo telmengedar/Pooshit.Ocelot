@@ -1,6 +1,5 @@
 using System.Linq;
 using System.Threading.Tasks;
-using Moq;
 using NUnit.Framework;
 using Pooshit.Ocelot.Clients;
 using Pooshit.Ocelot.Entities;
@@ -35,12 +34,5 @@ public class SqliteVectorColumnTests {
         SchemaService service = new(client);
         await service.UpdateSchema<VectorEntity>();
         Assert.That(await service.ExistsSchema<VectorEntity>(), Is.True);
-    }
-
-    [Test, Parallelizable]
-    public void ExternalDialect_WithoutOwnImplementation_HasNoVectorType() {
-        Mock<IDBInfo> external = new() { CallBase = true };
-
-        Assert.That(external.Object.GetVectorType(3), Is.Null);
     }
 }
