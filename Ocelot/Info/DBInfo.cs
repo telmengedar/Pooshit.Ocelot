@@ -211,6 +211,9 @@ public abstract class DBInfo : IDBInfo {
     public abstract string GetDBType(string type, int length=-1);
 
     /// <inheritdoc />
+    public virtual string GetVectorType(int dimensions) => null;
+
+    /// <inheritdoc />
     public virtual bool IsTypeEqual(string lhs, string rhs) {
         return lhs == rhs;
     }

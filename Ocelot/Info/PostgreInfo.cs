@@ -34,6 +34,12 @@ namespace Pooshit.Ocelot.Info;
 /// database specific logic for postgre databases
 /// </summary>
 public class PostgreInfo : DBInfo {
+    const string UserDefinedType = "USER-DEFINED";
+
+    const string FormattedTypesQuery = "SELECT a.attname, format_type(a.atttypid, a.atttypmod) FROM pg_attribute a WHERE a.attrelid = to_regclass(quote_ident(@1)) AND a.attnum > 0 AND NOT a.attisdropped";
+
+    static readonly Regex vectorType = new(@"^vector(\((?<dimensions>[0-9]{1,5})\))?$", RegexOptions.Compiled);
+
     readonly Type bigIntRangeType = Type.GetType("NpgsqlTypes.NpgsqlRange`1,Npgsql");
     readonly Type decimalRangeType = Type.GetType("NpgsqlTypes.NpgsqlRange`1,Npgsql");
     readonly Type intRangeType = Type.GetType("NpgsqlTypes.NpgsqlRange`1[System.Int32],Npgsql");
@@ -431,6 +437,9 @@ public class PostgreInfo : DBInfo {
         return lhs == rhs;
     }
 
+    /// <inheritdoc />
+    public override string GetVectorType(int dimensions) => $"vector({dimensions})";
+
     string StripLength(ReadOnlySpan<char> type) {
         int indexOf = type.IndexOf("[");
         if (indexOf < 0)
@@ -441,6 +450,10 @@ public class PostgreInfo : DBInfo {
     
     /// <inheritdoc />
     public override string GetDBType(string type, int length=-1) {
+        Match vector = vectorType.Match(type);
+        if (vector.Success)
+            return vector.Groups["dimensions"].Success ? GetVectorType(int.Parse(vector.Groups["dimensions"].Value)) : "vector";
+
         if (length == -1)
             type = StripLength(type);
         
@@ -588,7 +601,8 @@ public class PostgreInfo : DBInfo {
     }
 
     void ColumnType(IOperationPreparator operation, ColumnDescriptor column) {
-        string pgtype = GetDBType(column.Type, column.Length);
+        string pgtype = (column is EntityColumnDescriptor entitycolumn ? VectorAttribute.GetColumnType(entitycolumn.Property, this) : null)
+                        ?? GetDBType(column.Type, column.Length);
         if(column.AutoIncrement) {
             if(pgtype == "int4")
                 operation.AppendText("serial4");
@@ -612,7 +626,7 @@ public class PostgreInfo : DBInfo {
                 throw new InvalidOperationException("Autoincrement with postgre only allowed with integer types");
         }
         else {
-            operation.AppendText(GetDBType(column.Property.PropertyType, SizeAttribute.GetLength(column.Property)));
+            operation.AppendText(VectorAttribute.GetColumnType(column.Property, this) ?? GetDBType(column.Property.PropertyType, SizeAttribute.GetLength(column.Property)));
         }
     }
 
@@ -698,6 +712,17 @@ public class PostgreInfo : DBInfo {
         return createStatement.ProcessCreateStatement();
     }
     
+    static void ApplyFormattedTypes(IReadOnlyDictionary<string, ColumnDescriptor> columns, IDataReader reader) {
+        using (reader) {
+            while (reader.Read()) {
+                if (columns.TryGetValue(reader.GetString(0), out ColumnDescriptor column) && column.Type == UserDefinedType)
+                    column.Type = reader.GetString(1);
+            }
+        }
+    }
+
+    static bool HasUserDefinedType(Dictionary<string, ColumnDescriptor> columns) => columns.Values.Any(c => c.Type == UserDefinedType);
+
     /// <inheritdoc />
     public override SchemaDescriptor GetSchema(IDBClient client, string name) {
         PgView view = new LoadOperation<PgView>(client, EntityDescriptor.Create, DB.All).Where(p => p.Name == name).ExecuteEntity();
@@ -718,6 +743,9 @@ public class PostgreInfo : DBInfo {
                 AutoIncrement = column.Default?.StartsWith("nextval") ?? column.IsIdentity == "YES"
             };
         }
+
+        if (HasUserDefinedType(columns))
+            ApplyFormattedTypes(columns, client.Reader(null, FormattedTypesQuery, (IEnumerable<object>)new object[] { name }));
 
         List<UniqueDescriptor> uniques = [];
         List<IndexDescriptor> indices = [];
@@ -779,6 +807,9 @@ public class PostgreInfo : DBInfo {
                 AutoIncrement = column.Default?.StartsWith("nextval") ?? column.IsIdentity == "YES"
             };
         }
+
+        if (HasUserDefinedType(columns))
+            ApplyFormattedTypes(columns, await client.ReaderAsync(transaction, FormattedTypesQuery, (IEnumerable<object>)new object[] { name }));
 
         List<UniqueDescriptor> uniques = [];
         List<IndexDescriptor> indices = [];

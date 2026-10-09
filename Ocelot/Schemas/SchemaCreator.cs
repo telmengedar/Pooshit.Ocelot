@@ -104,7 +104,7 @@ namespace Pooshit.Ocelot.Schemas {
             ColumnAttribute column = ColumnAttribute.Get(property);
             string columnname = column == null ? property.Name.ToLower() : column.Column;
 
-            ColumnDescriptor columndescriptor = new(columnname, dbInfo.GetDBType(property.PropertyType, -1)) {
+            ColumnDescriptor columndescriptor = new(columnname, VectorAttribute.GetColumnType(property, dbInfo) ?? dbInfo.GetDBType(property.PropertyType, -1)) {
                 PrimaryKey = PrimaryKeyAttribute.IsPrimaryKey(property),
                 AutoIncrement = AutoIncrementAttribute.IsAutoIncrement(property),
                 NotNull = NotNullAttribute.HasNotNull(property) || (property.PropertyType.IsValueType && !(property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))),

@@ -8,6 +8,7 @@ using Pooshit.Ocelot.Entities.Descriptors;
 using Pooshit.Ocelot.Entities.Operations;
 using Pooshit.Ocelot.Entities.Operations.Prepared;
 using Pooshit.Ocelot.Extern;
+using Pooshit.Ocelot.Info;
 using Pooshit.Ocelot.Schemas;
 
 namespace Pooshit.Ocelot.Entities.Schema {
@@ -80,6 +81,10 @@ namespace Pooshit.Ocelot.Entities.Schema {
             creator.Create(typeof(T), client);
         }
 
+        static string GetTargetType(IDBInfo dbinfo, EntityColumnDescriptor column) {
+            return VectorAttribute.GetColumnType(column.Property, dbinfo) ?? dbinfo.GetDBType(column.Property.PropertyType, SizeAttribute.GetLength(column.Property));
+        }
+
         void UpdateTable<T>(IDBClient client, TableDescriptor currentschema) {
             Logger.Info(this, $"Checking schema of '{typeof(T).Name}'");
 
@@ -98,7 +103,7 @@ namespace Pooshit.Ocelot.Entities.Schema {
                     obsolete.Add(column.Name);
                 }
                 else {
-                    if(!client.DBInfo.IsTypeEqual(column.Type, client.DBInfo.GetDBType(entitycolumn.Property.PropertyType, SizeAttribute.GetLength(entitycolumn.Property)))
+                    if(!client.DBInfo.IsTypeEqual(column.Type, GetTargetType(client.DBInfo, entitycolumn))
                         || column.PrimaryKey != entitycolumn.PrimaryKey
                         || column.AutoIncrement != entitycolumn.AutoIncrement
                         || column.IsUnique != entitycolumn.IsUnique
@@ -106,7 +111,7 @@ namespace Pooshit.Ocelot.Entities.Schema {
                     /* default value is not evaluated for now
                    || column.DefaultValue != entitycolumn.DefaultValue*/
                     ) {
-                        Logger.Info(this, $"Detected altered column '{entitycolumn.Name}'", $"New -> {entitycolumn} {client.DBInfo.GetDBType(entitycolumn.Property.PropertyType, SizeAttribute.GetLength(entitycolumn.Property))}\r\nOld -> {column} {column.Type}");
+                        Logger.Info(this, $"Detected altered column '{entitycolumn.Name}'", $"New -> {entitycolumn} {GetTargetType(client.DBInfo, entitycolumn)}\r\nOld -> {column} {column.Type}");
                         altered.Add(entitycolumn);
                     }
                 }
