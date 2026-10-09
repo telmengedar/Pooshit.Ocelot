@@ -760,7 +760,7 @@ public class PostgreInfo : DBInfo {
 
     /// <inheritdoc />
     public override async Task<Schema> GetSchemaAsync(IDBClient client, string name, Transaction transaction=null) {
-        PgView view = await new LoadOperation<PgView>(client, EntityDescriptor.Create, DB.All).Where(p => p.Name == name).ExecuteEntityAsync();
+        PgView view = await new LoadOperation<PgView>(client, EntityDescriptor.Create, DB.All).Where(p => p.Name == name).ExecuteEntityAsync(transaction);
         if (view != null)
             return new ViewSchema {
                 Name = name,
@@ -768,7 +768,7 @@ public class PostgreInfo : DBInfo {
             };
 
         Dictionary<string, ColumnDescriptor> columns = new();
-        await foreach (PgColumn column in new LoadOperation<PgColumn>(client, EntityDescriptor.Create, DB.All).Where(c => c.Table == name).ExecuteEntitiesAsync()) {
+        await foreach (PgColumn column in new LoadOperation<PgColumn>(client, EntityDescriptor.Create, DB.All).Where(c => c.Table == name).ExecuteEntitiesAsync(transaction)) {
             string type = column.DataType;
             if (column.DataType == "ARRAY")
                 type = column.ItemType.Substring(1) + "[]";
@@ -782,7 +782,7 @@ public class PostgreInfo : DBInfo {
 
         List<UniqueDescriptor> uniques = [];
         List<IndexDescriptor> indices = [];
-        await foreach(PgIndex index in new LoadOperation<PgIndex>(client, EntityDescriptor.Create, DB.All).Where(i => i.Table == name).ExecuteEntitiesAsync()) {
+        await foreach(PgIndex index in new LoadOperation<PgIndex>(client, EntityDescriptor.Create, DB.All).Where(i => i.Table == name).ExecuteEntitiesAsync(transaction)) {
             Match match = Regex.Match(index.Definition, "^CREATE (?<unique>UNIQUE )?INDEX (?<name>[^ ]+) ON (?<table>[^ ]+)( USING (?<type>[a-zA-Z]+))? \\((?<columns>.+)\\)");
             if(!match.Success)
                 continue;
