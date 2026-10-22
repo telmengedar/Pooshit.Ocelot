@@ -24,8 +24,8 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
         /// <inheritdoc />
         public override long Execute(Transaction transaction, params object[] parameters) {
             if(DBPrepare && DBClient.DBInfo.PreparationSupported)
-                return Converter.Convert<long>(DBClient.ScalarPrepared(transaction, CommandText, ConstantParameters.Concat(parameters)), true);
-            return Converter.Convert<long>(DBClient.Scalar(transaction, CommandText, ConstantParameters.Concat(parameters)), true);
+                return Converter.Convert<long>(DBClient.ScalarWritePrepared(transaction, CommandText, ConstantParameters.Concat(parameters)), true);
+            return Converter.Convert<long>(DBClient.ScalarWrite(transaction, CommandText, ConstantParameters.Concat(parameters)), true);
         }
 
         /// <inheritdoc />
@@ -42,8 +42,8 @@ namespace Pooshit.Ocelot.Entities.Operations.Prepared {
         public override async Task<long> ExecuteAsync(Transaction transaction, params object[] parameters) {
             object value;
             if(DBPrepare && DBClient.DBInfo.PreparationSupported)
-                value = await DBClient.ScalarPreparedAsync(transaction, CommandText, ConstantParameters.Concat(parameters));
-            else value = await DBClient.ScalarAsync(transaction, CommandText, ConstantParameters.Concat(parameters));
+                value = await DBClient.ScalarWritePreparedAsync(transaction, CommandText, ConstantParameters.Concat(parameters));
+            else value = await DBClient.ScalarWriteAsync(transaction, CommandText, ConstantParameters.Concat(parameters));
             return Converter.Convert<long>(value, true);
         }
     }
