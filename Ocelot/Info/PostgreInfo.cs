@@ -861,7 +861,12 @@ public class PostgreInfo : DBInfo {
     public override void CreateParameter(IDbCommand command, object parameterValue) {
         IDbDataParameter parameter = command.CreateParameter();
         parameter.ParameterName = Parameter + (command.Parameters.Count + 1);
-        if (parameterValue == null || parameterValue == DBNull.Value)
+        if (parameterValue is StreamParameter streamParameter) {
+            streamParameter.Validate(true);
+            parameter.DbType = DbType.Binary;
+            parameter.Value = streamParameter.Stream;
+        }
+        else if (parameterValue == null || parameterValue == DBNull.Value)
             parameter.Value = DBNull.Value;
         else if (parameterValue is Range<BigInteger> numericRange)
             parameter.Value = Activator.CreateInstance(bigIntRangeType, (decimal)numericRange.Lower, numericRange.LowerInclusive, (decimal)numericRange.Upper, numericRange.UpperInclusive);

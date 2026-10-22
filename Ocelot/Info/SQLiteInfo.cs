@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Numerics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Pooshit.Ocelot.Clients;
+using Pooshit.Ocelot.CustomTypes;
 using Pooshit.Ocelot.Entities.Attributes;
 using Pooshit.Ocelot.Entities.Descriptors;
 using Pooshit.Ocelot.Entities.Operations;
@@ -351,6 +353,18 @@ public class SQLiteInfo : DBInfo {
 
     /// <inheritdoc />
     public override void CreateParameter(IDbCommand command, object parameterValue) {
+        if (parameterValue is StreamParameter streamParameter) {
+            streamParameter.Validate(false);
+            byte[] bytes = new byte[streamParameter.Length];
+            int offset = 0;
+            while (offset < bytes.Length) {
+                int read = streamParameter.Stream.Read(bytes, offset, bytes.Length - offset);
+                if (read == 0)
+                    throw new EndOfStreamException("The stream ended before its declared length.");
+                offset += read;
+            }
+            parameterValue = bytes;
+        }
         // currently sqlite doesn't have a mapping for biginteger
         if (parameterValue is BigInteger)
             parameterValue = parameterValue.ToString();
