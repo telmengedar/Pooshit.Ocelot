@@ -607,6 +607,8 @@ public abstract class DBInfo : IDBInfo {
 
     /// <inheritdoc />
     public virtual void CreateParameter(IDbCommand command, object parameterValue) {
+        if (parameterValue is StreamParameter)
+            throw new NotSupportedException("Stream parameters are not supported by this provider.");
         IDbDataParameter parameter = command.CreateParameter();
         parameter.ParameterName = Parameter + (command.Parameters.Count + 1);
         parameter.Value = parameterValue == null || parameterValue == DBNull.Value ?

@@ -105,10 +105,10 @@ public class DBClient : ADbClient {
     }
 
     /// <inheritdoc />
-    public override Task<int> NonQueryPreparedAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters, CancellationToken cancellationToken) {
+    public override async Task<int> NonQueryPreparedAsync(Transaction transaction, string commandstring, IEnumerable<object> parameters, CancellationToken cancellationToken) {
         using PreparedCommand command = PrepareCommand(transaction, commandstring, parameters, true);
         try {
-            return command.Command.ExecuteNonQueryAsync(cancellationToken);
+            return await command.Command.ExecuteNonQueryAsync(cancellationToken);
         }
         catch (OperationCanceledException) {
             throw;

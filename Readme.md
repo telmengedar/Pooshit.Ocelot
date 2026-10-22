@@ -6,6 +6,36 @@ Simple nonintrusive entitymanager to access a database without the need to inclu
 
 This library can interact with **Sqlite**, **PostgreSQL**, **MySQL**/**MariaDB** and **MSSql**
 
+## Binary stream parameters
+
+`Pooshit.Ocelot.CustomTypes.StreamParameter` supplies a readable stream and its exact remaining length through existing parameter APIs:
+
+```csharp
+using FileStream source = File.OpenRead(path);
+StreamParameter value = new StreamParameter(source, checked((int)(source.Length - source.Position)));
+await entitymanager.Insert<Document>().Columns(d => d.Id, d => d.Content).ExecuteAsync(id, value);
+```
+
+PostgreSQL requires a seekable source and sends the original stream without an Ocelot payload buffer. SQLite reads the declared bytes synchronously into a byte array, including for async execution. Other providers reject this carrier. Length is limited to `Int32.MaxValue`; for a seekable source it must equal `Length - Position` when bound. For SQLite nonseekable sources the caller supplies the exact remaining count; premature EOF fails, and bytes beyond that count are not inspected.
+
+The caller owns the stream and keeps it open until execution completes. Binding or execution may advance it, including on failure; rewind or reopen before reusing it. Preparing a fluent operation does not read the stream. Do not access or change the source concurrently with execution.
+
+For PostgreSQL cancellation use the explicit client overload:
+
+```csharp
+await client.NonQueryAsync(null, "INSERT INTO document (id, content) VALUES (@1, @2)",
+    new object[] { id, value }, cancellationToken);
+```
+
+Fluent `ExecuteAsync` takes parameter values and has no cancellation-token overload. SQLite's synchronous materialization does not observe cancellation. An in-database blob copy already uses a scalar subquery:
+
+```csharp
+LoadOperation<Source> query = entitymanager.Load<Source>(s => s.Content).Where(s => s.Id == sourceId);
+await entitymanager.Update<Target>()
+    .Set(t => t.Content == DB.Operation(query).Blob)
+    .Where(t => t.Id == targetId).ExecuteAsync();
+```
+
 ## Entities
 
 To work with the entitymanager you need entities. This means a class with properties which acts as a model for your data. If you don't specify otherwise the entitymanager is automatically using your classname as tablename and the names of the properties as column names.
