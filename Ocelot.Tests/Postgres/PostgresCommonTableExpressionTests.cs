@@ -38,6 +38,7 @@ public class PostgresCommonTableExpressionTests {
         try {
             List<int> lengths = [];
             List<int> parameters = [];
+
             for(int depth = 2; depth <= 8; depth++) {
                 int[] values = [1, 2];
                 List<CommonTableExpression> definitions = [em.Load<ValueModel>(v => v.Integer).Where(v => v.Integer.In(values)).AsCte("hop0")];
@@ -47,14 +48,18 @@ public class PostgresCommonTableExpressionTests {
                         .Where(v => (v.Integer.In(previous) || v.Integer.In(previous)) && v.Integer.In(values)).AsCte($"hop{i}"));
                 }
                 CommonTableExpression last = definitions[depth - 1];
+
                 PreparedLoadOperation<ValueModel> prepared = em.Load<ValueModel>(v => v.Integer).With(definitions.ToArray())
                     .Where(v => v.Integer.In(last) || v.Integer.In(last)).Union(last).Prepare(false);
+
                 Assert.That(prepared.ConstantParameters.Length, Is.EqualTo(depth));
                 Assert.That(prepared.ConstantParameters.All(p => p is int[] array && array.SequenceEqual(values)), Is.True);
                 Assert.That(prepared.ExecuteSet<int>().OrderBy(i => i), Is.EqualTo(new[] { 1, 1, 2, 2 }));
+
                 parameters.Add(prepared.ConstantParameters.Length);
                 lengths.Add(Regex.Replace(Regex.Replace(prepared.CommandText, @"@\d+", "@p"), @"hop\d+", "hop").Length);
             }
+
             Assert.That(parameters.Zip(parameters.Skip(1), (a, b) => b - a).Distinct(), Is.EqualTo(new[] { 1 }));
             Assert.That(lengths.Zip(lengths.Skip(1), (a, b) => b - a).Distinct().Count(), Is.EqualTo(1));
         }
@@ -73,24 +78,35 @@ public class PostgresCommonTableExpressionTests {
                 .Where(v => literal.Bool && v.Integer.In(values)).OrderBy(v => v.Integer).Limit(6).AsCte("limit");
             CommonTableExpression next = em.Load<ValueModel>(v => v.Integer).Where(v => v.Integer.In(seed) || v.Integer.In(seed)).AsCte("next");
             LoadOperation<ValueModel> outer = em.Load<ValueModel>(v => v.Integer).With(seed, next).From(next).OrderBy(v => v.Integer).Limit(1).Offset(4);
+
             PreparedLoadOperation<ValueModel> prepared = outer.Prepare(false);
+
             Assert.That(prepared.ConstantParameters.Length, Is.EqualTo(4));
             Assert.That(prepared.ConstantParameters[0], Is.EqualTo(values));
+
             WindowResult<ValueModel, long> page = preparedEntry
                 ? await prepared.ExecutePagedAsync(2, 1)
                 : await outer.ExecutePagedAsync(2, 1);
+
             Assert.That(await page.WindowValue, Is.EqualTo(6));
+
             List<int> items = [];
             await foreach(ValueModel item in page.Items)
                 items.Add(item.Integer);
+
             Assert.That(items, Is.EqualTo(new[] { 1, 2 }));
+
             WindowResult<ValueModel, long> window = await em.Load<ValueModel>(v => v.Integer).With(seed, next).From(next)
                 .ExecuteWindowedAsync<long>(DB.SumOver(DB.Property<ValueModel>(v => v.Integer)));
+
             Assert.That(await window.WindowValue, Is.EqualTo(15));
+
             List<int> windowed = [];
             await foreach(ValueModel item in window.Items)
                 windowed.Add(item.Integer);
+
             Assert.That(windowed.OrderBy(i => i), Is.EqualTo(Enumerable.Range(0, 6)));
+
             WindowReader<long> reader = await prepared.ExecuteWindowedReaderAsync<long>(DB.CountOver());
             using(reader.Reader) {
                 Assert.That(reader.Reader.Read(), Is.True);

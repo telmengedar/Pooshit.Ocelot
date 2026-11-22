@@ -1158,9 +1158,7 @@ public class LoadOperation : ILoadOperation {
     /// </summary>
     protected Expression Havings { get; set; }
 
-    /// <summary>Creates a named reference to this load.</summary>
-    /// <param name="name">Unqualified statement-local name.</param>
-    /// <returns>Named expression definition and reference.</returns>
+    /// <inheritdoc />
     public CommonTableExpression AsCte(string name) => new(name, this, dbclient.DBInfo);
 
     /// <summary>Appends ordered common table expressions.</summary>
