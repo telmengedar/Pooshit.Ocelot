@@ -94,6 +94,7 @@ public class LoadOperation<T> : IDatabaseOperation {
     readonly List<JoinOperation> joinoperations = [];
     bool distinct;
     string alias;
+    readonly List<CommonTableExpression> expressions = [];
     readonly List<IDatabaseOperation> unions= [];
     IDatabaseOperation from;
 
@@ -111,6 +112,7 @@ public class LoadOperation<T> : IDatabaseOperation {
         Havings = origin.Havings;
         distinct = origin.distinct;
         alias = origin.alias;
+        expressions.AddRange(origin.expressions);
     }
 
     /// <summary>
@@ -622,6 +624,19 @@ public class LoadOperation<T> : IDatabaseOperation {
         return Prepare(false).ExecuteWindowedAsync<long>(transaction, DB.CountOver(), cancellationToken);
     }
 
+    /// <summary>Creates a named reference to this load.</summary>
+    /// <param name="name">Unqualified statement-local name.</param>
+    /// <returns>Named expression definition and reference.</returns>
+    public CommonTableExpression AsCte(string name) => new(name, this, dbclient.DBInfo);
+
+    /// <summary>Appends ordered common table expressions.</summary>
+    /// <param name="definitions">Definitions in dependency order.</param>
+    /// <returns>This load operation.</returns>
+    public LoadOperation<T> With(params CommonTableExpression[] definitions) {
+        CommonTableExpression.AddDefinitions(expressions, definitions);
+        return this;
+    }
+
     /// <summary>
     /// specifies an operation (subselect) to load data from
     /// </summary>
@@ -953,6 +968,7 @@ public class LoadOperation<T> : IDatabaseOperation {
 
     /// <inheritdoc />
     void IDatabaseOperation.Prepare(IOperationPreparator preparator) {
+        CommonTableExpression.PrepareDefinitions(expressions, preparator);
         if (columns.Count == 0)
             columns.AddRange(typeof(T).GetProperties().Select(p => Field.Property<T>(p.Name)));
 
@@ -1066,6 +1082,7 @@ public class LoadOperation : ILoadOperation {
     readonly List<JoinOperation> joinoperations = [];
     bool distinct;
     string alias;
+    readonly List<CommonTableExpression> expressions = [];
     readonly List<IDatabaseOperation> unions = [];
 
     /// <summary>
@@ -1082,6 +1099,7 @@ public class LoadOperation : ILoadOperation {
         Havings = origin.Havings;
         distinct = origin.distinct;
         alias = origin.alias;
+        expressions.AddRange(origin.expressions);
     }
 
     /// <summary>
@@ -1139,6 +1157,20 @@ public class LoadOperation : ILoadOperation {
     /// having criterias
     /// </summary>
     protected Expression Havings { get; set; }
+
+    /// <inheritdoc />
+    public CommonTableExpression AsCte(string name) => new(name, this, dbclient.DBInfo);
+
+    /// <summary>Appends ordered common table expressions.</summary>
+    /// <param name="definitions">Definitions in dependency order.</param>
+    /// <returns>This load operation.</returns>
+    public LoadOperation With(params CommonTableExpression[] definitions) {
+        CommonTableExpression.AddDefinitions(expressions, definitions);
+        return this;
+    }
+
+    /// <inheritdoc />
+    ILoadOperation ILoadOperation.With(params CommonTableExpression[] definitions) => With(definitions);
 
     /// <summary>
     /// specifies an operation (subselect) to load data from
@@ -1499,6 +1531,7 @@ public class LoadOperation : ILoadOperation {
 
     /// <inheritdoc />
     void IDatabaseOperation.Prepare(IOperationPreparator preparator) {
+        CommonTableExpression.PrepareDefinitions(expressions, preparator);
         if (columns.Count == 0)
             throw new InvalidOperationException("You need to specify fields to load");
 
