@@ -16,6 +16,16 @@ namespace Pooshit.Ocelot.Entities.Operations;
 /// </summary>
 public interface ILoadOperation : IDatabaseOperation {
 
+    /// <summary>Creates a named reference to this load.</summary>
+    /// <param name="name">Unqualified statement-local name.</param>
+    /// <returns>Named expression definition and reference.</returns>
+    CommonTableExpression AsCte(string name);
+
+    /// <summary>Appends ordered common table expressions.</summary>
+    /// <param name="expressions">Definitions in dependency order.</param>
+    /// <returns>This load operation.</returns>
+    ILoadOperation With(params CommonTableExpression[] expressions);
+
 	/// <summary>
 	/// loads entities using the operation
 	/// </summary>

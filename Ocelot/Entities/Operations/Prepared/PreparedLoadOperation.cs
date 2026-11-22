@@ -901,9 +901,7 @@ public class PreparedLoadOperation<T> : PreparedLoadOperation {
     }
 
     static string InjectWindowedColumn(string commandText, string aggregateSql, int? limit, int? offset, string dialectTypeName) {
-        // Insert ", <aggregateSql>" just before the first "FROM" keyword (case-insensitive, word boundary).
-        // Strip any existing LIMIT/OFFSET and re-append the caller-supplied values when limit/offset are provided.
-        int fromIdx = FindFromKeyword(commandText);
+        int fromIdx = FindTopLevelKeyword(commandText, "FROM");
         string baseText;
         if (fromIdx < 0)
             baseText = commandText + ", " + aggregateSql;
@@ -929,9 +927,8 @@ public class PreparedLoadOperation<T> : PreparedLoadOperation {
     }
 
     static string StripLimitOffset(string sql) {
-        // Find the last top-level LIMIT or OFFSET keyword and strip from there
-        int lastLimit = FindLastTopLevelKeyword(sql, "LIMIT");
-        int lastOffset = FindLastTopLevelKeyword(sql, "OFFSET");
+        int lastLimit = FindTopLevelKeyword(sql, "LIMIT", true);
+        int lastOffset = FindTopLevelKeyword(sql, "OFFSET", true);
         int cutAt = -1;
         if (lastLimit >= 0) cutAt = lastLimit;
         if (lastOffset >= 0 && (cutAt < 0 || lastOffset < cutAt)) cutAt = lastOffset;
@@ -939,39 +936,46 @@ public class PreparedLoadOperation<T> : PreparedLoadOperation {
         return sql[..cutAt].TrimEnd();
     }
 
-    static int FindLastTopLevelKeyword(string sql, string keyword) {
+    static int FindTopLevelKeyword(string sql, string keyword, bool last = false) {
         int result = -1;
         int depth = 0;
-        for (int i = 0; i < sql.Length; i++) {
-            if (sql[i] == '(') { depth++; continue; }
-            if (sql[i] == ')') { depth--; continue; }
-            if (depth > 0) continue;
-            if (i + keyword.Length <= sql.Length && string.Compare(sql, i, keyword, 0, keyword.Length, StringComparison.OrdinalIgnoreCase) == 0) {
+        char quote = '\0';
+        for(int i = 0; i < sql.Length; i++) {
+            char current = sql[i];
+            if(quote != '\0') {
+                if(current == quote) {
+                    if(i + 1 < sql.Length && sql[i + 1] == quote)
+                        i++;
+                    else
+                        quote = '\0';
+                }
+                continue;
+            }
+            if(current is '\'' or '"' or '`' or '[') {
+                quote = current == '[' ? ']' : current;
+                continue;
+            }
+            if(current == '(') {
+                depth++;
+                continue;
+            }
+            if(current == ')') {
+                depth--;
+                continue;
+            }
+            if(depth != 0)
+                continue;
+            if(i + keyword.Length <= sql.Length && string.Compare(sql, i, keyword, 0, keyword.Length, StringComparison.OrdinalIgnoreCase) == 0) {
                 bool afterOk = i + keyword.Length >= sql.Length || !char.IsLetterOrDigit(sql[i + keyword.Length]);
                 bool beforeOk = i == 0 || char.IsWhiteSpace(sql[i - 1]);
-                if (beforeOk && afterOk)
+                if(beforeOk && afterOk) {
+                    if(!last)
+                        return i;
                     result = i;
+                }
             }
         }
         return result;
-    }
-
-    static int FindFromKeyword(string sql) {
-        // Walk from left to find first top-level FROM not inside parentheses
-        int depth = 0;
-        for (int i = 0; i < sql.Length; i++) {
-            if (sql[i] == '(') { depth++; continue; }
-            if (sql[i] == ')') { depth--; continue; }
-            if (depth > 0) continue;
-            if (i + 4 <= sql.Length && string.Compare(sql, i, "FROM", 0, 4, StringComparison.OrdinalIgnoreCase) == 0) {
-                // Ensure it's a word boundary
-                bool afterOk = i + 4 >= sql.Length || !char.IsLetterOrDigit(sql[i + 4]);
-                bool beforeOk = i == 0 || char.IsWhiteSpace(sql[i - 1]);
-                if (beforeOk && afterOk)
-                    return i;
-            }
-        }
-        return -1;
     }
 
     static List<PropertyInfo> BuildSetters(Reader reader, EntityDescriptor descriptor, string windowAlias, out int windowOrdinal) {

@@ -281,3 +281,21 @@ INNER JOIN LATERAL (
 | SQLite | throws `NotSupportedException` at `Prepare()` time |
 
 Check `IDBInfo.SupportsLateralJoin` before calling `LateralJoin` when your code may run against SQLite. The flag is `false` on `SQLiteInfo` and `true` on all other dialects, so the check serves as a natural branch point for a fallback path in SQLite-backed tests.
+
+
+## Named common table expressions
+
+Use `AsCte(name)` to name a load and `With(...)` to attach definitions to the outer load in dependency order:
+
+```csharp
+CommonTableExpression seed = entitymanager.Load<Node>(n => n.Id)
+    .Where(n => n.Id == seedId).AsCte("seed");
+CommonTableExpression next = entitymanager.Load<Node>(n => n.Id)
+    .Where(n => n.ParentId.In(seed)).AsCte("next");
+Node[] nodes = entitymanager.Load<Node>().With(seed, next)
+    .Where(n => n.Id.In(next)).ExecuteEntities<Node>().ToArray();
+```
+
+Each definition renders and binds its parameters once per statement. References reuse the name through existing `In`, `From` and `Union` APIs (`Union` emits `UNION ALL`). `In` requires a single projected column. Names must be simple identifiers and unique within the outer load, ignoring case; repeated `With` calls append definitions. The body remains mutable until preparation.
+
+Attach definitions only to the outer load. References require registration in that statement, and bodies may reference earlier definitions. Forward or self references, cycles, nested `With` scopes, recursive CTEs, write CTEs and materialization hints are unsupported. Compose the body and outer load using the same database dialect. SQLite and PostgreSQL have execution coverage; MySQL and MSSQL have SQL rendering coverage only.
